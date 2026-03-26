@@ -6,3 +6,6 @@
 
 # ipynb checkpoints
 .ipynb_checkpoints/
+
+#also include pycache files
+__pycache__/
