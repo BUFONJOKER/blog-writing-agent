@@ -1,0 +1,8 @@
+# add all venv folder in main or sub folders
+.venv/
+
+# environment variables file
+.env
+
+# ipynb checkpoints
+.ipynb_checkpoints/

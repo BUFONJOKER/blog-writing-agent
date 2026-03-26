@@ -1,0 +1,48 @@
+﻿Task,Est. Hours,Phase,Priority,Sprint,Status
+1.2 — Set up environment variable management,1,Phase 1 - Setup,High,Sprint 1,Not Started
+1.3 — Define the shared State schema on paper,2,Phase 1 - Setup,High,Sprint 1,Not Started
+1.1 — Initialize monorepo structure,2,Phase 1 - Setup,High,Sprint 1,Not Started
+2.3 — Build the web fetch tool,3,Phase 2 - FastMCP,High,Sprint 1,Not Started
+2.4 — Build the keyword extraction tool,2,Phase 2 - FastMCP,Medium,Sprint 1,Not Started
+2.1 — Initialize FastMCP project,2,Phase 2 - FastMCP,High,Sprint 1,Not Started
+2.5 — Build the summarize tool,2,Phase 2 - FastMCP,Medium,Sprint 1,Not Started
+2.2 — Build the web search tool,3,Phase 2 - FastMCP,High,Sprint 1,Not Started
+2.7 — Add server authentication,2,Phase 2 - FastMCP,High,Sprint 6,Not Started
+2.6 — Add tool descriptions and input schemas,1,Phase 2 - FastMCP,High,Sprint 1,Not Started
+2.8 — Run and test MCP server locally,3,Phase 2 - FastMCP,High,Sprint 1,Not Started
+2.9 — Dockerize the MCP server,2,Phase 2 - FastMCP,Medium,Sprint 6,Not Started
+3.1 — Initialize the LangGraph backend project,2,Phase 3 - LangGraph,High,Sprint 2,Not Started
+3.5 — Build the Research Executor node,4,Phase 3 - LangGraph,High,Sprint 3,Not Started
+3.4 — Build the Research Query Generator node,2,Phase 3 - LangGraph,High,Sprint 3,Not Started
+3.3 — Build the Router node,2,Phase 3 - LangGraph,High,Sprint 2,Not Started
+3.6 — Build the Research Summarizer node,2,Phase 3 - LangGraph,High,Sprint 3,Not Started
+3.2 — Build the MCP client connection,2,Phase 3 - LangGraph,High,Sprint 2,Not Started
+3.12 — Implement Human-in-the-Loop Checkpoint 2,3,Phase 3 - LangGraph,High,Sprint 4,Not Started
+3.9 — Build the Task Executor node,4,Phase 3 - LangGraph,High,Sprint 2,Not Started
+3.7 — Build the Blog Planner node,3,Phase 3 - LangGraph,High,Sprint 2,Not Started
+3.11 — Build the Editor node,3,Phase 3 - LangGraph,High,Sprint 2,Not Started
+3.8 — Implement Human-in-the-Loop Checkpoint 1,4,Phase 3 - LangGraph,High,Sprint 4,Not Started
+3.14 — Add graph persistence with thread management,3,Phase 3 - LangGraph,High,Sprint 4,Not Started
+3.13 — Wire the full graph with conditional edges,4,Phase 3 - LangGraph,High,Sprint 2,Not Started
+3.10 — Build the Assembler node,2,Phase 3 - LangGraph,Medium,Sprint 2,Not Started
+4.8 — Add database models and migrations,3,Phase 4 - FastAPI,High,Sprint 4,Not Started
+4.2 — Build the /blog/start endpoint,3,Phase 4 - FastAPI,High,Sprint 4,Not Started
+4.1 — Create the FastAPI app,2,Phase 4 - FastAPI,High,Sprint 4,Not Started
+4.3 — Build the /blog/{thread_id}/status endpoint,2,Phase 4 - FastAPI,High,Sprint 4,Not Started
+4.7 — Add authentication middleware,3,Phase 4 - FastAPI,High,Sprint 6,Not Started
+4.5 — Build the /blog/{thread_id}/result endpoint,1,Phase 4 - FastAPI,Medium,Sprint 4,Not Started
+4.4 — Build the /blog/{thread_id}/review endpoint,3,Phase 4 - FastAPI,High,Sprint 4,Not Started
+4.6 — Add SSE for real-time streaming,4,Phase 4 - FastAPI,High,Sprint 6,Not Started
+5.9 — Add error handling and loading states,3,Phase 5 - Frontend,Medium,Sprint 5,Not Started
+5.1 — Initialize Next.js project,2,Phase 5 - Frontend,High,Sprint 5,Not Started
+5.6 — Build the results page,3,Phase 5 - Frontend,High,Sprint 5,Not Started
+5.8 — Add global state management,2,Phase 5 - Frontend,Medium,Sprint 5,Not Started
+5.3 — Build the live progress page,5,Phase 5 - Frontend,High,Sprint 5,Not Started
+5.7 — Build the blog runs history page,2,Phase 5 - Frontend,Medium,Sprint 5,Not Started
+5.5 — Build the Draft Review component,4,Phase 5 - Frontend,High,Sprint 5,Not Started
+5.4 — Build the Plan Review component,4,Phase 5 - Frontend,High,Sprint 5,Not Started
+5.2 — Build the prompt input page,3,Phase 5 - Frontend,High,Sprint 5,Not Started
+6.4 — Configure production deployment,5,Phase 6 - DevOps,High,Sprint 6,Not Started
+6.1 — Wire all three services in docker-compose,4,Phase 6 - DevOps,High,Sprint 6,Not Started
+6.3 — Add observability with LangSmith,2,Phase 6 - DevOps,High,Sprint 6,Not Started
+6.2 — End-to-end integration test,4,Phase 6 - DevOps,High,Sprint 6,Not Started

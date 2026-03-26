@@ -1,0 +1,710 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><title>Task Board</title><style>
+/* cspell:disable-file */
+/* webkit printing magic: print all background colors */
+html {
+	-webkit-print-color-adjust: exact;
+}
+* {
+	box-sizing: border-box;
+	-webkit-print-color-adjust: exact;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+}
+@media only screen {
+	body {
+		margin: 2em auto;
+		max-width: 900px;
+		color: rgb(55, 53, 47);
+	}
+}
+
+body {
+	line-height: 1.5;
+	white-space: pre-wrap;
+}
+
+a,
+a.visited {
+	color: inherit;
+	text-decoration: underline;
+}
+
+.pdf-relative-link-path {
+	font-size: 80%;
+	color: #444;
+}
+
+h1,
+h2,
+h3 {
+	letter-spacing: -0.01em;
+	line-height: 1.2;
+	font-weight: 600;
+	margin-bottom: 0;
+}
+
+/* Override strong tags inside headings to maintain consistent weight */
+h1 strong,
+h2 strong,
+h3 strong {
+	font-weight: 600;
+}
+
+.page-title {
+	font-size: 2.5rem;
+	font-weight: 700;
+	margin-top: 0;
+	margin-bottom: 0.75em;
+}
+
+h1 {
+	font-size: 1.875rem;
+	margin-top: 1.875rem;
+}
+
+h2 {
+	font-size: 1.5rem;
+	margin-top: 1.5rem;
+}
+
+h3 {
+	font-size: 1.25rem;
+	margin-top: 1.25rem;
+}
+
+.source {
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	padding: 1.5em;
+	word-break: break-all;
+}
+
+.callout {
+	border-radius: 10px;
+	padding: 1rem;
+}
+
+figure {
+	margin: 1.25em 0;
+	page-break-inside: avoid;
+}
+
+figcaption {
+	opacity: 0.5;
+	font-size: 85%;
+	margin-top: 0.5em;
+}
+
+mark {
+	background-color: transparent;
+}
+
+.indented {
+	padding-left: 1.5em;
+}
+
+hr {
+	background: transparent;
+	display: block;
+	width: 100%;
+	height: 1px;
+	visibility: visible;
+	border: none;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+img {
+	max-width: 100%;
+}
+
+@media only print {
+	img {
+		max-height: 100vh;
+		object-fit: contain;
+	}
+}
+
+@page {
+	margin: 1in;
+}
+
+.collection-content {
+	font-size: 0.875rem;
+}
+
+.collection-content td {
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+.column-list {
+	display: flex;
+	gap: 46px;
+}
+
+.column {
+	min-width: 0;
+	overflow: hidden;
+}
+
+.column > *:first-child {
+	margin-top: 0;
+}
+
+.table_of_contents-item {
+	display: block;
+	font-size: 0.875rem;
+	line-height: 1.3;
+	padding: 0.125rem;
+}
+
+.table_of_contents-indent-1 {
+	margin-left: 1.5rem;
+}
+
+.table_of_contents-indent-2 {
+	margin-left: 3rem;
+}
+
+.table_of_contents-indent-3 {
+	margin-left: 4.5rem;
+}
+
+.table_of_contents-link {
+	text-decoration: none;
+	opacity: 0.7;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.18);
+}
+
+table,
+th,
+td {
+	border: 1px solid rgba(55, 53, 47, 0.09);
+	border-collapse: collapse;
+}
+
+table {
+	border-left: none;
+	border-right: none;
+}
+
+th,
+td {
+	font-weight: normal;
+	padding: 0.25em 0.5em;
+	line-height: 1.5;
+	min-height: 1.5em;
+	text-align: left;
+}
+
+th {
+	color: rgba(55, 53, 47, 0.6);
+}
+
+ol,
+ul {
+	margin: 0;
+	margin-block-start: 0.6em;
+	margin-block-end: 0.6em;
+}
+
+li > ol:first-child,
+li > ul:first-child {
+	margin-block-start: 0.6em;
+}
+
+ul > li {
+	list-style: disc;
+}
+
+ul.to-do-list {
+	padding-inline-start: 0;
+}
+
+ul.to-do-list > li {
+	list-style: none;
+}
+
+.to-do-children-checked {
+	text-decoration: line-through;
+	opacity: 0.375;
+}
+
+ul.toggle > li {
+	list-style: none;
+}
+
+ul {
+	padding-inline-start: 1.7em;
+}
+
+ul > li {
+	padding-left: 0.1em;
+}
+
+ol {
+	padding-inline-start: 1.6em;
+}
+
+ol > li {
+	padding-left: 0.2em;
+}
+
+.mono ol {
+	padding-inline-start: 2em;
+}
+
+.mono ol > li {
+	text-indent: -0.4em;
+}
+
+.toggle {
+	padding-inline-start: 0em;
+	list-style-type: none;
+}
+
+/* Indent toggle children */
+.toggle > li > details {
+	padding-left: 1.7em;
+}
+
+.toggle > li > details > summary {
+	margin-left: -1.1em;
+}
+
+.selected-value {
+	display: inline-block;
+	padding: 0 0.5em;
+	background: rgba(206, 205, 202, 0.5);
+	border-radius: 3px;
+	margin-right: 0.5em;
+	margin-top: 0.3em;
+	margin-bottom: 0.3em;
+	white-space: nowrap;
+}
+
+.collection-title {
+	display: inline-block;
+	margin-right: 1em;
+}
+
+.page-description {
+	margin-bottom: 2em;
+}
+
+.simple-table {
+	margin-top: 1em;
+	font-size: 0.875rem;
+	empty-cells: show;
+}
+.simple-table td {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table th {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table-header-color {
+	background: rgb(247, 246, 243);
+	color: black;
+}
+.simple-table-header {
+	font-weight: 500;
+}
+
+time {
+	opacity: 0.5;
+}
+
+.icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	max-width: 1.2em;
+	max-height: 1.2em;
+	text-decoration: none;
+	vertical-align: text-bottom;
+	margin-right: 0.5em;
+}
+
+img.icon {
+	border-radius: 3px;
+}
+
+.callout img.notion-static-icon {
+	width: 1em;
+	height: 1em;
+}
+
+.callout p {
+	margin: 0;
+}
+
+.callout h1,
+.callout h2,
+.callout h3 {
+	margin: 0 0 0.6rem;
+}
+
+.user-icon {
+	width: 1.5em;
+	height: 1.5em;
+	border-radius: 100%;
+	margin-right: 0.5rem;
+}
+
+.user-icon-inner {
+	font-size: 0.8em;
+}
+
+.text-icon {
+	border: 1px solid #000;
+	text-align: center;
+}
+
+.page-cover-image {
+	display: block;
+	object-fit: cover;
+	width: 100%;
+	max-height: 30vh;
+}
+
+.page-header-icon {
+	font-size: 3rem;
+	margin-bottom: 1rem;
+}
+
+.page-header-icon-with-cover {
+	margin-top: -0.72em;
+	margin-left: 0.07em;
+}
+
+.page-header-icon img {
+	border-radius: 3px;
+}
+
+.link-to-page {
+	margin: 1em 0;
+	padding: 0;
+	border: none;
+	font-weight: 500;
+}
+
+p > .user {
+	opacity: 0.5;
+}
+
+td > .user,
+td > time {
+	white-space: nowrap;
+}
+
+input[type="checkbox"] {
+	transform: scale(1.5);
+	margin-right: 0.6em;
+	vertical-align: middle;
+}
+
+p {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+
+.image {
+	border: none;
+	margin: 1.5em 0;
+	padding: 0;
+	border-radius: 0;
+	text-align: center;
+}
+
+.code,
+code {
+	background: rgba(135, 131, 120, 0.15);
+	border-radius: 3px;
+	padding: 0.2em 0.4em;
+	border-radius: 3px;
+	font-size: 85%;
+	tab-size: 2;
+}
+
+code {
+	color: #eb5757;
+}
+
+.code {
+	padding: 1.5em 1em;
+}
+
+.code-wrap {
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
+.code > code {
+	background: none;
+	padding: 0;
+	font-size: 100%;
+	color: inherit;
+}
+
+blockquote {
+	font-size: 1em;
+	margin: 1em 0;
+	padding-left: 1em;
+	border-left: 3px solid rgb(55, 53, 47);
+}
+
+blockquote.quote-large {
+	font-size: 1.25em;
+}
+
+.bookmark {
+	text-decoration: none;
+	max-height: 8em;
+	padding: 0;
+	display: flex;
+	width: 100%;
+	align-items: stretch;
+}
+
+.bookmark-title {
+	font-size: 0.85em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	height: 1.75em;
+	white-space: nowrap;
+}
+
+.bookmark-text {
+	display: flex;
+	flex-direction: column;
+}
+
+.bookmark-info {
+	flex: 4 1 180px;
+	padding: 12px 14px 14px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+.bookmark-image {
+	width: 33%;
+	flex: 1 1 180px;
+	display: block;
+	position: relative;
+	object-fit: cover;
+	border-radius: 1px;
+}
+
+.bookmark-description {
+	color: rgba(55, 53, 47, 0.6);
+	font-size: 0.75em;
+	overflow: hidden;
+	max-height: 4.5em;
+	word-break: break-word;
+}
+
+.bookmark-href {
+	font-size: 0.75em;
+	margin-top: 0.25em;
+}
+
+.sans { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol"; }
+.code { font-family: "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace; }
+.serif { font-family: Lyon-Text, Georgia, ui-serif, serif; }
+.mono { font-family: iawriter-mono, Nitti, Menlo, Courier, monospace; }
+.pdf .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK JP'; }
+.pdf:lang(zh-CN) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK SC'; }
+.pdf:lang(zh-TW) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK TC'; }
+.pdf:lang(ko-KR) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK KR'; }
+.pdf .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.pdf .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK JP'; }
+.pdf:lang(zh-CN) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK SC'; }
+.pdf:lang(zh-TW) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK TC'; }
+.pdf:lang(ko-KR) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK KR'; }
+.pdf .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.highlight-default {
+	color: rgba(44, 44, 43, 1);
+}
+.highlight-gray {
+	color: rgba(125, 122, 117, 1);
+	fill: rgba(125, 122, 117, 1);
+}
+.highlight-brown {
+	color: rgba(159, 118, 90, 1);
+	fill: rgba(159, 118, 90, 1);
+}
+.highlight-orange {
+	color: rgba(210, 123, 45, 1);
+	fill: rgba(210, 123, 45, 1);
+}
+.highlight-yellow {
+	color: rgba(203, 148, 52, 1);
+	fill: rgba(203, 148, 52, 1);
+}
+.highlight-teal {
+	color: rgba(80, 148, 110, 1);
+	fill: rgba(80, 148, 110, 1);
+}
+.highlight-blue {
+	color: rgba(56, 125, 201, 1);
+	fill: rgba(56, 125, 201, 1);
+}
+.highlight-purple {
+	color: rgba(154, 107, 180, 1);
+	fill: rgba(154, 107, 180, 1);
+}
+.highlight-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.highlight-red {
+	color: rgba(207, 81, 72, 1);
+	fill: rgba(207, 81, 72, 1);
+}
+.highlight-default_background {
+	color: rgba(44, 44, 43, 1);
+}
+.highlight-gray_background {
+	background: rgba(42, 28, 0, 0.07);
+}
+.highlight-brown_background {
+	background: rgba(139, 46, 0, 0.086);
+}
+.highlight-orange_background {
+	background: rgba(224, 101, 1, 0.129);
+}
+.highlight-yellow_background {
+	background: rgba(211, 168, 0, 0.137);
+}
+.highlight-teal_background {
+	background: rgba(0, 100, 45, 0.09);
+}
+.highlight-blue_background {
+	background: rgba(0, 124, 215, 0.094);
+}
+.highlight-purple_background {
+	background: rgba(102, 0, 178, 0.078);
+}
+.highlight-pink_background {
+	background: rgba(197, 0, 93, 0.086);
+}
+.highlight-red_background {
+	background: rgba(223, 22, 0, 0.094);
+}
+.block-color-default {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray {
+	color: rgba(125, 122, 117, 1);
+	fill: rgba(125, 122, 117, 1);
+}
+.block-color-brown {
+	color: rgba(159, 118, 90, 1);
+	fill: rgba(159, 118, 90, 1);
+}
+.block-color-orange {
+	color: rgba(210, 123, 45, 1);
+	fill: rgba(210, 123, 45, 1);
+}
+.block-color-yellow {
+	color: rgba(203, 148, 52, 1);
+	fill: rgba(203, 148, 52, 1);
+}
+.block-color-teal {
+	color: rgba(80, 148, 110, 1);
+	fill: rgba(80, 148, 110, 1);
+}
+.block-color-blue {
+	color: rgba(56, 125, 201, 1);
+	fill: rgba(56, 125, 201, 1);
+}
+.block-color-purple {
+	color: rgba(154, 107, 180, 1);
+	fill: rgba(154, 107, 180, 1);
+}
+.block-color-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.block-color-red {
+	color: rgba(207, 81, 72, 1);
+	fill: rgba(207, 81, 72, 1);
+}
+.block-color-default_background {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray_background {
+	background: rgba(240, 239, 237, 1);
+}
+.block-color-brown_background {
+	background: rgba(245, 237, 233, 1);
+}
+.block-color-orange_background {
+	background: rgba(251, 235, 222, 1);
+}
+.block-color-yellow_background {
+	background: rgba(249, 243, 220, 1);
+}
+.block-color-teal_background {
+	background: rgba(232, 241, 236, 1);
+}
+.block-color-blue_background {
+	background: rgba(229, 242, 252, 1);
+}
+.block-color-purple_background {
+	background: rgba(243, 235, 249, 1);
+}
+.block-color-pink_background {
+	background: rgba(250, 233, 241, 1);
+}
+.block-color-red_background {
+	background: rgba(252, 233, 231, 1);
+}
+.select-value-color-default { background-color: rgba(42, 28, 0, 0.07); }
+.select-value-color-gray { background-color: rgba(28, 19, 1, 0.11); }
+.select-value-color-brown { background-color: rgba(127, 51, 0, 0.156); }
+.select-value-color-orange { background-color: rgba(196, 88, 0, 0.203); }
+.select-value-color-yellow { background-color: rgba(209, 156, 0, 0.282); }
+.select-value-color-green { background-color: rgba(0, 96, 38, 0.156); }
+.select-value-color-blue { background-color: rgba(0, 118, 217, 0.203); }
+.select-value-color-purple { background-color: rgba(92, 0, 163, 0.141); }
+.select-value-color-pink { background-color: rgba(183, 0, 78, 0.152); }
+.select-value-color-red { background-color: rgba(206, 24, 0, 0.164); }
+
+.checkbox {
+	display: inline-flex;
+	vertical-align: text-bottom;
+	width: 16;
+	height: 16;
+	background-size: 16px;
+	margin-left: 2px;
+	margin-right: 5px;
+}
+
+.checkbox-on {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22%2358A9D7%22%2F%3E%0A%3Cpath%20d%3D%22M6.71429%2012.2852L14%204.9995L12.7143%203.71436L6.71429%209.71378L3.28571%206.2831L2%207.57092L6.71429%2012.2852Z%22%20fill%3D%22white%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+
+.checkbox-off {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20x%3D%220.75%22%20y%3D%220.75%22%20width%3D%2214.5%22%20height%3D%2214.5%22%20fill%3D%22white%22%20stroke%3D%22%2336352F%22%20stroke-width%3D%221.5%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+	
+</style></head><body><article id="00dcc89c-44bb-4a7a-84c5-5c4194732ee8" class="page sans"><header><h1 class="page-title" dir="auto">Task Board</h1><p class="page-description" dir="auto"></p></header><div class="page-body"><table class="collection-content"><thead><tr><th><span class="icon property-icon"><img src="https://www.notion.so/icons/font_gray.svg" style="width:14px;height:14px;display:block"/></span>Task</th><th><span class="icon property-icon"><img src="https://www.notion.so/icons/hashtag_gray.svg" style="width:14px;height:14px;display:block"/></span>Est. Hours</th><th><span class="icon property-icon"><img src="https://www.notion.so/icons/arrow-circle-down_gray.svg" style="width:14px;height:14px;display:block"/></span>Phase</th><th><span class="icon property-icon"><img src="https://www.notion.so/icons/arrow-circle-down_gray.svg" style="width:14px;height:14px;display:block"/></span>Priority</th><th><span class="icon property-icon"><img src="https://www.notion.so/icons/arrow-circle-down_gray.svg" style="width:14px;height:14px;display:block"/></span>Sprint</th><th><span class="icon property-icon"><img src="https://www.notion.so/icons/arrow-circle-down_gray.svg" style="width:14px;height:14px;display:block"/></span>Status</th></tr></thead><tbody><tr id="32fc1cfa-959c-813d-a9d7-fd7c78b85971"><td class="cell-title"><a href="Task%20Board/1%202%20%E2%80%94%20Set%20up%20environment%20variable%20management%2032fc1cfa959c813da9d7fd7c78b85971.html"><span class="icon">🔐</span>1.2 — Set up environment variable management</a></td><td class="cell-DY~j">1</td><td class="cell-peS["><span class="selected-value select-value-color-gray">Phase 1 - Setup</span></td><td class="cell-TSll"><span class="selected-value select-value-color-red">High</span></td><td class="cell-Intt"><span class="selected-value select-value-color-gray">Sprint 1</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-81c7-8c69-cee5d909e8e3"><td class="cell-title"><a href="Task%20Board/1%203%20%E2%80%94%20Define%20the%20shared%20State%20schema%20on%20paper%2032fc1cfa959c81c78c69cee5d909e8e3.html"><span class="icon">📋</span>1.3 — Define the shared State schema on paper</a></td><td class="cell-DY~j">2</td><td class="cell-peS["><span class="selected-value select-value-color-gray">Phase 1 - Setup</span></td><td class="cell-TSll"><span class="selected-value select-value-color-red">High</span></td><td class="cell-Intt"><span class="selected-value select-value-color-gray">Sprint 1</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-81e3-abe9-eb7bf3399160"><td class="cell-title"><a href="Task%20Board/1%201%20%E2%80%94%20Initialize%20monorepo%20structure%2032fc1cfa959c81e3abe9eb7bf3399160.html"><span class="icon">📁</span>1.1 — Initialize monorepo structure</a></td><td class="cell-DY~j">2</td><td class="cell-peS["><span class="selected-value select-value-color-gray">Phase 1 - Setup</span></td><td class="cell-TSll"><span class="selected-value select-value-color-red">High</span></td><td class="cell-Intt"><span class="selected-value select-value-color-gray">Sprint 1</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-8110-9bad-c2d7866a59bd"><td class="cell-title"><a href="Task%20Board/2%203%20%E2%80%94%20Build%20the%20web%20fetch%20tool%2032fc1cfa959c81109badc2d7866a59bd.html"><span class="icon">🌐</span>2.3 — Build the web fetch tool</a></td><td class="cell-DY~j">3</td><td class="cell-peS["><span class="selected-value select-value-color-green">Phase 2 - FastMCP</span></td><td class="cell-TSll"><span class="selected-value select-value-color-red">High</span></td><td class="cell-Intt"><span class="selected-value select-value-color-gray">Sprint 1</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-813e-9a56-f60835edd81c"><td class="cell-title"><a href="Task%20Board/2%204%20%E2%80%94%20Build%20the%20keyword%20extraction%20tool%2032fc1cfa959c813e9a56f60835edd81c.html"><span class="icon">🏷️</span>2.4 — Build the keyword extraction tool</a></td><td class="cell-DY~j">2</td><td class="cell-peS["><span class="selected-value select-value-color-green">Phase 2 - FastMCP</span></td><td class="cell-TSll"><span class="selected-value select-value-color-yellow">Medium</span></td><td class="cell-Intt"><span class="selected-value select-value-color-gray">Sprint 1</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-81b1-a3bb-d1436f3b9010"><td class="cell-title"><a href="Task%20Board/2%201%20%E2%80%94%20Initialize%20FastMCP%20project%2032fc1cfa959c81b1a3bbd1436f3b9010.html"><span class="icon">⚡</span>2.1 — Initialize FastMCP project</a></td><td class="cell-DY~j">2</td><td class="cell-peS["><span class="selected-value select-value-color-green">Phase 2 - FastMCP</span></td><td class="cell-TSll"><span class="selected-value select-value-color-red">High</span></td><td class="cell-Intt"><span class="selected-value select-value-color-gray">Sprint 1</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-81ee-9193-ca48efcf8005"><td class="cell-title"><a href="Task%20Board/2%205%20%E2%80%94%20Build%20the%20summarize%20tool%2032fc1cfa959c81ee9193ca48efcf8005.html"><span class="icon">📝</span>2.5 — Build the summarize tool</a></td><td class="cell-DY~j">2</td><td class="cell-peS["><span class="selected-value select-value-color-green">Phase 2 - FastMCP</span></td><td class="cell-TSll"><span class="selected-value select-value-color-yellow">Medium</span></td><td class="cell-Intt"><span class="selected-value select-value-color-gray">Sprint 1</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-81fb-8acd-e7f656e25c2a"><td class="cell-title"><a href="Task%20Board/2%202%20%E2%80%94%20Build%20the%20web%20search%20tool%2032fc1cfa959c81fb8acde7f656e25c2a.html"><span class="icon">🔍</span>2.2 — Build the web search tool</a></td><td class="cell-DY~j">3</td><td class="cell-peS["><span class="selected-value select-value-color-green">Phase 2 - FastMCP</span></td><td class="cell-TSll"><span class="selected-value select-value-color-red">High</span></td><td class="cell-Intt"><span class="selected-value select-value-color-gray">Sprint 1</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-8130-a0e5-c5c305852c00"><td class="cell-title"><a href="Task%20Board/2%207%20%E2%80%94%20Add%20server%20authentication%2032fc1cfa959c8130a0e5c5c305852c00.html"><span class="icon">🔒</span>2.7 — Add server authentication</a></td><td class="cell-DY~j">2</td><td class="cell-peS["><span class="selected-value select-value-color-green">Phase 2 - FastMCP</span></td><td class="cell-TSll"><span class="selected-value select-value-color-red">High</span></td><td class="cell-Intt"><span class="selected-value select-value-color-red">Sprint 6</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-8138-8b5c-cbd2d3a3da2b"><td class="cell-title"><a href="Task%20Board/2%206%20%E2%80%94%20Add%20tool%20descriptions%20and%20input%20schemas%2032fc1cfa959c81388b5ccbd2d3a3da2b.html"><span class="icon">💬</span>2.6 — Add tool descriptions and input schemas</a></td><td class="cell-DY~j">1</td><td class="cell-peS["><span class="selected-value select-value-color-green">Phase 2 - FastMCP</span></td><td class="cell-TSll"><span class="selected-value select-value-color-red">High</span></td><td class="cell-Intt"><span class="selected-value select-value-color-gray">Sprint 1</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-8139-9a74-de0f7c066c48"><td class="cell-title"><a href="Task%20Board/2%208%20%E2%80%94%20Run%20and%20test%20MCP%20server%20locally%2032fc1cfa959c81399a74de0f7c066c48.html"><span class="icon">🧪</span>2.8 — Run and test MCP server locally</a></td><td class="cell-DY~j">3</td><td class="cell-peS["><span class="selected-value select-value-color-green">Phase 2 - FastMCP</span></td><td class="cell-TSll"><span class="selected-value select-value-color-red">High</span></td><td class="cell-Intt"><span class="selected-value select-value-color-gray">Sprint 1</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-8170-8e48-f64b2dd6734a"><td class="cell-title"><a href="Task%20Board/2%209%20%E2%80%94%20Dockerize%20the%20MCP%20server%2032fc1cfa959c81708e48f64b2dd6734a.html"><span class="icon">🐳</span>2.9 — Dockerize the MCP server</a></td><td class="cell-DY~j">2</td><td class="cell-peS["><span class="selected-value select-value-color-green">Phase 2 - FastMCP</span></td><td class="cell-TSll"><span class="selected-value select-value-color-yellow">Medium</span></td><td class="cell-Intt"><span class="selected-value select-value-color-red">Sprint 6</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-8107-8fff-f4ca23dcb3ee"><td class="cell-title"><a href="Task%20Board/3%201%20%E2%80%94%20Initialize%20the%20LangGraph%20backend%20project%2032fc1cfa959c81078ffff4ca23dcb3ee.html"><span class="icon">🧠</span>3.1 — Initialize the LangGraph backend project</a></td><td class="cell-DY~j">2</td><td class="cell-peS["><span class="selected-value select-value-color-purple">Phase 3 - LangGraph</span></td><td class="cell-TSll"><span class="selected-value select-value-color-red">High</span></td><td class="cell-Intt"><span class="selected-value select-value-color-blue">Sprint 2</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-8125-a430-ea9553ef3d9e"><td class="cell-title"><a href="Task%20Board/3%205%20%E2%80%94%20Build%20the%20Research%20Executor%20node%2032fc1cfa959c8125a430ea9553ef3d9e.html"><span class="icon">🥺</span>3.5 — Build the Research Executor node</a></td><td class="cell-DY~j">4</td><td class="cell-peS["><span class="selected-value select-value-color-purple">Phase 3 - LangGraph</span></td><td class="cell-TSll"><span class="selected-value select-value-color-red">High</span></td><td class="cell-Intt"><span class="selected-value select-value-color-purple">Sprint 3</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-8138-9ea3-c57f3da0caf7"><td class="cell-title"><a href="Task%20Board/3%204%20%E2%80%94%20Build%20the%20Research%20Query%20Generator%20node%2032fc1cfa959c81389ea3c57f3da0caf7.html"><span class="icon">📊</span>3.4 — Build the Research Query Generator node</a></td><td class="cell-DY~j">2</td><td class="cell-peS["><span class="selected-value select-value-color-purple">Phase 3 - LangGraph</span></td><td class="cell-TSll"><span class="selected-value select-value-color-red">High</span></td><td class="cell-Intt"><span class="selected-value select-value-color-purple">Sprint 3</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-815b-afc1-f672f25cea03"><td class="cell-title"><a href="Task%20Board/3%203%20%E2%80%94%20Build%20the%20Router%20node%2032fc1cfa959c815bafc1f672f25cea03.html"><span class="icon">🔀</span>3.3 — Build the Router node</a></td><td class="cell-DY~j">2</td><td class="cell-peS["><span class="selected-value select-value-color-purple">Phase 3 - LangGraph</span></td><td class="cell-TSll"><span class="selected-value select-value-color-red">High</span></td><td class="cell-Intt"><span class="selected-value select-value-color-blue">Sprint 2</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-81af-a9c0-f5983c594cae"><td class="cell-title"><a href="Task%20Board/3%206%20%E2%80%94%20Build%20the%20Research%20Summarizer%20node%2032fc1cfa959c81afa9c0f5983c594cae.html"><span class="icon">📦</span>3.6 — Build the Research Summarizer node</a></td><td class="cell-DY~j">2</td><td class="cell-peS["><span class="selected-value select-value-color-purple">Phase 3 - LangGraph</span></td><td class="cell-TSll"><span class="selected-value select-value-color-red">High</span></td><td class="cell-Intt"><span class="selected-value select-value-color-purple">Sprint 3</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-81f8-9953-f67d7559a984"><td class="cell-title"><a href="Task%20Board/3%202%20%E2%80%94%20Build%20the%20MCP%20client%20connection%2032fc1cfa959c81f89953f67d7559a984.html"><span class="icon">🔌</span>3.2 — Build the MCP client connection</a></td><td class="cell-DY~j">2</td><td class="cell-peS["><span class="selected-value select-value-color-purple">Phase 3 - LangGraph</span></td><td class="cell-TSll"><span class="selected-value select-value-color-red">High</span></td><td class="cell-Intt"><span class="selected-value select-value-color-blue">Sprint 2</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-8121-9ec2-c63bb872eb12"><td class="cell-title"><a href="Task%20Board/3%2012%20%E2%80%94%20Implement%20Human-in-the-Loop%20Checkpoint%202%2032fc1cfa959c81219ec2c63bb872eb12.html"><span class="icon">🔁</span>3.12 — Implement Human-in-the-Loop Checkpoint 2</a></td><td class="cell-DY~j">3</td><td class="cell-peS["><span class="selected-value select-value-color-purple">Phase 3 - LangGraph</span></td><td class="cell-TSll"><span class="selected-value select-value-color-red">High</span></td><td class="cell-Intt"><span class="selected-value select-value-color-orange">Sprint 4</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-8124-8546-ed63fa445732"><td class="cell-title"><a href="Task%20Board/3%209%20%E2%80%94%20Build%20the%20Task%20Executor%20node%2032fc1cfa959c81248546ed63fa445732.html"><span class="icon">✍️</span>3.9 — Build the Task Executor node</a></td><td class="cell-DY~j">4</td><td class="cell-peS["><span class="selected-value select-value-color-purple">Phase 3 - LangGraph</span></td><td class="cell-TSll"><span class="selected-value select-value-color-red">High</span></td><td class="cell-Intt"><span class="selected-value select-value-color-blue">Sprint 2</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-8169-a0a7-c00fabb0b7db"><td class="cell-title"><a href="Task%20Board/3%207%20%E2%80%94%20Build%20the%20Blog%20Planner%20node%2032fc1cfa959c8169a0a7c00fabb0b7db.html"><span class="icon">📋</span>3.7 — Build the Blog Planner node</a></td><td class="cell-DY~j">3</td><td class="cell-peS["><span class="selected-value select-value-color-purple">Phase 3 - LangGraph</span></td><td class="cell-TSll"><span class="selected-value select-value-color-red">High</span></td><td class="cell-Intt"><span class="selected-value select-value-color-blue">Sprint 2</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-8188-844c-c80b5044fa9d"><td class="cell-title"><a href="Task%20Board/3%2011%20%E2%80%94%20Build%20the%20Editor%20node%2032fc1cfa959c8188844cc80b5044fa9d.html"><span class="icon">✏️</span>3.11 — Build the Editor node</a></td><td class="cell-DY~j">3</td><td class="cell-peS["><span class="selected-value select-value-color-purple">Phase 3 - LangGraph</span></td><td class="cell-TSll"><span class="selected-value select-value-color-red">High</span></td><td class="cell-Intt"><span class="selected-value select-value-color-blue">Sprint 2</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-81b4-8e1a-f783402c1d64"><td class="cell-title"><a href="Task%20Board/3%208%20%E2%80%94%20Implement%20Human-in-the-Loop%20Checkpoint%201%2032fc1cfa959c81b48e1af783402c1d64.html"><span class="icon">✋</span>3.8 — Implement Human-in-the-Loop Checkpoint 1</a></td><td class="cell-DY~j">4</td><td class="cell-peS["><span class="selected-value select-value-color-purple">Phase 3 - LangGraph</span></td><td class="cell-TSll"><span class="selected-value select-value-color-red">High</span></td><td class="cell-Intt"><span class="selected-value select-value-color-orange">Sprint 4</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-81cd-9908-de401cfd97d9"><td class="cell-title"><a href="Task%20Board/3%2014%20%E2%80%94%20Add%20graph%20persistence%20with%20thread%20managemen%2032fc1cfa959c81cd9908de401cfd97d9.html"><span class="icon">💾</span>3.14 — Add graph persistence with thread management</a></td><td class="cell-DY~j">3</td><td class="cell-peS["><span class="selected-value select-value-color-purple">Phase 3 - LangGraph</span></td><td class="cell-TSll"><span class="selected-value select-value-color-red">High</span></td><td class="cell-Intt"><span class="selected-value select-value-color-orange">Sprint 4</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-81ec-9a65-ee0e011b90a5"><td class="cell-title"><a href="Task%20Board/3%2013%20%E2%80%94%20Wire%20the%20full%20graph%20with%20conditional%20edges%2032fc1cfa959c81ec9a65ee0e011b90a5.html"><span class="icon">🕸️</span>3.13 — Wire the full graph with conditional edges</a></td><td class="cell-DY~j">4</td><td class="cell-peS["><span class="selected-value select-value-color-purple">Phase 3 - LangGraph</span></td><td class="cell-TSll"><span class="selected-value select-value-color-red">High</span></td><td class="cell-Intt"><span class="selected-value select-value-color-blue">Sprint 2</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-81fe-908c-c139fd2834b4"><td class="cell-title"><a href="Task%20Board/3%2010%20%E2%80%94%20Build%20the%20Assembler%20node%2032fc1cfa959c81fe908cc139fd2834b4.html"><span class="icon">🧵</span>3.10 — Build the Assembler node</a></td><td class="cell-DY~j">2</td><td class="cell-peS["><span class="selected-value select-value-color-purple">Phase 3 - LangGraph</span></td><td class="cell-TSll"><span class="selected-value select-value-color-yellow">Medium</span></td><td class="cell-Intt"><span class="selected-value select-value-color-blue">Sprint 2</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-8104-a60a-da2f407c4cb9"><td class="cell-title"><a href="Task%20Board/4%208%20%E2%80%94%20Add%20database%20models%20and%20migrations%2032fc1cfa959c8104a60ada2f407c4cb9.html"><span class="icon">🗄️</span>4.8 — Add database models and migrations</a></td><td class="cell-DY~j">3</td><td class="cell-peS["><span class="selected-value select-value-color-blue">Phase 4 - FastAPI</span></td><td class="cell-TSll"><span class="selected-value select-value-color-red">High</span></td><td class="cell-Intt"><span class="selected-value select-value-color-orange">Sprint 4</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-8114-9088-d4d6d6a85a2e"><td class="cell-title"><a href="Task%20Board/4%202%20%E2%80%94%20Build%20the%20blog%20start%20endpoint%2032fc1cfa959c81149088d4d6d6a85a2e.html"><span class="icon">🚀</span>4.2 — Build the /blog/start endpoint</a></td><td class="cell-DY~j">3</td><td class="cell-peS["><span class="selected-value select-value-color-blue">Phase 4 - FastAPI</span></td><td class="cell-TSll"><span class="selected-value select-value-color-red">High</span></td><td class="cell-Intt"><span class="selected-value select-value-color-orange">Sprint 4</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-811b-ba9f-cca12da38c16"><td class="cell-title"><a href="Task%20Board/4%201%20%E2%80%94%20Create%20the%20FastAPI%20app%2032fc1cfa959c811bba9fcca12da38c16.html"><span class="icon">🌐</span>4.1 — Create the FastAPI app</a></td><td class="cell-DY~j">2</td><td class="cell-peS["><span class="selected-value select-value-color-blue">Phase 4 - FastAPI</span></td><td class="cell-TSll"><span class="selected-value select-value-color-red">High</span></td><td class="cell-Intt"><span class="selected-value select-value-color-orange">Sprint 4</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-813d-b609-f92a7f2dd9dc"><td class="cell-title"><a href="Task%20Board/4%203%20%E2%80%94%20Build%20the%20blog%20%7Bthread_id%7D%20status%20endpoint%2032fc1cfa959c813db609f92a7f2dd9dc.html"><span class="icon">📊</span>4.3 — Build the /blog/{thread_id}/status endpoint</a></td><td class="cell-DY~j">2</td><td class="cell-peS["><span class="selected-value select-value-color-blue">Phase 4 - FastAPI</span></td><td class="cell-TSll"><span class="selected-value select-value-color-red">High</span></td><td class="cell-Intt"><span class="selected-value select-value-color-orange">Sprint 4</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-8156-8533-dead32810d23"><td class="cell-title"><a href="Task%20Board/4%207%20%E2%80%94%20Add%20authentication%20middleware%2032fc1cfa959c81568533dead32810d23.html"><span class="icon">🔐</span>4.7 — Add authentication middleware</a></td><td class="cell-DY~j">3</td><td class="cell-peS["><span class="selected-value select-value-color-blue">Phase 4 - FastAPI</span></td><td class="cell-TSll"><span class="selected-value select-value-color-red">High</span></td><td class="cell-Intt"><span class="selected-value select-value-color-red">Sprint 6</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-81b6-916c-cc5844a835e3"><td class="cell-title"><a href="Task%20Board/4%205%20%E2%80%94%20Build%20the%20blog%20%7Bthread_id%7D%20result%20endpoint%2032fc1cfa959c81b6916ccc5844a835e3.html"><span class="icon">🎯</span>4.5 — Build the /blog/{thread_id}/result endpoint</a></td><td class="cell-DY~j">1</td><td class="cell-peS["><span class="selected-value select-value-color-blue">Phase 4 - FastAPI</span></td><td class="cell-TSll"><span class="selected-value select-value-color-yellow">Medium</span></td><td class="cell-Intt"><span class="selected-value select-value-color-orange">Sprint 4</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-81bd-82f9-f4030ea3e59a"><td class="cell-title"><a href="Task%20Board/4%204%20%E2%80%94%20Build%20the%20blog%20%7Bthread_id%7D%20review%20endpoint%2032fc1cfa959c81bd82f9f4030ea3e59a.html"><span class="icon">💬</span>4.4 — Build the /blog/{thread_id}/review endpoint</a></td><td class="cell-DY~j">3</td><td class="cell-peS["><span class="selected-value select-value-color-blue">Phase 4 - FastAPI</span></td><td class="cell-TSll"><span class="selected-value select-value-color-red">High</span></td><td class="cell-Intt"><span class="selected-value select-value-color-orange">Sprint 4</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-81d5-b68a-eb36d2511685"><td class="cell-title"><a href="Task%20Board/4%206%20%E2%80%94%20Add%20SSE%20for%20real-time%20streaming%2032fc1cfa959c81d5b68aeb36d2511685.html"><span class="icon">📡</span>4.6 — Add SSE for real-time streaming</a></td><td class="cell-DY~j">4</td><td class="cell-peS["><span class="selected-value select-value-color-blue">Phase 4 - FastAPI</span></td><td class="cell-TSll"><span class="selected-value select-value-color-red">High</span></td><td class="cell-Intt"><span class="selected-value select-value-color-red">Sprint 6</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-8113-9e07-d29e616fb75f"><td class="cell-title"><a href="Task%20Board/5%209%20%E2%80%94%20Add%20error%20handling%20and%20loading%20states%2032fc1cfa959c81139e07d29e616fb75f.html"><span class="icon">⚠️</span>5.9 — Add error handling and loading states</a></td><td class="cell-DY~j">3</td><td class="cell-peS["><span class="selected-value select-value-color-pink">Phase 5 - Frontend</span></td><td class="cell-TSll"><span class="selected-value select-value-color-yellow">Medium</span></td><td class="cell-Intt"><span class="selected-value select-value-color-pink">Sprint 5</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-8118-bfb4-c925d3895eb8"><td class="cell-title"><a href="Task%20Board/5%201%20%E2%80%94%20Initialize%20Next%20js%20project%2032fc1cfa959c8118bfb4c925d3895eb8.html"><span class="icon">🖥️</span>5.1 — Initialize Next.js project</a></td><td class="cell-DY~j">2</td><td class="cell-peS["><span class="selected-value select-value-color-pink">Phase 5 - Frontend</span></td><td class="cell-TSll"><span class="selected-value select-value-color-red">High</span></td><td class="cell-Intt"><span class="selected-value select-value-color-pink">Sprint 5</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-812e-a482-f02a66d7824f"><td class="cell-title"><a href="Task%20Board/5%206%20%E2%80%94%20Build%20the%20results%20page%2032fc1cfa959c812ea482f02a66d7824f.html"><span class="icon">🎉</span>5.6 — Build the results page</a></td><td class="cell-DY~j">3</td><td class="cell-peS["><span class="selected-value select-value-color-pink">Phase 5 - Frontend</span></td><td class="cell-TSll"><span class="selected-value select-value-color-red">High</span></td><td class="cell-Intt"><span class="selected-value select-value-color-pink">Sprint 5</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-8175-947b-d3993cc73c47"><td class="cell-title"><a href="Task%20Board/5%208%20%E2%80%94%20Add%20global%20state%20management%2032fc1cfa959c8175947bd3993cc73c47.html"><span class="icon">🔄</span>5.8 — Add global state management</a></td><td class="cell-DY~j">2</td><td class="cell-peS["><span class="selected-value select-value-color-pink">Phase 5 - Frontend</span></td><td class="cell-TSll"><span class="selected-value select-value-color-yellow">Medium</span></td><td class="cell-Intt"><span class="selected-value select-value-color-pink">Sprint 5</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-8183-b269-d94855affa0b"><td class="cell-title"><a href="Task%20Board/5%203%20%E2%80%94%20Build%20the%20live%20progress%20page%2032fc1cfa959c8183b269d94855affa0b.html"><span class="icon">📡</span>5.3 — Build the live progress page</a></td><td class="cell-DY~j">5</td><td class="cell-peS["><span class="selected-value select-value-color-pink">Phase 5 - Frontend</span></td><td class="cell-TSll"><span class="selected-value select-value-color-red">High</span></td><td class="cell-Intt"><span class="selected-value select-value-color-pink">Sprint 5</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-8199-bd6d-ecccb358680d"><td class="cell-title"><a href="Task%20Board/5%207%20%E2%80%94%20Build%20the%20blog%20runs%20history%20page%2032fc1cfa959c8199bd6decccb358680d.html"><span class="icon">📜</span>5.7 — Build the blog runs history page</a></td><td class="cell-DY~j">2</td><td class="cell-peS["><span class="selected-value select-value-color-pink">Phase 5 - Frontend</span></td><td class="cell-TSll"><span class="selected-value select-value-color-yellow">Medium</span></td><td class="cell-Intt"><span class="selected-value select-value-color-pink">Sprint 5</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-819e-9836-f71b2b56baa7"><td class="cell-title"><a href="Task%20Board/5%205%20%E2%80%94%20Build%20the%20Draft%20Review%20component%2032fc1cfa959c819e9836f71b2b56baa7.html"><span class="icon">📰</span>5.5 — Build the Draft Review component</a></td><td class="cell-DY~j">4</td><td class="cell-peS["><span class="selected-value select-value-color-pink">Phase 5 - Frontend</span></td><td class="cell-TSll"><span class="selected-value select-value-color-red">High</span></td><td class="cell-Intt"><span class="selected-value select-value-color-pink">Sprint 5</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-81a1-80fd-cfd1e86bd3fe"><td class="cell-title"><a href="Task%20Board/5%204%20%E2%80%94%20Build%20the%20Plan%20Review%20component%2032fc1cfa959c81a180fdcfd1e86bd3fe.html"><span class="icon">📝</span>5.4 — Build the Plan Review component</a></td><td class="cell-DY~j">4</td><td class="cell-peS["><span class="selected-value select-value-color-pink">Phase 5 - Frontend</span></td><td class="cell-TSll"><span class="selected-value select-value-color-red">High</span></td><td class="cell-Intt"><span class="selected-value select-value-color-pink">Sprint 5</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-81b1-a77d-cc0dfa360dbe"><td class="cell-title"><a href="Task%20Board/5%202%20%E2%80%94%20Build%20the%20prompt%20input%20page%2032fc1cfa959c81b1a77dcc0dfa360dbe.html"><span class="icon">✏️</span>5.2 — Build the prompt input page</a></td><td class="cell-DY~j">3</td><td class="cell-peS["><span class="selected-value select-value-color-pink">Phase 5 - Frontend</span></td><td class="cell-TSll"><span class="selected-value select-value-color-red">High</span></td><td class="cell-Intt"><span class="selected-value select-value-color-pink">Sprint 5</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-8151-b9bd-e71d10a72131"><td class="cell-title"><a href="Task%20Board/6%204%20%E2%80%94%20Configure%20production%20deployment%2032fc1cfa959c8151b9bde71d10a72131.html"><span class="icon">☁️</span>6.4 — Configure production deployment</a></td><td class="cell-DY~j">5</td><td class="cell-peS["><span class="selected-value select-value-color-orange">Phase 6 - DevOps</span></td><td class="cell-TSll"><span class="selected-value select-value-color-red">High</span></td><td class="cell-Intt"><span class="selected-value select-value-color-red">Sprint 6</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-8174-945e-e1659a951422"><td class="cell-title"><a href="Task%20Board/6%201%20%E2%80%94%20Wire%20all%20three%20services%20in%20docker-compose%2032fc1cfa959c8174945ee1659a951422.html"><span class="icon">🐳</span>6.1 — Wire all three services in docker-compose</a></td><td class="cell-DY~j">4</td><td class="cell-peS["><span class="selected-value select-value-color-orange">Phase 6 - DevOps</span></td><td class="cell-TSll"><span class="selected-value select-value-color-red">High</span></td><td class="cell-Intt"><span class="selected-value select-value-color-red">Sprint 6</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-81b0-bc82-eb5847d4e6de"><td class="cell-title"><a href="Task%20Board/6%203%20%E2%80%94%20Add%20observability%20with%20LangSmith%2032fc1cfa959c81b0bc82eb5847d4e6de.html"><span class="icon">🔍</span>6.3 — Add observability with LangSmith</a></td><td class="cell-DY~j">2</td><td class="cell-peS["><span class="selected-value select-value-color-orange">Phase 6 - DevOps</span></td><td class="cell-TSll"><span class="selected-value select-value-color-red">High</span></td><td class="cell-Intt"><span class="selected-value select-value-color-red">Sprint 6</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr><tr id="32fc1cfa-959c-81d2-89d3-fe68e3419114"><td class="cell-title"><a href="Task%20Board/6%202%20%E2%80%94%20End-to-end%20integration%20test%2032fc1cfa959c81d289d3fe68e3419114.html"><span class="icon">✅</span>6.2 — End-to-end integration test</a></td><td class="cell-DY~j">4</td><td class="cell-peS["><span class="selected-value select-value-color-orange">Phase 6 - DevOps</span></td><td class="cell-TSll"><span class="selected-value select-value-color-red">High</span></td><td class="cell-Intt"><span class="selected-value select-value-color-red">Sprint 6</span></td><td class="cell-eZcK"><span class="selected-value select-value-color-gray">Not Started</span></td></tr></tbody></table><br/><br/></div></article><span class="sans" style="font-size:14px;padding-top:2em"></span></body></html>

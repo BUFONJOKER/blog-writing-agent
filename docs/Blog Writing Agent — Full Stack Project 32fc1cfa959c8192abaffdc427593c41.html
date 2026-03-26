@@ -1,0 +1,727 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><title>Blog Writing Agent — Full Stack Project</title><style>
+/* cspell:disable-file */
+/* webkit printing magic: print all background colors */
+html {
+	-webkit-print-color-adjust: exact;
+}
+* {
+	box-sizing: border-box;
+	-webkit-print-color-adjust: exact;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+}
+@media only screen {
+	body {
+		margin: 2em auto;
+		max-width: 900px;
+		color: rgb(55, 53, 47);
+	}
+}
+
+body {
+	line-height: 1.5;
+	white-space: pre-wrap;
+}
+
+a,
+a.visited {
+	color: inherit;
+	text-decoration: underline;
+}
+
+.pdf-relative-link-path {
+	font-size: 80%;
+	color: #444;
+}
+
+h1,
+h2,
+h3 {
+	letter-spacing: -0.01em;
+	line-height: 1.2;
+	font-weight: 600;
+	margin-bottom: 0;
+}
+
+/* Override strong tags inside headings to maintain consistent weight */
+h1 strong,
+h2 strong,
+h3 strong {
+	font-weight: 600;
+}
+
+.page-title {
+	font-size: 2.5rem;
+	font-weight: 700;
+	margin-top: 0;
+	margin-bottom: 0.75em;
+}
+
+h1 {
+	font-size: 1.875rem;
+	margin-top: 1.875rem;
+}
+
+h2 {
+	font-size: 1.5rem;
+	margin-top: 1.5rem;
+}
+
+h3 {
+	font-size: 1.25rem;
+	margin-top: 1.25rem;
+}
+
+.source {
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	padding: 1.5em;
+	word-break: break-all;
+}
+
+.callout {
+	border-radius: 10px;
+	padding: 1rem;
+}
+
+figure {
+	margin: 1.25em 0;
+	page-break-inside: avoid;
+}
+
+figcaption {
+	opacity: 0.5;
+	font-size: 85%;
+	margin-top: 0.5em;
+}
+
+mark {
+	background-color: transparent;
+}
+
+.indented {
+	padding-left: 1.5em;
+}
+
+hr {
+	background: transparent;
+	display: block;
+	width: 100%;
+	height: 1px;
+	visibility: visible;
+	border: none;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+img {
+	max-width: 100%;
+}
+
+@media only print {
+	img {
+		max-height: 100vh;
+		object-fit: contain;
+	}
+}
+
+@page {
+	margin: 1in;
+}
+
+.collection-content {
+	font-size: 0.875rem;
+}
+
+.collection-content td {
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+.column-list {
+	display: flex;
+	gap: 46px;
+}
+
+.column {
+	min-width: 0;
+	overflow: hidden;
+}
+
+.column > *:first-child {
+	margin-top: 0;
+}
+
+.table_of_contents-item {
+	display: block;
+	font-size: 0.875rem;
+	line-height: 1.3;
+	padding: 0.125rem;
+}
+
+.table_of_contents-indent-1 {
+	margin-left: 1.5rem;
+}
+
+.table_of_contents-indent-2 {
+	margin-left: 3rem;
+}
+
+.table_of_contents-indent-3 {
+	margin-left: 4.5rem;
+}
+
+.table_of_contents-link {
+	text-decoration: none;
+	opacity: 0.7;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.18);
+}
+
+table,
+th,
+td {
+	border: 1px solid rgba(55, 53, 47, 0.09);
+	border-collapse: collapse;
+}
+
+table {
+	border-left: none;
+	border-right: none;
+}
+
+th,
+td {
+	font-weight: normal;
+	padding: 0.25em 0.5em;
+	line-height: 1.5;
+	min-height: 1.5em;
+	text-align: left;
+}
+
+th {
+	color: rgba(55, 53, 47, 0.6);
+}
+
+ol,
+ul {
+	margin: 0;
+	margin-block-start: 0.6em;
+	margin-block-end: 0.6em;
+}
+
+li > ol:first-child,
+li > ul:first-child {
+	margin-block-start: 0.6em;
+}
+
+ul > li {
+	list-style: disc;
+}
+
+ul.to-do-list {
+	padding-inline-start: 0;
+}
+
+ul.to-do-list > li {
+	list-style: none;
+}
+
+.to-do-children-checked {
+	text-decoration: line-through;
+	opacity: 0.375;
+}
+
+ul.toggle > li {
+	list-style: none;
+}
+
+ul {
+	padding-inline-start: 1.7em;
+}
+
+ul > li {
+	padding-left: 0.1em;
+}
+
+ol {
+	padding-inline-start: 1.6em;
+}
+
+ol > li {
+	padding-left: 0.2em;
+}
+
+.mono ol {
+	padding-inline-start: 2em;
+}
+
+.mono ol > li {
+	text-indent: -0.4em;
+}
+
+.toggle {
+	padding-inline-start: 0em;
+	list-style-type: none;
+}
+
+/* Indent toggle children */
+.toggle > li > details {
+	padding-left: 1.7em;
+}
+
+.toggle > li > details > summary {
+	margin-left: -1.1em;
+}
+
+.selected-value {
+	display: inline-block;
+	padding: 0 0.5em;
+	background: rgba(206, 205, 202, 0.5);
+	border-radius: 3px;
+	margin-right: 0.5em;
+	margin-top: 0.3em;
+	margin-bottom: 0.3em;
+	white-space: nowrap;
+}
+
+.collection-title {
+	display: inline-block;
+	margin-right: 1em;
+}
+
+.page-description {
+	margin-bottom: 2em;
+}
+
+.simple-table {
+	margin-top: 1em;
+	font-size: 0.875rem;
+	empty-cells: show;
+}
+.simple-table td {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table th {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table-header-color {
+	background: rgb(247, 246, 243);
+	color: black;
+}
+.simple-table-header {
+	font-weight: 500;
+}
+
+time {
+	opacity: 0.5;
+}
+
+.icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	max-width: 1.2em;
+	max-height: 1.2em;
+	text-decoration: none;
+	vertical-align: text-bottom;
+	margin-right: 0.5em;
+}
+
+img.icon {
+	border-radius: 3px;
+}
+
+.callout img.notion-static-icon {
+	width: 1em;
+	height: 1em;
+}
+
+.callout p {
+	margin: 0;
+}
+
+.callout h1,
+.callout h2,
+.callout h3 {
+	margin: 0 0 0.6rem;
+}
+
+.user-icon {
+	width: 1.5em;
+	height: 1.5em;
+	border-radius: 100%;
+	margin-right: 0.5rem;
+}
+
+.user-icon-inner {
+	font-size: 0.8em;
+}
+
+.text-icon {
+	border: 1px solid #000;
+	text-align: center;
+}
+
+.page-cover-image {
+	display: block;
+	object-fit: cover;
+	width: 100%;
+	max-height: 30vh;
+}
+
+.page-header-icon {
+	font-size: 3rem;
+	margin-bottom: 1rem;
+}
+
+.page-header-icon-with-cover {
+	margin-top: -0.72em;
+	margin-left: 0.07em;
+}
+
+.page-header-icon img {
+	border-radius: 3px;
+}
+
+.link-to-page {
+	margin: 1em 0;
+	padding: 0;
+	border: none;
+	font-weight: 500;
+}
+
+p > .user {
+	opacity: 0.5;
+}
+
+td > .user,
+td > time {
+	white-space: nowrap;
+}
+
+input[type="checkbox"] {
+	transform: scale(1.5);
+	margin-right: 0.6em;
+	vertical-align: middle;
+}
+
+p {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+
+.image {
+	border: none;
+	margin: 1.5em 0;
+	padding: 0;
+	border-radius: 0;
+	text-align: center;
+}
+
+.code,
+code {
+	background: rgba(135, 131, 120, 0.15);
+	border-radius: 3px;
+	padding: 0.2em 0.4em;
+	border-radius: 3px;
+	font-size: 85%;
+	tab-size: 2;
+}
+
+code {
+	color: #eb5757;
+}
+
+.code {
+	padding: 1.5em 1em;
+}
+
+.code-wrap {
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
+.code > code {
+	background: none;
+	padding: 0;
+	font-size: 100%;
+	color: inherit;
+}
+
+blockquote {
+	font-size: 1em;
+	margin: 1em 0;
+	padding-left: 1em;
+	border-left: 3px solid rgb(55, 53, 47);
+}
+
+blockquote.quote-large {
+	font-size: 1.25em;
+}
+
+.bookmark {
+	text-decoration: none;
+	max-height: 8em;
+	padding: 0;
+	display: flex;
+	width: 100%;
+	align-items: stretch;
+}
+
+.bookmark-title {
+	font-size: 0.85em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	height: 1.75em;
+	white-space: nowrap;
+}
+
+.bookmark-text {
+	display: flex;
+	flex-direction: column;
+}
+
+.bookmark-info {
+	flex: 4 1 180px;
+	padding: 12px 14px 14px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+.bookmark-image {
+	width: 33%;
+	flex: 1 1 180px;
+	display: block;
+	position: relative;
+	object-fit: cover;
+	border-radius: 1px;
+}
+
+.bookmark-description {
+	color: rgba(55, 53, 47, 0.6);
+	font-size: 0.75em;
+	overflow: hidden;
+	max-height: 4.5em;
+	word-break: break-word;
+}
+
+.bookmark-href {
+	font-size: 0.75em;
+	margin-top: 0.25em;
+}
+
+.sans { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol"; }
+.code { font-family: "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace; }
+.serif { font-family: Lyon-Text, Georgia, ui-serif, serif; }
+.mono { font-family: iawriter-mono, Nitti, Menlo, Courier, monospace; }
+.pdf .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK JP'; }
+.pdf:lang(zh-CN) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK SC'; }
+.pdf:lang(zh-TW) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK TC'; }
+.pdf:lang(ko-KR) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK KR'; }
+.pdf .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.pdf .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK JP'; }
+.pdf:lang(zh-CN) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK SC'; }
+.pdf:lang(zh-TW) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK TC'; }
+.pdf:lang(ko-KR) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK KR'; }
+.pdf .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.highlight-default {
+	color: rgba(44, 44, 43, 1);
+}
+.highlight-gray {
+	color: rgba(125, 122, 117, 1);
+	fill: rgba(125, 122, 117, 1);
+}
+.highlight-brown {
+	color: rgba(159, 118, 90, 1);
+	fill: rgba(159, 118, 90, 1);
+}
+.highlight-orange {
+	color: rgba(210, 123, 45, 1);
+	fill: rgba(210, 123, 45, 1);
+}
+.highlight-yellow {
+	color: rgba(203, 148, 52, 1);
+	fill: rgba(203, 148, 52, 1);
+}
+.highlight-teal {
+	color: rgba(80, 148, 110, 1);
+	fill: rgba(80, 148, 110, 1);
+}
+.highlight-blue {
+	color: rgba(56, 125, 201, 1);
+	fill: rgba(56, 125, 201, 1);
+}
+.highlight-purple {
+	color: rgba(154, 107, 180, 1);
+	fill: rgba(154, 107, 180, 1);
+}
+.highlight-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.highlight-red {
+	color: rgba(207, 81, 72, 1);
+	fill: rgba(207, 81, 72, 1);
+}
+.highlight-default_background {
+	color: rgba(44, 44, 43, 1);
+}
+.highlight-gray_background {
+	background: rgba(42, 28, 0, 0.07);
+}
+.highlight-brown_background {
+	background: rgba(139, 46, 0, 0.086);
+}
+.highlight-orange_background {
+	background: rgba(224, 101, 1, 0.129);
+}
+.highlight-yellow_background {
+	background: rgba(211, 168, 0, 0.137);
+}
+.highlight-teal_background {
+	background: rgba(0, 100, 45, 0.09);
+}
+.highlight-blue_background {
+	background: rgba(0, 124, 215, 0.094);
+}
+.highlight-purple_background {
+	background: rgba(102, 0, 178, 0.078);
+}
+.highlight-pink_background {
+	background: rgba(197, 0, 93, 0.086);
+}
+.highlight-red_background {
+	background: rgba(223, 22, 0, 0.094);
+}
+.block-color-default {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray {
+	color: rgba(125, 122, 117, 1);
+	fill: rgba(125, 122, 117, 1);
+}
+.block-color-brown {
+	color: rgba(159, 118, 90, 1);
+	fill: rgba(159, 118, 90, 1);
+}
+.block-color-orange {
+	color: rgba(210, 123, 45, 1);
+	fill: rgba(210, 123, 45, 1);
+}
+.block-color-yellow {
+	color: rgba(203, 148, 52, 1);
+	fill: rgba(203, 148, 52, 1);
+}
+.block-color-teal {
+	color: rgba(80, 148, 110, 1);
+	fill: rgba(80, 148, 110, 1);
+}
+.block-color-blue {
+	color: rgba(56, 125, 201, 1);
+	fill: rgba(56, 125, 201, 1);
+}
+.block-color-purple {
+	color: rgba(154, 107, 180, 1);
+	fill: rgba(154, 107, 180, 1);
+}
+.block-color-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.block-color-red {
+	color: rgba(207, 81, 72, 1);
+	fill: rgba(207, 81, 72, 1);
+}
+.block-color-default_background {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray_background {
+	background: rgba(240, 239, 237, 1);
+}
+.block-color-brown_background {
+	background: rgba(245, 237, 233, 1);
+}
+.block-color-orange_background {
+	background: rgba(251, 235, 222, 1);
+}
+.block-color-yellow_background {
+	background: rgba(249, 243, 220, 1);
+}
+.block-color-teal_background {
+	background: rgba(232, 241, 236, 1);
+}
+.block-color-blue_background {
+	background: rgba(229, 242, 252, 1);
+}
+.block-color-purple_background {
+	background: rgba(243, 235, 249, 1);
+}
+.block-color-pink_background {
+	background: rgba(250, 233, 241, 1);
+}
+.block-color-red_background {
+	background: rgba(252, 233, 231, 1);
+}
+.select-value-color-default { background-color: rgba(42, 28, 0, 0.07); }
+.select-value-color-gray { background-color: rgba(28, 19, 1, 0.11); }
+.select-value-color-brown { background-color: rgba(127, 51, 0, 0.156); }
+.select-value-color-orange { background-color: rgba(196, 88, 0, 0.203); }
+.select-value-color-yellow { background-color: rgba(209, 156, 0, 0.282); }
+.select-value-color-green { background-color: rgba(0, 96, 38, 0.156); }
+.select-value-color-blue { background-color: rgba(0, 118, 217, 0.203); }
+.select-value-color-purple { background-color: rgba(92, 0, 163, 0.141); }
+.select-value-color-pink { background-color: rgba(183, 0, 78, 0.152); }
+.select-value-color-red { background-color: rgba(206, 24, 0, 0.164); }
+
+.checkbox {
+	display: inline-flex;
+	vertical-align: text-bottom;
+	width: 16;
+	height: 16;
+	background-size: 16px;
+	margin-left: 2px;
+	margin-right: 5px;
+}
+
+.checkbox-on {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22%2358A9D7%22%2F%3E%0A%3Cpath%20d%3D%22M6.71429%2012.2852L14%204.9995L12.7143%203.71436L6.71429%209.71378L3.28571%206.2831L2%207.57092L6.71429%2012.2852Z%22%20fill%3D%22white%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+
+.checkbox-off {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20x%3D%220.75%22%20y%3D%220.75%22%20width%3D%2214.5%22%20height%3D%2214.5%22%20fill%3D%22white%22%20stroke%3D%22%2336352F%22%20stroke-width%3D%221.5%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+	
+</style></head><body><article id="32fc1cfa-959c-8192-abaf-fdc427593c41" class="page sans"><header><div class="page-header-icon undefined"><span class="icon">🤖</span></div><h1 class="page-title" dir="auto">Blog Writing Agent — Full Stack Project</h1><p class="page-description" dir="auto"></p></header><div class="page-body"><div style="display:contents" dir="auto"><blockquote id="87416b57-78c1-4b6e-803d-a49164b5a4f5" class=""><strong>An end-to-end AI blog writing system built with FastMCP, LangGraph, FastAPI, and Next.js — featuring multi-tool research, human-in-the-loop review, and real-time streaming.</strong></blockquote></div><div style="display:contents" dir="auto"><hr id="8523d93f-74ec-4351-a3a3-312eef3b4443"/></div><div style="display:contents" dir="auto"><h2 id="8ae6b5a5-2275-442a-8533-91b4dcb1318f" class="">🧭 Project Overview</h2></div><div style="display:contents" dir="auto"><p id="be0f51fd-09d1-40b2-94b3-665f145056b8" class="">This project is a production-grade AI agent that takes a user&#x27;s blog topic as input and autonomously researches, plans, writes, and edits a full blog post — pausing at key moments for human review before continuing. It is built as a modern full-stack application with a clean separation between the frontend, backend orchestration layer, and a dedicated MCP (Model Context Protocol) tool server.</p></div><div style="display:contents" dir="auto"><p id="93a07b75-4d5a-4207-9b27-c5a36c44d550" class="">The agent is not a simple LLM call. It is a <strong>stateful graph</strong> where each node performs a focused task, tools are called via a dedicated server, and the entire run can be paused, resumed, edited, and traced. This architecture mirrors production AI systems used in real-world applications.</p></div><div style="display:contents" dir="auto"><hr id="a0b757c8-2b11-4ec4-baa4-9412b4d2d4ca"/></div><div style="display:contents" dir="auto"><h2 id="95fe3a20-fd66-45a6-bc5b-22ddc00044af" class="">🏗️ System Architecture</h2></div><div style="display:contents" dir="auto"><p id="bd2529b5-673a-42ac-b1fd-dd5eed59962b" class="">The system is composed of four independently deployable services:</p></div><div style="display:contents" dir="auto"><p id="253c5e8a-1343-4d2a-877a-7590b9bad8d1" class=""><strong>1. Next.js Frontend</strong></p></div><div style="display:contents" dir="auto"><p id="e0778f7b-dca2-401e-a57b-63bafcc0e4d6" class="">The user-facing interface where users submit blog prompts, watch live agent progress via Server-Sent Events, review and edit AI-generated plans and drafts at human-in-the-loop checkpoints, and download or copy the final blog post.</p></div><div style="display:contents" dir="auto"><p id="99326d24-f1a0-4b3e-9dff-4dec9cd35702" class=""><strong>2. FastAPI Backend</strong></p></div><div style="display:contents" dir="auto"><p id="d7c94614-4d57-4bcf-9410-3bf945742076" class="">The orchestration layer that receives requests from the frontend, manages LangGraph graph execution in background tasks, exposes REST endpoints for starting runs, polling status, submitting human reviews, and streaming events, and handles authentication, database persistence, and session management.</p></div><div style="display:contents" dir="auto"><p id="0f78dd20-cf94-440d-86fb-15c566b6df2e" class=""><strong>3. LangGraph Agent Graph</strong></p></div><div style="display:contents" dir="auto"><p id="624672e1-51bd-47b8-ad06-8c5eacc2d7f8" class="">The brain of the system. A directed stateful graph where each node is a focused AI step: routing, research query generation, web research via MCP tools, summarization, blog planning, task-based writing, assembly, and editing. Human-in-the-loop interrupts pause the graph at the planning and final review stages.</p></div><div style="display:contents" dir="auto"><p id="d398ac32-c61b-4cbc-811a-4024b8622eb0" class=""><strong>4. FastMCP Server</strong></p></div><div style="display:contents" dir="auto"><p id="3130f7a4-bdd3-44da-a874-21fa7e3b18c7" class="">A dedicated tool server built with FastMCP that exposes research and utility tools: web search, page fetching/scraping, keyword extraction, and content summarization. LangGraph connects to this server and binds its tools for use inside agent nodes.</p></div><div style="display:contents" dir="auto"><hr id="b9ccc092-dfa7-4d20-8c8a-c0a5be0d6970"/></div><div style="display:contents" dir="auto"><h2 id="0540cf4a-5a75-41fc-be01-a45b50cc8d11" class="">🔄 Agent Flow</h2></div><div style="display:contents" dir="auto"><p id="1542990c-075e-4c2d-a5d7-a4f365623bad" class="">The agent follows this high-level execution path:</p></div><div style="display:contents" dir="auto"><ol type="1" id="1303594c-bfbd-4bdc-9a65-ee82d0152966" class="numbered-list" start="1"><li>User submits a blog prompt via the frontend</li></ol></div><div style="display:contents" dir="auto"><ol type="1" id="3fc8659c-9f82-4da3-a8cd-e2c59d2f694a" class="numbered-list" start="2"><li>Router node classifies whether external research is needed</li></ol></div><div style="display:contents" dir="auto"><ol type="1" id="ccabb513-ee15-427b-a893-f2e3a9991dd3" class="numbered-list" start="3"><li>If research needed: query generation → web search via MCP → page fetching → summarization</li></ol></div><div style="display:contents" dir="auto"><ol type="1" id="a5b050b6-810a-4d4d-99c8-8bce15294900" class="numbered-list" start="4"><li>Blog planner creates a structured outline and task list</li></ol></div><div style="display:contents" dir="auto"><ol type="1" id="3f3b1ac7-885e-4b48-9a90-0679213ffc61" class="numbered-list" start="5"><li><strong>Human Checkpoint 1</strong>: User reviews and approves or edits the plan</li></ol></div><div style="display:contents" dir="auto"><ol type="1" id="b1b0e9a4-799c-43e3-933d-1d5f8629f89f" class="numbered-list" start="6"><li>Task executor writes each section sequentially</li></ol></div><div style="display:contents" dir="auto"><ol type="1" id="afbd0411-fcbd-4b45-970a-5f41e222974d" class="numbered-list" start="7"><li>Assembler joins sections into a full draft</li></ol></div><div style="display:contents" dir="auto"><ol type="1" id="efd40219-badf-4544-997f-929128100b51" class="numbered-list" start="8"><li>Editor reviews and refines the draft (up to 3 iterations)</li></ol></div><div style="display:contents" dir="auto"><ol type="1" id="72bbba9d-1ee9-449a-af4d-a3a8192027a3" class="numbered-list" start="9"><li><strong>Human Checkpoint 2</strong>: User reviews and approves the final draft</li></ol></div><div style="display:contents" dir="auto"><ol type="1" id="4573aee0-4ce5-4ea0-aa1d-2958b2e4a107" class="numbered-list" start="10"><li>Final post is saved and made available for export</li></ol></div><div style="display:contents" dir="auto"><hr id="e82f9e53-9525-4950-be95-b54ce240229f"/></div><div style="display:contents" dir="auto"><h2 id="e88c91cc-02c3-4c60-a86d-8f4ed1915371" class="">🛠️ Technology Stack</h2></div><div style="display:contents" dir="ltr"><table id="5b4127e5-dfcc-4838-b3e0-1bb47745bff1" class="simple-table"><thead class="simple-table-header"><div style="display:contents" dir="ltr"><tr id="a84e8715-9c97-4d95-8ff5-c218dd835aaf"><th id="ErMl" class="simple-table-header-color simple-table-header">Layer</th><th id="CVBH" class="simple-table-header-color simple-table-header">Technology</th><th id="PJ|z" class="simple-table-header-color simple-table-header">Purpose</th></tr></div></thead><tbody><div style="display:contents" dir="ltr"><tr id="4755ffdc-997d-4877-b2ab-6cf1a3ec8d35"><td id="ErMl" class="">Frontend</td><td id="CVBH" class="">Next.js 14, TypeScript, Tailwind</td><td id="PJ|z" class="">User interface, SSE streaming</td></tr></div><div style="display:contents" dir="ltr"><tr id="d369e832-4ec6-44fd-8375-d815accbcedd"><td id="ErMl" class="">State Management</td><td id="CVBH" class="">Zustand</td><td id="PJ|z" class="">Client-side agent state</td></tr></div><div style="display:contents" dir="ltr"><tr id="3af5a43e-4763-4f5e-8a4d-0a95237fd849"><td id="ErMl" class="">Backend API</td><td id="CVBH" class="">FastAPI, Python 3.11</td><td id="PJ|z" class="">REST API, background tasks</td></tr></div><div style="display:contents" dir="ltr"><tr id="9b601228-e879-4de7-b9a3-fe49e6f83414"><td id="ErMl" class="">Agent Orchestration</td><td id="CVBH" class="">LangGraph</td><td id="PJ|z" class="">Stateful graph execution</td></tr></div><div style="display:contents" dir="ltr"><tr id="95f6a6ce-d43a-4ab2-84ed-21b7414817d3"><td id="ErMl" class="">LLM</td><td id="CVBH" class="">OpenAI GPT-4o / Claude Sonnet</td><td id="PJ|z" class="">Node-level reasoning</td></tr></div><div style="display:contents" dir="ltr"><tr id="ab2861ee-06ca-4927-835d-46b8e92b2564"><td id="ErMl" class="">Tool Server</td><td id="CVBH" class="">FastMCP</td><td id="PJ|z" class="">MCP tool hosting</td></tr></div><div style="display:contents" dir="ltr"><tr id="01787be4-f8f3-46ee-a516-16a7477a0c72"><td id="ErMl" class="">Web Research</td><td id="CVBH" class="">Tavily API</td><td id="PJ|z" class="">Search and fetch</td></tr></div><div style="display:contents" dir="ltr"><tr id="f25c1a46-ee3a-4b4a-87c8-0632e071e22d"><td id="ErMl" class="">Persistence</td><td id="CVBH" class="">PostgreSQL + SQLAlchemy</td><td id="PJ|z" class="">Users, runs, outputs</td></tr></div><div style="display:contents" dir="ltr"><tr id="a8a04723-996a-4cba-b20f-15cfef084980"><td id="ErMl" class="">Checkpointing</td><td id="CVBH" class="">LangGraph PostgresSaver</td><td id="PJ|z" class="">Graph state persistence</td></tr></div><div style="display:contents" dir="ltr"><tr id="f86e089e-22db-48d9-81d3-25d0a9f922df"><td id="ErMl" class="">Observability</td><td id="CVBH" class="">LangSmith</td><td id="PJ|z" class="">Trace every LLM/tool call</td></tr></div><div style="display:contents" dir="ltr"><tr id="94ee3f2f-ac15-4bf3-88be-9ea2fb1b1ae2"><td id="ErMl" class="">Containerization</td><td id="CVBH" class="">Docker + docker-compose</td><td id="PJ|z" class="">Local and prod deployment</td></tr></div></tbody></table></div><div style="display:contents" dir="auto"><hr id="0dc41c90-45e4-4633-9a8d-a6e9239cb83b"/></div><div style="display:contents" dir="auto"><h2 id="d2375493-03ef-48d2-b1ee-b8e0bc5545f2" class="">📁 Repository Structure</h2></div><div style="display:contents" dir="auto"><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="0fc67d1a-ad2a-4fe1-ac6f-896fcffb37e6" class="code code-wrap"><code class="language-JavaScript" style="white-space:pre-wrap;word-break:break-all">blog-agent/
+├── frontend/          # Next.js app
+│   ├── app/
+│   ├── components/
+│   └── lib/
+├── backend/           # FastAPI + LangGraph
+│   ├── agent/
+│   │   ├── nodes/
+│   │   ├── state.py
+│   │   ├── graph.py
+│   │   └── tools.py
+│   ├── api/
+│   └── db/
+├── mcp_server/        # FastMCP tool server
+│   ├── server.py
+│   └── tools/
+├── docker-compose.yml
+└── .env.example</code></pre></div><div style="display:contents" dir="auto"><hr id="efc14861-e327-481b-9534-27d31bfd8e6b"/></div><div style="display:contents" dir="auto"><h2 id="67b57514-3264-42bc-b10a-c33e95d018e7" class="">🚀 Sprint Plan</h2></div><div style="display:contents" dir="ltr"><table id="d22b880b-0d43-4258-b149-25d69f97ebd8" class="simple-table"><thead class="simple-table-header"><div style="display:contents" dir="ltr"><tr id="ead70c85-cc14-45d9-a2f3-b8840935f0e9"><th id="WjOH" class="simple-table-header-color simple-table-header">Sprint</th><th id="gHSZ" class="simple-table-header-color simple-table-header">Focus</th><th id="=aOS" class="simple-table-header-color simple-table-header">Tasks</th></tr></div></thead><tbody><div style="display:contents" dir="ltr"><tr id="bc06b7d3-4bbc-4b0a-ba66-af17f620258b"><td id="WjOH" class="">Sprint 1</td><td id="gHSZ" class="">Setup + MCP Server</td><td id="=aOS" class="">1.1, 1.2, 1.3, 2.1–2.4</td></tr></div><div style="display:contents" dir="ltr"><tr id="b8dc02b6-72f5-4b20-a788-1a16b238acd4"><td id="WjOH" class="">Sprint 2</td><td id="gHSZ" class="">Core LangGraph Graph</td><td id="=aOS" class="">3.1–3.3, 3.7, 3.9, 3.13</td></tr></div><div style="display:contents" dir="ltr"><tr id="bcfd09d1-3e72-4f98-89cd-cea725886fd7"><td id="WjOH" class="">Sprint 3</td><td id="gHSZ" class="">Research Pipeline</td><td id="=aOS" class="">3.4–3.6</td></tr></div><div style="display:contents" dir="ltr"><tr id="2aa7e8ab-2077-4eca-b3b2-a6ac7c2761e6"><td id="WjOH" class="">Sprint 4</td><td id="gHSZ" class="">HIL + API Endpoints</td><td id="=aOS" class="">3.8, 3.12, 4.1–4.5</td></tr></div><div style="display:contents" dir="ltr"><tr id="d465817b-6b03-4469-a485-1c01df5d50d2"><td id="WjOH" class="">Sprint 5</td><td id="gHSZ" class="">Full Frontend</td><td id="=aOS" class="">5.1–5.6</td></tr></div><div style="display:contents" dir="ltr"><tr id="28f1a5b4-96ca-46ac-b711-ea679e986dab"><td id="WjOH" class="">Sprint 6</td><td id="gHSZ" class="">Auth, SSE, Docker, Prod</td><td id="=aOS" class="">2.7–2.9, 4.6–4.8, 6.1–6.4</td></tr></div></tbody></table></div><div style="display:contents" dir="auto"><hr id="809efc50-6ae4-48b0-9b19-b58c5eb4577e"/></div><div style="display:contents" dir="auto"><h2 id="045befcf-c6a6-4f57-89a9-1ae0bd27ae1a" class="">📋 Task Board</h2></div><div style="display:contents" dir="auto"><p id="78f14149-d98c-4c37-80e1-602e2c1f8a7d" class="">All 44 tasks are tracked in the database below, organized by phase. Each task has a dedicated page with full implementation details, acceptance criteria, and technical notes.</p></div><div style="display:contents" dir="ltr"><figure id="00dcc89c-44bb-4a7a-84c5-5c4194732ee8" class="link-to-page"><a href="Blog%20Writing%20Agent%20%E2%80%94%20Full%20Stack%20Project/Task%20Board%2000dcc89c44bb4a7a84c55c4194732ee8.html">Task Board</a></figure></div></div></article><span class="sans" style="font-size:14px;padding-top:2em"></span></body></html>
