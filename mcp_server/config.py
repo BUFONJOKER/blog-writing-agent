@@ -2,24 +2,32 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Find the project root by looking for the parent of the current folder
-# This goes up one level from 'backend/' or 'mcp_server/' to the main project folder
+# 1. Setup paths for local development
 BASE_DIR = Path(__file__).resolve().parent.parent
 env_path = BASE_DIR / ".env"
 
-# Load the file specifically from the root
-load_dotenv(dotenv_path=env_path)
+# 2. Load .env ONLY if it exists (Local WSL logic)
+# In Docker, this will simply skip if you didn't copy the .env into the image.
+if env_path.exists():
+    load_dotenv(dotenv_path=env_path)
+else:
+    # Fallback to standard loading for Docker/Production environments
+    load_dotenv()
 
 class Config:
+    # 3. Access variables (Works for both .env and Docker -e flags)
     TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
-    DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./test.db") # With default value
     DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
     @classmethod
     def validate(cls):
         """Ensure critical vars are present"""
         if not cls.TAVILY_API_KEY:
-            raise ValueError("TAVILY_API_KEY is not set in the .env file")
+            # Provide a more helpful error for Docker users
+            raise ValueError(
+                "TAVILY_API_KEY is missing. "
+                "Ensure it is in your .env or passed via 'docker run -e'."
+            )
 
 # Validate on import
 Config.validate()
