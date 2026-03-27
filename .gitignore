@@ -9,3 +9,6 @@
 
 #also include pycache files
 __pycache__/
+
+# also include pytest cache files
+.pytest_cache/
