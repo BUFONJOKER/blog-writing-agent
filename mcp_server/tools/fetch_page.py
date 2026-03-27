@@ -54,15 +54,26 @@ def truncate_tokens(text: str, max_tokens=1000):
 
 def fetch_page_tool(url: str, query: str = "") -> dict:
     """
-    Fetch a webpage using Tavily, clean it, and return safe LLM-ready content.
-    Use this tool when:
-    - You need to retrieve and process content from a specific URL.
-    - You want to extract the main text and title from a webpage while removing junk.
-    - You want to ensure the content is within token limits for LLM processing.
-    Inputs:
-    - url (str): The URL of the webpage to fetch.
-    Outputs:
-    - dict: A dictionary containing 'title', 'content', and 'source' (URL).
+    Core tool for the 'Extraction Phase'. Retrieves and cleans full-text content from a specific URL.
+
+    WHEN TO USE:
+    - Use AFTER obtaining a high-authority URL from the web_search_tool to get the full article text.
+    - Use to extract the main technical content while automatically removing 'junk' like navigation menus, ads, and footers.
+    - Use to ensure the content is formatted as safe, LLM-ready Markdown within token limits.
+
+    WHEN NOT TO USE:
+    - Do not use for initial broad research; use web_search_tool first to find relevant URLs.
+    - Do not use if the search snippet from Tavily already contains all the factual data required.
+
+    INPUTS:
+    - url (str): The absolute URL of the webpage to fetch (e.g., 'https://www.infoq.com/news/python-313-latest-features').
+    - query (str): The specific query to focus the extraction on, ensuring the resulting text is relevant to your blog goal.
+
+    OUTPUT:
+    - Returns a dictionary containing:
+        * 'title': The cleaned page title.
+        * 'content': The main article text in Markdown, truncated to approximately 1,000 tokens for efficient LLM processing.
+        * 'source': The original URL for citation.
     """
 
     # 1. Validate input

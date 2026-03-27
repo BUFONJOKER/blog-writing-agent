@@ -10,21 +10,30 @@ if __package__ is None or __package__ == "":
 from config import Config
 
 def web_search_tool(query: str) -> dict:
-    """"
-    Search the internet for real-time information, news, and technical documentation.
+    """
+    Performs a real-time internet search to retrieve technical documentation, news, and factual data.
 
-    Use this tool when:
-    - The user asks about current events or news after your knowledge cutoff.
-    - You need to verify specific facts, statistics, or technical details.
-    - You need to gather background research for blog posts or articles.
-    - The user asks for information you don't have in your local training data.
+    WHEN TO USE:
+    - Use as the initial 'Discovery Phase' to find authoritative source URLs for a blog topic.
+    - Use to verify specific version numbers (e.g., 'Python 3.13 features'), benchmarks, or release dates.
+    - Use when the required information is likely updated after your internal knowledge cutoff (2026 context).
 
-    Args:
-        query (str): A clear, descriptive search query (e.g., 'latest features of Python 3.13'
-                     or 'current trends in AI writing 2026').
+    WHEN NOT TO USE:
+    - Do not use if the user provides a specific URL (use fetch_page_tool instead).
+    - Do not use for general logic, coding assistance, or internal data science concepts already in your training data.
 
-    Returns:
-        list: A list of objects containing 'title', 'url', 'content' (snippet), and 'score'.
+    INPUTS:
+    - query (str): A precise, technical search string.
+      Example: 'Python 3.13 JIT compiler performance vs 3.12' or 'FastAPI best practices 2026'.
+    - max_results (int): The number of search results to return.
+      Range: 1 to 10. Default: 5.
+
+    OUTPUT:
+    - Returns a list of result objects. Each object contains:
+        * 'title': The headline of the webpage.
+        * 'url': The absolute link (needed for fetch_page_tool).
+        * 'content': A short text snippet for initial relevance filtering.
+        * 'score': A relevancy ranking from 0.0 to 1.0.
     """
 
     if not query or not query.strip():

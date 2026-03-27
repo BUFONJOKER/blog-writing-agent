@@ -4,28 +4,26 @@ from typing import List
 
 def extract_keywords_tool(text: str, topic: str, max_keywords: int = 10) -> str:
     """
-    Expert SEO Keyword Extractor for Blog Planning.
+    Expert SEO Keyword Extractor for the 'Optimization Phase' of blog planning.
 
-    Use this tool when:
-    - You have completed raw research and need to identify the most impactful SEO terms before creating a blog outline.
-    - You need to ensure the final post is discoverable and targets the correct technical audience.
-    - You are moving from the 'Research Phase' to the 'Planning Phase' in your workflow.
+    WHEN TO USE:
+    - Use when you have completed raw research and summarization and need to identify impactful SEO terms.
+    - Use as the final bridge when moving from the 'Research Phase' to the 'Planning Phase'.
+    - Use to ensure the post targets a specific technical audience (e.g., Data Scientists using WSL2).
+    WHEN NOT TO USE:
+    - Do not use before you have a technical summary or raw research text.
+    - Do not use for general brainstorming without source material.
 
-    What this tool does:
-    1. Perfroms a frequency analysis of technical terms in the provided research.
-    2. Generates a targeted instruction for you (the Agent) to refine these terms based on the specific 'topic'.
-    3. Requires you to output a final list as a clean JSON array of strings to maintain data structure for the Planner.
+    INPUTS:
+    - text (str): The research summary or technical brief to be analyzed.
+    - topic (str): The primary subject (e.g., 'Python 3.13 Internals') to ensure relevance.
+    - max_keywords (int): Number of keywords to identify. Range: 5 to 15. Default: 10.
 
-    Returns:
-    A structured extraction directive providing a high-confidence baseline of technical terms.
-
-    This tool does not return the final keywords directly; instead, it outputs an instruction
-    set that requires you (the Agent) to perform an internal analysis of the research text.
-
-    Your response to this tool's output MUST be a standalone, clean JSON array of 5–10
-    (or `max_keywords`) strings.
-
-    Example Output Format: ["python 3.13", "software architecture", "performance"].
+    OUTPUT & AGENT RESPONSIBILITY:
+    - This tool returns a 'Structured Extraction Directive' containing a high-confidence baseline of terms.
+    - IMPORTANT: This tool DOES NOT return the final keywords. It returns an instruction set.
+    - You MUST perform an internal analysis of the research text based on this directive.
+    - Your final response MUST be ONLY a clean JSON array of strings (e.g., ["keyword1", "keyword2"]).
     """
     # 1. Validation & Cleaning
     if not text or len(text.strip()) < 50:

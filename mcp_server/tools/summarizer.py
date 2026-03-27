@@ -1,21 +1,24 @@
 def summarize_research(content: str, topic: str, max_words: int = 1000) -> str:
     """
-    Orchestrates an exhaustive, 1000-word technical synthesis of research data.
+    Orchestrates an exhaustive technical synthesis of raw research data into a high-density brief.
 
-    Use this tool when:
-    - You have successfully fetched raw text (via fetch_page_tool) and need a high-density foundation for a long-form blog post.
-    - The raw content is too fragmented or 'noisy' (containing ads/menus) to be used directly in a draft.
-    - You need to extract specific technical evidence, such as version numbers (e.g., Python 3.13), performance metrics, or architectural changes.
+    WHEN TO USE:
+    - Use during the 'Synthesis Phase' after retrieving raw text via fetch_page_tool.
+    - Use when the source material is fragmented, 'noisy' (ads/menus), or exceeds 2,000 characters.
+    - Use to isolate critical technical evidence like version numbers (e.g., Python 3.13), performance metrics, and architectural changes.
+    WHEN NOT TO USE:
+    - Do not use if the content is already a concise summary or under 500 characters.
+    - Do not use for initial web discovery (use web_search_tool instead).
 
-    How to handle the output:
-    - This tool returns a structured 'Summarization Directive'.
-    - Upon receiving the output, you MUST act as a Technical Editor and generate the 1000-word summary immediately before proceeding to the next planning step.
-    - Focus your internal analysis on: Hard Data, Core Arguments, and Developer Impact.
+    INPUTS:
+    - content (str): The raw, unprocessed text string scraped from the web.
+    - topic (str): The specific technical subject to isolate from the surrounding noise (e.g., 'Python 3.13 JIT Compiler').
+    - max_words (int): Target word count for the detailed brief. Range: 100 to 1500. Default: 1000.
 
-    Args:
-        content (str): The raw, unprocessed text string scraped from the web.
-        topic (str): The specific subject matter to isolate from the noise (e.g., 'Python 3.13 JIT Compiler').
-        max_words (int): The target length of the detailed technical brief. Defaults to 1000.
+    OUTPUT:
+    - Returns a structured 'Summarization Directive'.
+    - IMPORTANT: Upon receiving this output, you MUST act as a Technical Editor and generate the 1000-word summary immediately before proceeding to planning.
+    - Your internal analysis must prioritize: Hard Data, Core Arguments, and Developer Impact.
     """
     if not content or len(content.strip()) < 500:
         return "ERROR: Insufficient content for a 1000-word deep-dive."
