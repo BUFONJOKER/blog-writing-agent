@@ -78,10 +78,7 @@ def fetch_page_tool(url: str = Field(..., description="The absolute URL of the w
 
     # 1. Validate input
     if not url.startswith("http"):
-        return {
-            "error": "Invalid URL format",
-            "message": "URL must start with http/https"
-        }
+        raise ValueError("URL must start with http/https")
 
     try:
         response = tavily.extract(
@@ -90,13 +87,10 @@ def fetch_page_tool(url: str = Field(..., description="The absolute URL of the w
         extract_depth="advanced"
     )
     except Exception as exc:
-        return {
-            "error": "Tavily extraction failed",
-            "message": str(exc)
-        }
+        raise RuntimeError(f"Tavily extraction failed: {exc}") from exc
 
-    if not response["results"]:
-        return {"error": "No content found"}
+    if not response.get("results"):
+        raise LookupError("No content found")
 
     raw_content = response["results"][0]["raw_content"]
 

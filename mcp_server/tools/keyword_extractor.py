@@ -50,7 +50,7 @@ def extract_keywords_tool(text: str = Field(..., description="The research summa
         f"INSTRUCTION: Analyze the research text provided below. Identify the most "
         f"valuable SEO keywords that will help this blog post rank for '{topic}'.\n"
         f"BASELINE SUGGESTIONS: {', '.join(baseline)}\n\n"
-        f"FORMAT: Return ONLY a valid JSON array of strings (e.g., ['word1', 'word2']).\n\n"
+        f"FORMAT: Return ONLY a valid JSON array of {max_keywords} strings (e.g., ['word1', 'word2']).\n\n"
         f"RESEARCH TEXT (Truncated for context):\n{text[:8000]}"
     )
 

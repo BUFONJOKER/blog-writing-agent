@@ -22,12 +22,16 @@ def summarize_research(content: str = Field(..., description="The raw, unprocess
     - IMPORTANT: Upon receiving this output, you MUST act as a Technical Editor and generate the 1000-word summary immediately before proceeding to planning.
     - Your internal analysis must prioritize: Hard Data, Core Arguments, and Developer Impact.
     """
-    if not content or len(content.strip()) < 500:
-        return "ERROR: Insufficient content for a 1000-word deep-dive."
+    if not content or not content.strip():
+        return "ERROR: Insufficient content for summarization."
+
+    # Fast path for short content: return pre-optimized text directly.
+    if len(content.strip()) < 500:
+        return f"PRE-OPTIMIZED CONTENT:\n{content.strip()}"
 
     # The Instruction Block: Designed to force depth and length
     instructions = (
-        f"### DEEP-DIVE RESEARCH DIRECTIVE ###\n"
+        f"### TECHNICAL SUMMARIZATION DIRECTIVE ###\n"
         f"TOPIC: {topic}\n"
         f"TARGET LENGTH: {max_words} words\n\n"
         f"INSTRUCTION: Act as a Senior Technical Lead. Generate an exhaustive, "
