@@ -1,8 +1,9 @@
 import re
 from collections import Counter
 from typing import List
+from pydantic import Field
 
-def extract_keywords_tool(text: str, topic: str, max_keywords: int = 10) -> str:
+def extract_keywords_tool(text: str = Field(..., description="The research summary or technical brief to be analyzed."), topic: str = Field(..., description="The primary subject (e.g., 'Python 3.13 Internals') to ensure relevance."), max_keywords: int = Field(10, ge=5, le=15, description="Number of keywords to identify. Range: 5 to 15. Default: 10.")) -> str:
     """
     Expert SEO Keyword Extractor for the 'Optimization Phase' of blog planning.
 

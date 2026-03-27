@@ -3,7 +3,7 @@ from tools.web_search import web_search_tool
 from tools.fetch_page import fetch_page_tool
 from tools.keyword_extractor import extract_keywords_tool
 from tools.summarizer import summarize_research
-mcp = FastMCP("blog-researrch-tools")
+mcp = FastMCP("blog-research-tools")
 
 mcp.tool()(web_search_tool)
 

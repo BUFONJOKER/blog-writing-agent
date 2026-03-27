@@ -1,4 +1,6 @@
-def summarize_research(content: str, topic: str, max_words: int = 1000) -> str:
+from pydantic import Field
+
+def summarize_research(content: str = Field(..., description="The raw, unprocessed text string scraped from the web."), topic: str = Field(..., description="The specific technical subject to isolate from the surrounding noise (e.g., 'Python 3.13 JIT Compiler')."), max_words: int = Field(1000, ge=100, le=1500, description="Target word count for the detailed brief. Range: 100 to 1500. Default: 1000.")) -> str:
     """
     Orchestrates an exhaustive technical synthesis of raw research data into a high-density brief.
 

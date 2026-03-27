@@ -8,8 +8,9 @@ if __package__ is None or __package__ == "":
     sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from config import Config
+from pydantic import Field
 
-def web_search_tool(query: str) -> dict:
+def web_search_tool(query: str = Field(..., description="A precise, technical search string. Example: 'Python 3.13 JIT compiler performance vs 3.12' or 'FastAPI best practices 2026'")) -> dict:
     """
     Performs a real-time internet search to retrieve technical documentation, news, and factual data.
 

@@ -10,7 +10,7 @@ if __package__ is None or __package__ == "":
     sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from config import Config
-
+from pydantic import Field
 
 
 # Initialize client
@@ -52,7 +52,7 @@ def truncate_tokens(text: str, max_tokens=1000):
     tokens = enc.encode(text)
     return enc.decode(tokens[:max_tokens])
 
-def fetch_page_tool(url: str, query: str = "") -> dict:
+def fetch_page_tool(url: str = Field(..., description="The absolute URL of the webpage to fetch (e.g., 'https://www.infoq.com/news/python-313-latest-features')"), query: str = Field("", description="The specific query to focus the extraction on, ensuring the resulting text is relevant to your blog goal.")) -> dict:
     """
     Core tool for the 'Extraction Phase'. Retrieves and cleans full-text content from a specific URL.
 
