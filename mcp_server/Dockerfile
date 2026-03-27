@@ -9,15 +9,20 @@ RUN uv sync --frozen --no-cache --no-dev
 
 FROM python:3.12-slim-bookworm
 WORKDIR /app
+
+# Install procps to get the 'pgrep' command
+RUN apt-get update && apt-get install -y procps && rm -rf /var/lib/apt/lists/*
+
 COPY --from=builder /app/.venv /app/.venv
 COPY . .
+
 ENV PATH="/app/.venv/bin:$PATH" \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
-# Health check that works for both Stdio and SSE
+# Updated Health check: looks for the filename specifically
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD pgrep -f "python server.py" || exit 1
+  CMD pgrep -f "server.py" || exit 1
 
-# Start in SSE mode for cloud deployment
+# Start in SSE mode for cloud deployment (Default)
 CMD ["python", "server.py", "--sse"]
