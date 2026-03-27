@@ -11,15 +11,15 @@ env_path = BASE_DIR / ".env"
 load_dotenv(dotenv_path=env_path)
 
 class Config:
-    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+    TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
     DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./test.db") # With default value
     DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
     @classmethod
     def validate(cls):
         """Ensure critical vars are present"""
-        if not cls.OPENAI_API_KEY:
-            raise ValueError("OPENAI_API_KEY is not set in the .env file")
+        if not cls.TAVILY_API_KEY:
+            raise ValueError("TAVILY_API_KEY is not set in the .env file")
 
 # Validate on import
 Config.validate()

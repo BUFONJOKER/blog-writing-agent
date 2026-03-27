@@ -11,4 +11,5 @@ dependencies = [
     "mcp[cli]>=1.26.0",
     "python-dotenv>=1.2.2",
     "tavily-python>=0.7.23",
+    "tiktoken>=0.12.0",
 ]

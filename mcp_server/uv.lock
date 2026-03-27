@@ -712,6 +712,7 @@ dependencies = [
     { name = "mcp", extra = ["cli"] },
     { name = "python-dotenv" },
     { name = "tavily-python" },
+    { name = "tiktoken" },
 ]
 
 [package.metadata]
@@ -722,6 +723,7 @@ requires-dist = [
     { name = "mcp", extras = ["cli"], specifier = ">=1.26.0" },
     { name = "python-dotenv", specifier = ">=1.2.2" },
     { name = "tavily-python", specifier = ">=0.7.23" },
+    { name = "tiktoken", specifier = ">=0.12.0" },
 ]
 
 [[package]]
