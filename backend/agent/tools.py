@@ -47,16 +47,18 @@ async def get_hosted_mcp_tools() -> list:
     return await client.get_tools()
 
 
-async def initialize_tools(tools_place: Literal['hosted', 'local']) -> None:
-    """Load local or hosted MCP tools according to given tool place and print a readable summary for debugging."""
+async def initialize_tools(tools_place: Literal['hosted', 'local']) -> list:
+    """Load local or hosted MCP tools according to given tool place and print a readable summary for debugging and return the list of tools."""
     if tools_place == 'hosted':
         tools = await get_hosted_mcp_tools()
     else:
         tools = await get_local_mcp_tools()
 
-    print(f"Discovered {len(tools)} tools from MCP server ({tools_place}):")
-    for tool in tools:
-        print(f"- {tool.name}")
+    # print(f"Discovered {len(tools)} tools from MCP server ({tools_place}):")
+    # for tool in tools:
+    #     print(f"- {tool.name}")
+
+    return tools
 
 
 if __name__ == "__main__":

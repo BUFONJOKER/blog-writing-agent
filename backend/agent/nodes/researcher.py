@@ -20,7 +20,7 @@ async def researcher_node(state: BlogAgentState) -> dict:
     """
 
     # Load tools from MCP server
-    tools = await initialize_tools()
+    tools = await initialize_tools(tools_place='local')
 
     tools_by_name = {tool.name: tool for tool in tools}
 
