@@ -1,6 +1,12 @@
 
 ---
 
+## 🌐 Hosted Deployment
+
+This MCP server is deployed at:
+
+`https://Blog-Research-Tools.fastmcp.app/mcp`
+
 ## 🚀 Getting Started
 
 ### Local Development (WSL2/Ubuntu)

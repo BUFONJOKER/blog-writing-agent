@@ -1,14 +1,14 @@
-from langchain_mcp_adapters.client import MultiServerMCPClient
 import asyncio
+from langchain_mcp_adapters.client import MultiServerMCPClient
+from config import Config
+from typing import Literal
 
-async def get_mcp_tools():
-    """
-    Create an MCP client and fetch all tools exposed by the MCP server.
+async def get_local_mcp_tools() -> list:
+    """Fetch tool definitions from the local MCP server over stdio.
 
     Returns:
-    list: Tool objects discovered from the configured MCP server.
+        list: Tool objects discovered from the local MCP server.
     """
-    # Define the MCP server configuration with the appropriate command and arguments to start the server
     mcp_server_config = {
         "blog-research-tools": {
             "transport": "stdio",
@@ -22,19 +22,42 @@ async def get_mcp_tools():
             ],
         }
     }
-    # Initialize the MCP client with the server configuration and fetch the tools
+
     client = MultiServerMCPClient(mcp_server_config)
-    tools = await client.get_tools()
-
-    return tools
+    return await client.get_tools()
 
 
-async def initialize_tools():
+async def get_hosted_mcp_tools() -> list:
+    """Fetch tool definitions from the hosted MCP server over HTTP.
+
+    Returns:
+        list: Tool objects discovered from the hosted MCP server.
     """
-    Initialize tool loading for startup and print discovered tools.
-    """
-    tools = await get_mcp_tools()
-    print("Available tools:", tools)
+    mcp_server_config = {
+        "blog-research-tools (Hosted)": {
+            "url": "https://Blog-Research-Tools.fastmcp.app/mcp",
+            "transport": "streamable_http",
+            "headers": {
+                "Authorization": f"Bearer {Config.HORIZON_TOKEN}",
+            },
+        }
+    }
+
+    client = MultiServerMCPClient(mcp_server_config)
+    return await client.get_tools()
+
+
+async def initialize_tools(tools_place: Literal['hosted', 'local']) -> None:
+    """Load local or hosted MCP tools according to given tool place and print a readable summary for debugging."""
+    if tools_place == 'hosted':
+        tools = await get_hosted_mcp_tools()
+    else:
+        tools = await get_local_mcp_tools()
+
+    print(f"Discovered {len(tools)} tools from MCP server ({tools_place}):")
+    for tool in tools:
+        print(f"- {tool.name}")
+
 
 if __name__ == "__main__":
-    asyncio.run(initialize_tools())
+    asyncio.run(initialize_tools('local'))

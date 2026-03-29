@@ -16,16 +16,16 @@ else:
 
 class Config:
     # 3. Access variables (Works for both .env and Docker -e flags)
-    TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
+    HORIZON_TOKEN = os.getenv("HORIZON_TOKEN")
     DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
     @classmethod
     def validate(cls):
         """Ensure critical vars are present"""
-        if not cls.TAVILY_API_KEY:
+        if not cls.HORIZON_TOKEN:
             # Provide a more helpful error for Docker users
             raise ValueError(
-                "TAVILY_API_KEY is missing. "
+                "HORIZON_TOKEN is missing. "
                 "Ensure it is in your .env or passed via 'docker run -e'."
             )
 
