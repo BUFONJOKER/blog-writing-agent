@@ -19,32 +19,32 @@ class BlogAgentState(BaseModel):
     needs_research: Annotated[
         Literal[True, False],
         Field(description="Routing decision that determines whether external research must run before planning and writing."),
-    ]
+    ] = False  # Default to False, but the router node will set this based on the prompt analysis
 
     research_queries: Annotated[
         List[str],
         Field(description="Search queries generated from the prompt to collect source material and factual context.")
-    ]
+    ] = Field(default_factory=list)  # Start with an empty list, to be populated by the research node
 
     research_results: Annotated[
         List[dict],
         Field(description="Raw outputs returned by research tools (search and page fetch), preserved for traceability before summarization.")
-    ]
+    ] = Field(default_factory=list)
 
     research_summary: Annotated[
         str,
         Field(description="Condensed synthesis of the collected research used as grounded context for planning and drafting.")
-    ]
+    ] = Field(default_factory=str)
 
     blog_plan: Annotated[
         dict,
         Field(description="Structured outline for the article, typically including title, section breakdown, tone, and target audience.")
-    ]
+    ] = Field(default_factory=dict)
 
     tasks: Annotated[
         List[str],
         Field(description="Section-level writing tasks derived from the plan; each item represents one unit of writing work.")
-    ]
+    ] = Field(default_factory=list)
 
     task_outputs: Annotated[
         dict,
@@ -57,12 +57,12 @@ class BlogAgentState(BaseModel):
     draft: Annotated[
         str,
         Field(description="First complete markdown draft assembled from all section outputs.")
-    ]
+    ] = Field(default_factory=str)
 
     final_post: Annotated[
         str,
         Field(description="Final edited article after revision, polishing, and any human-in-the-loop adjustments.")
-    ]
+    ] = Field(default_factory=str)
 
     human_feedback: Annotated[
         str|None,
@@ -77,12 +77,12 @@ class BlogAgentState(BaseModel):
     thread_id: Annotated[
         str,
         Field(description="Run-level unique identifier used to correlate state, logs, events, and API calls for this execution.")
-    ]
+    ] = Field(default_factory=str)
 
     status: Annotated[
         str,
         Field(description="Current lifecycle state of the run (for example: running, awaiting_human, complete, or error).")
-    ]
+    ] = Field(default=str)
 
     interrupt_type: Annotated[
         str|None,
