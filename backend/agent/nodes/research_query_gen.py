@@ -1,7 +1,7 @@
-from state import BlogAgentState
+from agent.state import BlogAgentState
 from pydantic import Field, BaseModel
 from langchain_core.prompts import ChatPromptTemplate
-from model.ollama import load_model
+from agent.model import load_model
 from typing import List
 
 class ResearchQueryGenNodeOutput(BaseModel):

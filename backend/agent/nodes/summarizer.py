@@ -1,5 +1,5 @@
-from state import BlogAgentState
-from model.ollama import load_model
+from agent.state import BlogAgentState
+from agent.model import load_model
 from langchain_core.prompts import ChatPromptTemplate
 
 

@@ -1,16 +1,13 @@
 from langgraph.graph.state import StateGraph, START, END
-from state import BlogAgentState
-from nodes.router import router_node
-from nodes.summarizer import summarizer_node
-from nodes.research_query_gen import research_query_gen_node
-from nodes.planner import planner_node
-from nodes.task_executer import task_executer_node
-from nodes.assembler import assembler_node
-from nodes.editor import editor_node
-from nodes.finalize import finalize_node
-from nodes.critic import critic_node
-from nodes.research_loop import research_loop_node
-from nodes.researcher import researcher_node, get_research_tools
+from agent.state import BlogAgentState
+from agent.nodes import (
+    router_node, research_query_gen_node,
+    summarizer_node, research_loop_node,
+    planner_node, task_executer_node,
+    assembler_node, editor_node,
+    critic_node, finalize_node,
+    get_research_tools,researcher_node
+)
 from langgraph.prebuilt import ToolNode
 
 async def build_workflow():
@@ -105,23 +102,23 @@ async def build_workflow():
     return workflow
 
 
-# import asyncio
+import asyncio
 
-# async def save_graph_image():
-#     # 1. Build the workflow
-#     workflow = await build_workflow()
+async def save_graph_image():
+    # 1. Build the workflow
+    workflow = await build_workflow()
 
-#     # 2. Generate the PNG bytes
-#     # Note: This requires the 'pyppeteer' or 'graphviz' dependencies
-#     # usually installed via `pip install langchain-core[draw]`
-#     png_bytes = workflow.get_graph().draw_mermaid_png()
+    # 2. Generate the PNG bytes
+    # Note: This requires the 'pyppeteer' or 'graphviz' dependencies
+    # usually installed via `pip install langchain-core[draw]`
+    png_bytes = workflow.get_graph().draw_mermaid_png()
 
-#     # 3. Write to a file
-#     with open("workflow.png", "wb") as f:
-#         f.write(png_bytes)
-#     print("Workflow saved as workflow.png")
+    # 3. Write to a file
+    with open("workflow.png", "wb") as f:
+        f.write(png_bytes)
+    print("Workflow saved as workflow.png")
 
 
-# if __name__ == "__main__":
-#     # Run the async function
-#     asyncio.run(save_graph_image())
+if __name__ == "__main__":
+    # Run the async function
+    asyncio.run(save_graph_image())
