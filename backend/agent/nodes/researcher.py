@@ -1,4 +1,4 @@
-from agent.tools import get_mcp_tools, initialize_tools
+from agent.tools import initialize_tools
 from langchain_core.prompts import ChatPromptTemplate
 from agent.model.ollama import load_model
 from agent.state import BlogAgentState
@@ -52,6 +52,8 @@ async def researcher_node(state: BlogAgentState) -> dict:
         """
 
     response = llm_with_tools.invoke(state.prompt)
+
+    print(response)
 
 if __name__ == "__main__":
 

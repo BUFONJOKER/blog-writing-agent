@@ -16,9 +16,9 @@ async def get_local_mcp_tools() -> list:
             "args": [
                 "run",
                 "--project",
-                "/home/mani/data-science/llm-projects/blog-writing-agent/mcp_server",
+                r"D:\blog-writing-agent\mcp_server",
                 "python",
-                "/home/mani/data-science/llm-projects/blog-writing-agent/mcp_server/server.py",
+                r"D:\blog-writing-agent\mcp_server\server.py",
             ],
         }
     }
