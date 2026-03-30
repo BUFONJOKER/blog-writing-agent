@@ -1,7 +1,7 @@
-from agent.tools import initialize_tools
+from tools import initialize_tools
 from langchain_core.prompts import ChatPromptTemplate
-from agent.model.ollama import load_model
-from agent.state import BlogAgentState
+from model.ollama import load_model
+from state import BlogAgentState
 import asyncio
 
 async def researcher_node(state: BlogAgentState) -> dict:
@@ -34,7 +34,7 @@ async def researcher_node(state: BlogAgentState) -> dict:
 
 
     system_prompt = """
-        You are a Lead Research Agent. Your goal is to gather high-fidelity, factual evidence for a technical blog post using a two-tier retrieval strategy.
+        You are a Lead Research  Your goal is to gather high-fidelity, factual evidence for a technical blog post using a two-tier retrieval strategy.
 
         ### OPERATIONAL PROTOCOL:
         1. PHASE 1 (Broad Search): Execute `web_search` for every query provided in `state['research_queries']`. Analyze the snippets for relevance, authority, and data freshness.

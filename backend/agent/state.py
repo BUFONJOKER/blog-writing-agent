@@ -98,3 +98,61 @@ class BlogAgentState(BaseModel):
         dict,
         Field(description="Supplementary generation preferences and constraints, such as tone, audience, word target, and SEO keywords.")
     ] = Field(default_factory=dict)
+
+    needs_revision: Annotated[
+    bool,
+    Field(
+        default=False,
+        description="Determines whether the draft needs another revision cycle based on critic evaluation."
+        )
+    ]
+
+    feedback: Annotated[
+    dict,
+    Field(
+        default_factory=dict,
+        description="Structured feedback from critic node including issues, suggestions, and improvement areas."
+        )
+    ] = Field(default_factory=dict)
+
+    more_research_needed: Annotated[
+    bool,
+    Field(
+        default=False,
+        description="Indicates if additional research is required due to gaps in information."
+        )
+    ] = False
+
+    research_gaps: Annotated[
+    List[str],
+    Field(
+        default_factory=list,
+        description="List of missing topics or unanswered questions identified during research or planning."
+        )
+    ] = Field(default_factory=list)
+
+    current_task: Annotated[
+    str | None,
+    Field(
+        default=None,
+        description="Currently executing task (useful for debugging and step-by-step execution)."
+        )
+    ] = None
+
+    agent_thoughts: Annotated[
+    List[str],
+    Field(
+        default_factory=list,
+        description="Chain-of-thought style reasoning summaries for each major step (not full CoT, but structured insights)."
+        )
+    ] = Field(default_factory=list)
+
+    confidence_score: Annotated[
+    float,
+    Field(
+        ge=0,
+        le=1,
+        default=1.0,
+        description="Confidence level of the final output after evaluation."
+        )
+    ] = 1.0

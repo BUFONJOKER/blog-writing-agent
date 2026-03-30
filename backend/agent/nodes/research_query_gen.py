@@ -1,7 +1,7 @@
-from agent.state import BlogAgentState
+from state import BlogAgentState
 from pydantic import Field, BaseModel
 from langchain_core.prompts import ChatPromptTemplate
-from agent.model.ollama import load_model
+from model.ollama import load_model
 
 class ResearchQueryGenNodeOutput(BaseModel):
     """Structured output from the research query generation node.

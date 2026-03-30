@@ -1,5 +1,5 @@
-from agent.model.ollama import load_model
-from agent.state import BlogAgentState
+from model.ollama import load_model
+from state import BlogAgentState
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 from typing import Literal
@@ -13,8 +13,15 @@ class RouterNodeDecision(BaseModel):
 
     # Changed from Literal strings to a boolean for direct logic use
     needs_research: bool = Field(
-        description="True if the prompt requires factual grounding or real-time research."
+    default=False,
+    description=(
+        "Set to True if the prompt requires real-time information, current events, "
+        "specific factual grounding (e.g., statistics, technical documentation), or "
+        "data beyond the model's knowledge cutoff. Set to False if the request "
+        "is creative, general-purpose, or can be fulfilled using the model's "
+        "existing internal knowledge."
     )
+)
 
 def router_node(state: BlogAgentState) -> dict:
     """Classify the incoming prompt and return a routing state update.
@@ -64,17 +71,6 @@ def router_node(state: BlogAgentState) -> dict:
         "needs_research": response.needs_research
     }
 
-
-
-
-def route_after_prediction(state: BlogAgentState) -> Literal["research_plan", "write_plan"]:
-    """
-    Determines the next step in the graph based on the router's decision.
-    """
-    if state.needs_research:
-        return "research_plan"
-    else:
-        return "write_plan"
 
 # only for testing purposes, not part of the actual graph execution
 
