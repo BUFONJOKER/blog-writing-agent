@@ -1,8 +1,7 @@
-from model.ollama import load_model
-from state import BlogAgentState
+from agent.model.ollama import load_model
+from agent.state import BlogAgentState
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
-from typing import Literal
 
 class RouterNodeDecision(BaseModel):
     """Structured router output returned by the LLM classifier.

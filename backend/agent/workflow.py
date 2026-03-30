@@ -1,15 +1,15 @@
 from langgraph.graph.state import StateGraph, START, END
-from state import BlogAgentState
-from nodes.router import router_node
-from nodes.summarizer import summarizer_node
-from nodes.research_query_gen import research_query_gen_node
-from nodes.planner import planner_node
-from nodes.task_executer import task_executer_node
-from nodes.assembler import assembler_node
-from nodes.editor import editor_node
-from nodes.finalize import finalize_node
-from nodes.critic import critic_node
-from nodes.research_loop import research_loop_node
+from agent.state import BlogAgentState
+from agent.nodes.router import router_node
+from agent.nodes.summarizer import summarizer_node
+from agent.nodes.research_query_gen import research_query_gen_node
+from agent.nodes.planner import planner_node
+from agent.nodes.task_executer import task_executer_node
+from agent.nodes.assembler import assembler_node
+from agent.nodes.editor import editor_node
+from agent.nodes.finalize import finalize_node
+from agent.nodes.critic import critic_node
+from agent.nodes.research_loop import research_loop_node
 
 graph = StateGraph(BlogAgentState)
 
