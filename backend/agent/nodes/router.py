@@ -1,5 +1,5 @@
-from agent.model.ollama import load_model
-from agent.state import BlogAgentState
+from model.ollama import load_model
+from state import BlogAgentState
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 

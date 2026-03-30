@@ -3,7 +3,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 # 1. Setup paths for local development
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 env_path = BASE_DIR / ".env"
 
 # 2. Load .env ONLY if it exists (Local WSL logic)

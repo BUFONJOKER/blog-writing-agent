@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Annotated, Literal, List
+from typing import Annotated, Literal, List, Any
 import operator
 
 class BlogAgentState(BaseModel):
@@ -156,3 +156,29 @@ class BlogAgentState(BaseModel):
         description="Confidence level of the final output after evaluation."
         )
     ] = 1.0
+
+    tool_call_count: Annotated[
+        int,
+        Field(
+            ge=0,
+            default=0,
+            description="Total number of tool calls executed in the current research run.",
+        ),
+    ] = 0
+
+    max_tool_calls: Annotated[
+        int,
+        Field(
+            ge=1,
+            default=8,
+            description="Hard cap for tool calls to prevent unbounded ReAct loops.",
+        ),
+    ] = 8
+
+    messages: Annotated[
+        List[Any],
+        Field(
+            default_factory=list,
+            description="Conversation/message history used by researcher and ToolNode during ReAct execution.",
+        ),
+    ] = Field(default_factory=list)
