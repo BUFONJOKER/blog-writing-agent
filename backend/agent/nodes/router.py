@@ -19,8 +19,16 @@ class RouterNodeDecision(BaseModel):
         "data beyond the model's knowledge cutoff. Set to False if the request "
         "is creative, general-purpose, or can be fulfilled using the model's "
         "existing internal knowledge."
+        )
     )
-)
+
+    topic: str = Field(
+        default="General",
+        description=(
+            "The main topic or subject of the user's prompt, extracted by the model. "
+            "This can be used for downstream nodes to provide context-aware responses."
+        )
+    )
 
 def router_node(state: BlogAgentState) -> dict:
     """Classify the incoming prompt and return a routing state update.
@@ -30,7 +38,7 @@ def router_node(state: BlogAgentState) -> dict:
 
     Returns:
         A partial state dictionary with the `needs_research` flag set to the
-        model's classification result.
+        model's classification result and `topic` of prompt.
     """
 
     model = load_model()
@@ -38,13 +46,14 @@ def router_node(state: BlogAgentState) -> dict:
     llm_structured_output = model.with_structured_output(schema=RouterNodeDecision,method='function_calling')
 
     system_prompt = """
-        You are an expert Content Strategy Router. Your sole objective is to analyze a user's blog request and determine if the agent must perform external research.
+        You are an expert Content Strategy Router. Your sole objective is to analyze a user's blog request and determine if the agent must perform external research. Always take into account the **topic of the prompt** along with its content.
 
         ### CRITERIA FOR RESEARCH (needs_research = True):
         1. CURRENT EVENTS: The topic involves news, sports results (e.g., ICC Trophy), or recent tech releases.
         2. SPECIFIC FACTS: The user asks for statistics, technical benchmarks, or specific data points.
-        3. UNFAMILIAR ENTITIES: The prompt mentions specific companies, people, or niche tools (like MCP, LangGraph, or specific Python libraries).
+        3. UNFAMILIAR ENTITIES: The prompt mentions specific companies, people, niche tools (like MCP, LangGraph, or specific Python libraries), or any lesser-known subject.
         4. RECENT TRENDS: Any topic where information from 2024-2026 is required for accuracy.
+        5. TOPIC COMPLEXITY: If the topic is highly specialized or outside common knowledge domains, consider research.
 
         ### CRITERIA FOR NO RESEARCH (needs_research = False):
         1. GENERAL KNOWLEDGE: Common topics like "How to stay healthy" or "The history of the Roman Empire."
@@ -52,8 +61,8 @@ def router_node(state: BlogAgentState) -> dict:
         3. LOGICAL/MATH TASKS: Coding syntax explanations or basic logic problems that don't require external API data.
 
         ### FINAL INSTRUCTION:
-        If you are even 1% unsure, set 'needs_research' to True to ensure factual accuracy.
-        """
+        Always analyze the **topic** of the user's request along with the content. If you are even 1% unsure, set 'needs_research' to True to ensure factual accuracy.
+"""
 
     # It's better to pass the prompt directly to the template
     prompt_template = ChatPromptTemplate.from_messages([
@@ -67,7 +76,8 @@ def router_node(state: BlogAgentState) -> dict:
     response = chain.invoke({"prompt": state.prompt})
 
     return {
-        "needs_research": response.needs_research
+        "needs_research": response.needs_research,
+        'topic':response.topic
     }
 
 

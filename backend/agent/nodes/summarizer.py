@@ -1,47 +1,54 @@
 from agent.state import BlogAgentState
+from agent.tools import initialize_tools
+import asyncio
 from agent.model import load_model
+from langchain_core.messages import ToolMessage
 from langchain_core.prompts import ChatPromptTemplate
+from typing import Dict, Any
 
+async def summarizer_node(state: BlogAgentState) -> dict:
+    # 1. Setup
+    results = state.research_summary if state.needs_research else state.prompt
+    topic = state.topic
 
-def _normalize_result(item: object) -> str:
-    if isinstance(item, dict):
-        tool_name = item.get("tool_name", "tool")
-        content = item.get("content", "")
-        return f"[{tool_name}] {content}"
-    return str(item)
+    tools = await initialize_tools('local')
+    model = load_model()
+    llm_with_tools = model.bind_tools(tools, tool_choice="summarize_research")
 
+    # 2. FIRST PASS: Get the "Directive" from the tool
+    # We pass the raw data into the tool to get the formatted Instruction Block
+    tool_call_response = await llm_with_tools.ainvoke(
+        f"Use the summarize_research tool for the topic '{topic}' using this data: {results}"
+    )
 
-def summarizer_node(state: BlogAgentState) -> dict:
-    """Summarize collected research outputs into a concise grounded context."""
-    if not state.research_results:
-        return {
-            "research_summary": state.research_summary or "No external research results were collected.",
-            "more_research_needed": False,
-        }
+    directive = ""
+    if tool_call_response.tool_calls:
+        tool_call = tool_call_response.tool_calls[0]
+        tool = next(t for t in tools if t.name == tool_call['name'])
+        # This executes the python function in summarizer.py
+        directive = await tool.ainvoke(tool_call['args'])
 
-    normalized = [_normalize_result(item) for item in state.research_results]
-    source_text = "\n\n".join(normalized[:12])
+    print("Directive from tool:", directive)
 
-    prompt = ChatPromptTemplate.from_messages([
-        (
-            "system",
-            "You are a technical research summarizer. Produce a concise factual summary with key findings and any missing areas.",
-        ),
-        (
-            "user",
-            "User prompt:\n{prompt}\n\nResearch outputs:\n{research_outputs}\n\nReturn 5-8 bullet points in plain text.",
-        ),
+    # 3. SECOND PASS: Use the Directive to generate the actual Summary
+    # Now we feed the instructions returned by the tool BACK to the LLM
+    final_summary_response = await model.ainvoke([
+        ("system", "You are a Senior Technical Lead. Follow the directive provided by the user exactly."),
+        ("human", directive) # The 'directive' contains the instructions + raw data
     ])
 
-    try:
-        model = load_model()
-        chain = prompt | model
-        response = chain.invoke({"prompt": state.prompt, "research_outputs": source_text})
-        summary = getattr(response, "content", "") or "\n".join(normalized[:5])
-    except Exception:
-        summary = "\n".join(normalized[:5])
+    # print(final_summary_response)
 
+    # 4. Return the final text content
     return {
-        "research_summary": summary,
-        "more_research_needed": False,
+        "research_summary": final_summary_response.content,
+        "messages": [tool_call_response, final_summary_response]
     }
+
+if __name__ == "__main__":
+    # Test state - add needs_research=True for real test
+    state = BlogAgentState(
+        prompt="What is AI? Research: AI is artificial intelligence involving machine learning.",
+        needs_research=False  # Set True to test research_summary path
+    )
+    result = asyncio.run(summarizer_node(state))

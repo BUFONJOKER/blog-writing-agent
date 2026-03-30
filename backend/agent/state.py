@@ -10,7 +10,13 @@ class BlogAgentState(BaseModel):
         description="Original user request for the blog post."
     )
 
+
     # --- All other fields now have defaults ---
+
+    topic: str = Field(
+        default="",
+        description="The main topic or subject of the user's prompt."
+    )
 
     needs_research: bool = Field(
         default=False,

@@ -89,12 +89,10 @@ async def build_workflow():
     graph.add_edge("research_query_gen_node", "researcher_node")
     graph.add_edge("researcher_tools", "researcher_node")
     graph.add_edge("summarizer_node", "research_loop")
-    graph.add_edge("research_loop", "planner_node")
     graph.add_edge("planner_node", "task_executer_node")
     graph.add_edge("task_executer_node", "assembler_node")
     graph.add_edge("assembler_node", "editor_node")
     graph.add_edge("editor_node",'critic_node')
-    graph.add_edge("critic_node", "finalize_node")
     graph.add_edge("finalize_node",END)
 
     workflow = graph.compile()
@@ -102,23 +100,23 @@ async def build_workflow():
     return workflow
 
 
-import asyncio
+# import asyncio
 
-async def save_graph_image():
-    # 1. Build the workflow
-    workflow = await build_workflow()
+# async def save_graph_image():
+#     # 1. Build the workflow
+#     workflow = await build_workflow()
 
-    # 2. Generate the PNG bytes
-    # Note: This requires the 'pyppeteer' or 'graphviz' dependencies
-    # usually installed via `pip install langchain-core[draw]`
-    png_bytes = workflow.get_graph().draw_mermaid_png()
+#     # 2. Generate the PNG bytes
+#     # Note: This requires the 'pyppeteer' or 'graphviz' dependencies
+#     # usually installed via `pip install langchain-core[draw]`
+#     png_bytes = workflow.get_graph().draw_mermaid_png()
 
-    # 3. Write to a file
-    with open("workflow.png", "wb") as f:
-        f.write(png_bytes)
-    print("Workflow saved as workflow.png")
+#     # 3. Write to a file
+#     with open("workflow.png", "wb") as f:
+#         f.write(png_bytes)
+#     print("Workflow saved as workflow.png")
 
 
-if __name__ == "__main__":
-    # Run the async function
-    asyncio.run(save_graph_image())
+# if __name__ == "__main__":
+#     # Run the async function
+#     asyncio.run(save_graph_image())
