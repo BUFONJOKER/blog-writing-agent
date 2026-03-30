@@ -3,182 +3,147 @@ from typing import Annotated, Literal, List, Any
 import operator
 
 class BlogAgentState(BaseModel):
-    """Shared runtime state passed between all nodes in the blog-writing graph.
+    """Shared runtime state passed between all nodes in the blog-writing graph."""
 
-    Each field represents a piece of data produced or consumed by one or more
-    nodes (routing, research, planning, drafting, review, and finalization).
-    Keeping this schema explicit makes node behavior predictable and easier to
-    validate, debug, and evolve.
-    """
-
-    prompt: Annotated[
-        str,
-        Field(description="Original user request for the blog post. This value should remain unchanged for the entire run.")
-    ]
-
-    needs_research: Annotated[
-        Literal[True, False],
-        Field(description="Routing decision that determines whether external research must run before planning and writing."),
-    ] = False  # Default to False, but the router node will set this based on the prompt analysis
-
-    research_queries: Annotated[
-        List[str],
-        Field(description="Search queries generated from the prompt to collect source material and factual context.")
-    ] = Field(default_factory=list)  # Start with an empty list, to be populated by the research node
-
-    research_results: Annotated[
-        List[dict],
-        Field(description="Raw outputs returned by research tools (search and page fetch), preserved for traceability before summarization.")
-    ] = Field(default_factory=list)
-
-    research_summary: Annotated[
-        str,
-        Field(description="Condensed synthesis of the collected research used as grounded context for planning and drafting.")
-    ] = Field(default_factory=str)
-
-    blog_plan: Annotated[
-        dict,
-        Field(description="Structured outline for the article, typically including title, section breakdown, tone, and target audience.")
-    ] = Field(default_factory=dict)
-
-    tasks: Annotated[
-        List[str],
-        Field(description="Section-level writing tasks derived from the plan; each item represents one unit of writing work.")
-    ] = Field(default_factory=list)
-
-    task_outputs: Annotated[
-        dict,
-        operator.or_,
-    ] = Field(
-        default_factory=dict,
-        description="This allows multiple nodes to add their specific task results and merge them into one dictionary.",
+    # 1. The only mandatory field
+    prompt: str = Field(
+        description="Original user request for the blog post."
     )
 
-    draft: Annotated[
-        str,
-        Field(description="First complete markdown draft assembled from all section outputs.")
-    ] = Field(default_factory=str)
+    # --- All other fields now have defaults ---
 
-    final_post: Annotated[
-        str,
-        Field(description="Final edited article after revision, polishing, and any human-in-the-loop adjustments.")
-    ] = Field(default_factory=str)
-
-    human_feedback: Annotated[
-        str|None,
-        Field(description="Optional reviewer feedback captured at checkpoints and used to guide re-planning or revision.")
-    ] = None
-
-    iteration_count: Annotated[
-        int,
-        Field(ge=0, le=3, description="Number of revision cycles completed so far; constrained to 0-3 to prevent unbounded loops.")
-    ] = 0
-
-    thread_id: Annotated[
-        str,
-        Field(description="Run-level unique identifier used to correlate state, logs, events, and API calls for this execution.")
-    ] = Field(default_factory=str)
-
-    status: Annotated[
-        str,
-        Field(description="Current lifecycle state of the run (for example: running, awaiting_human, complete, or error).")
-    ] = Field(default=str)
-
-    interrupt_type: Annotated[
-        str|None,
-        Field(description="Checkpoint type when paused for review, such as plan_review or final_review.")
-    ] = None
-
-    error: Annotated[
-        str|None,
-        Field(description="Optional error details when execution fails, intended for debugging, observability, and client reporting.")
-    ] = None
-
-    metadata: Annotated[
-        dict,
-        Field(description="Supplementary generation preferences and constraints, such as tone, audience, word target, and SEO keywords.")
-    ] = Field(default_factory=dict)
-
-    needs_revision: Annotated[
-    bool,
-    Field(
+    needs_research: bool = Field(
         default=False,
-        description="Determines whether the draft needs another revision cycle based on critic evaluation."
-        )
-    ]
+        description="Routing decision for external research."
+    )
 
-    feedback: Annotated[
-    dict,
-    Field(
+    research_queries: List[str] = Field(
+        default_factory=list,
+        description="Search queries generated from the prompt."
+    )
+
+    research_results: List[dict] = Field(
+        default_factory=list,
+        description="Raw outputs returned by research tools."
+    )
+
+    research_summary: str = Field(
+        default="",
+        description="Condensed synthesis of the collected research."
+    )
+
+    blog_plan: dict = Field(
         default_factory=dict,
-        description="Structured feedback from critic node including issues, suggestions, and improvement areas."
-        )
-    ] = Field(default_factory=dict)
+        description="Structured outline for the article."
+    )
 
-    more_research_needed: Annotated[
-    bool,
-    Field(
-        default=False,
-        description="Indicates if additional research is required due to gaps in information."
-        )
-    ] = False
-
-    research_gaps: Annotated[
-    List[str],
-    Field(
+    tasks: List[str] = Field(
         default_factory=list,
-        description="List of missing topics or unanswered questions identified during research or planning."
-        )
-    ] = Field(default_factory=list)
+        description="Section-level writing tasks."
+    )
 
-    current_task: Annotated[
-    str | None,
-    Field(
+    task_outputs: Annotated[dict, operator.or_] = Field(
+        default_factory=dict,
+        description="Merged dictionary of task results."
+    )
+
+    draft: str = Field(
+        default="",
+        description="First complete markdown draft."
+    )
+
+    final_post: str = Field(
+        default="",
+        description="Final edited article."
+    )
+
+    human_feedback: str | None = Field(
         default=None,
-        description="Currently executing task (useful for debugging and step-by-step execution)."
-        )
-    ] = None
+        description="Optional reviewer feedback."
+    )
 
-    agent_thoughts: Annotated[
-    List[str],
-    Field(
+    iteration_count: int = Field(
+        default=0,
+        ge=0,
+        le=3,
+        description="Number of revision cycles."
+    )
+
+    thread_id: str = Field(
+        default="",
+        description="Unique identifier for the run."
+    )
+
+    status: str = Field(
+        default="running",
+        description="Current lifecycle state of the run."
+    )
+
+    interrupt_type: str | None = Field(
+        default=None,
+        description="Checkpoint type when paused."
+    )
+
+    error: str | None = Field(
+        default=None,
+        description="Optional error details."
+    )
+
+    metadata: dict = Field(
+        default_factory=dict,
+        description="Supplementary generation preferences."
+    )
+
+    needs_revision: bool = Field(
+        default=False,
+        description="Determines if another revision cycle is needed."
+    )
+
+    feedback: dict = Field(
+        default_factory=dict,
+        description="Structured feedback from critic node."
+    )
+
+    more_research_needed: bool = Field(
+        default=False,
+        description="Indicates if additional research is required."
+    )
+
+    research_gaps: List[str] = Field(
         default_factory=list,
-        description="Chain-of-thought style reasoning summaries for each major step (not full CoT, but structured insights)."
-        )
-    ] = Field(default_factory=list)
+        description="List of missing topics."
+    )
 
-    confidence_score: Annotated[
-    float,
-    Field(
+    current_task: str | None = Field(
+        default=None,
+        description="Currently executing task."
+    )
+
+    agent_thoughts: List[str] = Field(
+        default_factory=list,
+        description="Chain-of-thought style reasoning summaries."
+    )
+
+    confidence_score: float = Field(
+        default=1.0,
         ge=0,
         le=1,
-        default=1.0,
-        description="Confidence level of the final output after evaluation."
-        )
-    ] = 1.0
+        description="Confidence level of the final output."
+    )
 
-    tool_call_count: Annotated[
-        int,
-        Field(
-            ge=0,
-            default=0,
-            description="Total number of tool calls executed in the current research run.",
-        ),
-    ] = 0
+    tool_call_count: int = Field(
+        default=0,
+        ge=0,
+        description="Total tool calls executed."
+    )
 
-    max_tool_calls: Annotated[
-        int,
-        Field(
-            ge=1,
-            default=8,
-            description="Hard cap for tool calls to prevent unbounded ReAct loops.",
-        ),
-    ] = 8
+    max_tool_calls: int = Field(
+        default=8,
+        ge=1,
+        description="Hard cap for tool calls."
+    )
 
-    messages: Annotated[
-        List[Any],
-        Field(
-            default_factory=list,
-            description="Conversation/message history used by researcher and ToolNode during ReAct execution.",
-        ),
-    ] = Field(default_factory=list)
+    messages: List[Any] = Field(
+        default_factory=list,
+        description="Conversation history for ReAct execution."
+    )

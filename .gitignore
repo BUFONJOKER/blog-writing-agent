@@ -12,3 +12,4 @@ __pycache__/
 
 # also include pytest cache files
 .pytest_cache/
+backend.egg-info/

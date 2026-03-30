@@ -16,3 +16,10 @@ dependencies = [
     "python-dotenv>=1.2.2",
     "uvicorn>=0.42.0",
 ]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["agent", "api", "db"]   

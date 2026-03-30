@@ -1,6 +1,6 @@
 import asyncio
 from langchain_mcp_adapters.client import MultiServerMCPClient
-from config import Config
+from agent.config import Config
 from typing import Literal
 
 async def get_local_mcp_tools() -> list:
