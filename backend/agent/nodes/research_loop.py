@@ -1,4 +1,4 @@
-from state import BlogAgentState
+from agent.state import BlogAgentState
 
 
 def research_loop_node(state: BlogAgentState) -> dict:

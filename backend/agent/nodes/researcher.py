@@ -57,19 +57,16 @@ async def researcher_node(state: BlogAgentState) -> dict:
     """
 
     prompt = ChatPromptTemplate.from_messages([
-        ("system", system_prompt),MessagesPlaceholder(variable_name="messages")
+        ("system", system_prompt),MessagesPlaceholder(variable_name="research_queries")
     ])
 
     chain = prompt | llm_with_tools
 
     research_queries = state.research_queries
 
-    if not state.messages:
-        state.messages = [HumanMessage(content=f"Research Query: {query}") for query in research_queries]
+    response: AIMessage = await chain.ainvoke({"research_queries": research_queries})
 
-    response: AIMessage = await chain.ainvoke({"messages": state.messages})
 
-    state.messages.append(response)
 
     research_results = [
         {
@@ -88,8 +85,13 @@ async def researcher_node(state: BlogAgentState) -> dict:
     if not response.tool_calls:
         research_summary = response.content
 
+    ai_msg = AIMessage(
+        content=(f"Generated Research Results: {research_results}\n"
+                 f"Summary: {research_summary}")
+    )
+
     return {
-        "messages": state.messages,
+        "messages":[ai_msg],
         "research_results": research_results,
         "research_summary": research_summary,
         "tool_call_count": tool_call_count,

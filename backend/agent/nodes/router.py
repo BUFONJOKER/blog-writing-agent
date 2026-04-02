@@ -2,6 +2,7 @@ from agent.model import load_model
 from agent.state import BlogAgentState
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
+from langchain_core.messages import HumanMessage, AIMessage
 
 class RouterNodeDecision(BaseModel):
     """Structured router output returned by the LLM classifier.
@@ -45,6 +46,10 @@ def router_node(state: BlogAgentState) -> dict:
     # Using 'tool_calling' is often more robust for Ollama models than 'function_calling'
     llm_structured_output = model.with_structured_output(schema=RouterNodeDecision,method='function_calling')
 
+
+    prompt = state.prompt
+    human_msg = HumanMessage(content=prompt)
+
     system_prompt = """
         You are an expert Content Strategy Router. Your sole objective is to analyze a user's blog request and determine if the agent must perform external research. Always take into account the **topic of the prompt** along with its content.
 
@@ -75,9 +80,14 @@ def router_node(state: BlogAgentState) -> dict:
     # We pass only the prompt field from the state
     response = chain.invoke({"prompt": state.prompt})
 
+    ai_msg = AIMessage(
+        content=f"Decision: Research={response.needs_research}, Topic={response.topic}"
+    )
     return {
         "needs_research": response.needs_research,
-        'topic':response.topic
+        'topic':response.topic,
+        'messages':[human_msg, ai_msg]
+
     }
 
 

@@ -3,6 +3,7 @@ from pydantic import Field, BaseModel
 from langchain_core.prompts import ChatPromptTemplate
 from agent.model import load_model
 from typing import List
+from langchain_core.messages import AIMessage
 
 class ResearchQueryGenNodeOutput(BaseModel):
     """
@@ -124,10 +125,18 @@ def research_query_gen_node(state: BlogAgentState) -> dict:
 
     response: ResearchQueryGenNodeOutput = chain.invoke({"prompt": state.prompt})
 
+    ai_msg = AIMessage(
+        content=(
+            f"Generated Research Queries: {response.research_queries}\n"
+            f"Identified Research Gaps: {response.research_gaps}\n"
+            f"More Research Needed: {response.more_research_needed}"
+        )
+    )
     return {
         "research_queries": response.research_queries,
         "research_gaps": response.research_gaps,
-        "more_research_needed": response.more_research_needed
+        "more_research_needed": response.more_research_needed,
+        "messages": [ai_msg]
     }
 
 

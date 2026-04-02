@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import Annotated, Literal, List, Any
+from langgraph.graph.message import AnyMessage, add_messages
 import operator
 
 class BlogAgentState(BaseModel):
@@ -149,7 +150,7 @@ class BlogAgentState(BaseModel):
         description="Hard cap for tool calls."
     )
 
-    messages: List[Any] = Field(
+    messages: Annotated[list[AnyMessage], add_messages] = Field(
         default_factory=list,
-        description="Conversation history for ReAct execution."
+        description="Chronological list of all messages exchanged with the LLM."
     )
