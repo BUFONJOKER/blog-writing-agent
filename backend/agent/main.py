@@ -17,10 +17,10 @@ async def main():
         app = await build_workflow(checkpointer)
 
         # 2. Thread ID identifies this specific conversation
-        config = {"configurable": {"thread_id": "blog_123"}}
+        config = {"configurable": {"thread_id": "blog_new_mlops"}}
 
         # 3. Start the process
-        initial_input = {"prompt": "Write a blog post about 2026 MLOps"}
+        initial_input = {"prompt": "Research the top 3 MLOps deployment patterns used in early 2026 and find specific performance benchmarks comparing them to 2025 standards. Provide the source URLs for these benchmarks."}
         async for event in app.astream(initial_input, config, stream_mode="values"):
             print(event)
 

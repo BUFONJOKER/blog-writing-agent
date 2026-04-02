@@ -4,14 +4,13 @@ from agent.model import load_model
 from agent.state import BlogAgentState
 from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
 import asyncio
-from typing import List
 
 async def get_research_tools():
     tools = await initialize_tools(tools_place='local')
 
     tools_by_name = {tool.name: tool for tool in tools}
 
-    allowed_tools = ["web_search_tool", "fetch_page_tool","extract_keywords_tool","summarize_research"]
+    allowed_tools = ["web_search_tool", "fetch_page_tool"]
 
     specific_tools = [tools_by_name[tool_name] for tool_name in allowed_tools if tool_name in tools_by_name]
 
@@ -47,8 +46,6 @@ async def researcher_node(state: BlogAgentState) -> dict:
     Use tools in this order:
     1. web_search_tool → find URLs
     2. fetch_page_tool → get content
-    3. summarize_research → summarize
-    4. extract_keywords_tool → keywords
 
     Rules:
     - Do not repeat queries
@@ -65,8 +62,6 @@ async def researcher_node(state: BlogAgentState) -> dict:
     research_queries = state.research_queries
 
     response: AIMessage = await chain.ainvoke({"research_queries": research_queries})
-
-
 
     research_results = [
         {
