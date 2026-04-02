@@ -49,7 +49,7 @@ class BlogAgentState(BaseModel):
         description="Section-level writing tasks."
     )
 
-    task_outputs: Annotated[dict, operator.or_] = Field(
+    tasks_output: Annotated[dict, operator.or_] = Field(
         default_factory=dict,
         description="Merged dictionary of task results."
     )

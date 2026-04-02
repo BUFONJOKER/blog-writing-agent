@@ -1,11 +1,14 @@
 from agent.state import BlogAgentState
 from agent.model import load_model
 from pydantic import BaseModel, Field
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_core.messages import HumanMessage, AIMessage
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.messages import AIMessage
 from typing import List
 
 class SectionPlan(BaseModel):
+
+    name: str = Field(description="The name of the section (e.g., Introduction, Technical Deep-Dive)")
+
     description: str = Field(description="A brief description of the section's content and purpose")
 
     word_count: str = Field(description="Approximate word count for the section")
@@ -19,7 +22,7 @@ class SectionPlan(BaseModel):
 class BlogPlan(BaseModel):
     title: str = Field(description="The title of the blog post")
 
-    subtitile: str = Field(description="The subtitle of the blog post")
+    subtitle: str = Field(description="The subtitle of the blog post")
 
     tone: str = Field(description="The tone of the blog post (e.g., formal, conversational, technical)")
 
@@ -80,7 +83,7 @@ def planner_node(state: BlogAgentState):
         f"Structure: {response.sections} sections with a {response.tasks} writing tasks."
         )
     )
-    
+
     return {
         "blog_plan": response.model_dump(), # Convert Pydantic object to dictionary
         "tasks": response.tasks,       # Extract tasks for the next node

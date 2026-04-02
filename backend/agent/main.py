@@ -42,15 +42,15 @@ async def main():
             await app.aupdate_state(config, {"human_feedback": feedback}, as_node="planner_node")
             print("Feedback saved. You might want to re-run the planner or resume.")
 
-        # # 6. Resume execution
-        # # Passing None tells LangGraph to look at the last checkpoint and continue
-        # async for event in app.astream(None, config, stream_mode="values"):
-        #     # Replace your current print(event) with this:
-        #     try:
-        #         print(event)
-        #     except UnicodeEncodeError:
-        #         # Fallback: encode to ascii and ignore errors just for the console display
-        #         print(str(event).encode('ascii', 'ignore').decode('ascii'))
+        # 6. Resume execution
+        # Passing None tells LangGraph to look at the last checkpoint and continue
+        async for event in app.astream(None, config, stream_mode="values"):
+            # Replace your current print(event) with this:
+            try:
+                print(event)
+            except UnicodeEncodeError:
+                # Fallback: encode to ascii and ignore errors just for the console display
+                print(str(event).encode('ascii', 'ignore').decode('ascii'))
 
 if __name__ == "__main__":
     asyncio.run(main())
