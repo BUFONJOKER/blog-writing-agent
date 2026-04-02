@@ -2,13 +2,25 @@ from agent.state import BlogAgentState
 from agent.tools import initialize_tools
 import asyncio
 from agent.model import load_model
-from langchain_core.messages import ToolMessage
+from langchain_core.messages import ToolMessage, AIMessage
 from langchain_core.prompts import ChatPromptTemplate
 from typing import Dict, Any
 
 async def summarizer_node(state: BlogAgentState) -> dict:
     # 1. Setup
-    results = state.research_summary if state.needs_research else state.prompt
+    if state.needs_research:
+        results = state.research_summary
+    else:
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", "Generate a detailed blog on the following topic:"),
+            ("human", state.prompt)
+        ])
+
+        chain = prompt | load_model()
+
+        response = chain.invoke({"prompt": state.prompt})
+        results = response.content
+        ai_msg = AIMessage(content=f"Generated Content: {results}")
     topic = state.topic
 
     tools = await initialize_tools('local')
@@ -28,7 +40,6 @@ async def summarizer_node(state: BlogAgentState) -> dict:
         # This executes the python function in summarizer.py
         directive = await tool.ainvoke(tool_call['args'])
 
-    print("Directive from tool:", directive)
 
     # 3. SECOND PASS: Use the Directive to generate the actual Summary
     # Now we feed the instructions returned by the tool BACK to the LLM
@@ -37,12 +48,17 @@ async def summarizer_node(state: BlogAgentState) -> dict:
         ("human", directive) # The 'directive' contains the instructions + raw data
     ])
 
+    new_messages = [tool_call_response, final_summary_response]
+
+    if ai_msg:
+        new_messages.insert(0, ai_msg)
+
     # print(final_summary_response)
 
     # 4. Return the final text content
     return {
         "research_summary": final_summary_response.content,
-        "messages": [tool_call_response, final_summary_response]
+        "messages": new_messages
     }
 
 if __name__ == "__main__":
