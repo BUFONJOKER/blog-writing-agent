@@ -48,14 +48,15 @@ async def build_workflow(checkpointer):
         "summarizer_node": "summarizer_node"
     })
 
-    # NEW: Logic to decide if the Researcher stays in the tool-calling loop
-    def should_execute_tools(state: BlogAgentState):
-        # If the LLM generated tool_calls, go to the ToolNode
-        if state.has_tool_calls and state.tool_call_count < state.max_tool_calls:
-            return "researcher_tools"
-        # If no tool calls (it returned text), research is done -> move to summarizer
-        return "summarizer_node"
 
+    def should_execute_tools(state: BlogAgentState):
+    # Ensure has_tool_calls is checked accurately
+        if state.has_tool_calls and (state.tool_call_count or 0) < (state.max_tool_calls or 8):
+            return "researcher_tools"
+
+        # If the researcher_node returned False for has_tool_calls,
+        # it means the LLM provided a final text response.
+        return "summarizer_node"
     # 3. Add the Researcher -> Tools -> Researcher Loop
     graph.add_conditional_edges(
         "researcher_node",

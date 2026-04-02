@@ -2,7 +2,7 @@ from pathlib import Path
 import sys
 
 from tavily import TavilyClient
-
+import json
 # Support running this file directly from tools/ as a script.
 if __package__ is None or __package__ == "":
     sys.path.append(str(Path(__file__).resolve().parents[1]))
@@ -13,7 +13,7 @@ from pydantic import Field
 def web_search_tool(
     query: str = Field(..., description="A precise, technical search string."),
     max_results: int = Field(5, description="Number of results to return (1-10).") # Add this
-) -> dict:
+):
     """
     Performs a real-time internet search...
     """
@@ -27,6 +27,8 @@ def web_search_tool(
     except (ValueError, TypeError):
         max_results = 5
 
+    max_results = max(1, min(max_results, 10))  # clamp 1–10
+
     try:
         tavily_client = TavilyClient(api_key=Config.TAVILY_API_KEY)
         # Pass max_results to the tavily client
@@ -34,20 +36,22 @@ def web_search_tool(
     except Exception as exc:
         raise RuntimeError(f"Tavily search request failed: {exc}") from exc
 
-    results = response.get("results") if isinstance(response, dict) else None
+    results = response.get("results", [])
     if not results:
-        raise LookupError("No search results returned from Tavily")
+        return json.dumps({"results": []})
 
-    result = results[0]
-    missing_fields = [key for key in ("url", "title", "content", "score") if key not in result]
-    if missing_fields:
-        raise KeyError(f"Missing expected fields in Tavily result: {', '.join(missing_fields)}")
+    # ✅ Process ALL results
+    processed_results = []
+    for r in results:
+        processed_results.append({
+            "url": r.get("url", ""),
+            "title": r.get("title", ""),
+            "content": r.get("content", ""),
+            "score": r.get("score", 0.0)
+        })
 
-    web_search_results = {
-        "url": result["url"],
-        "title": result["title"],
-        "content": result["content"],
-        "score": result["score"],
-    }
-
-    return web_search_results
+    # ✅ Return JSON string (important for ToolMessage parsing)
+    return json.dumps({
+        "query": query,
+        "results": processed_results
+    })
