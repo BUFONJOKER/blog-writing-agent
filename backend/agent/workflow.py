@@ -10,7 +10,7 @@ from agent.nodes import (
 )
 from langgraph.prebuilt import ToolNode
 
-async def build_workflow():
+async def build_workflow(checkpointer):
     graph = StateGraph(BlogAgentState)
 
     tools = await get_research_tools()
@@ -95,7 +95,7 @@ async def build_workflow():
     graph.add_edge("editor_node",'critic_node')
     graph.add_edge("finalize_node",END)
 
-    workflow = graph.compile()
+    workflow = graph.compile(checkpointer=checkpointer,  interrupt_after=['planner_node'])
 
     return workflow
 

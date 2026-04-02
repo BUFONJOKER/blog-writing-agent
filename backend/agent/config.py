@@ -17,6 +17,7 @@ else:
 class Config:
     # 3. Access variables (Works for both .env and Docker -e flags)
     HORIZON_TOKEN = os.getenv("HORIZON_TOKEN")
+    DB_URL = os.getenv("DB_URL")
     DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
     @classmethod
@@ -26,6 +27,11 @@ class Config:
             # Provide a more helpful error for Docker users
             raise ValueError(
                 "HORIZON_TOKEN is missing. "
+                "Ensure it is in your .env or passed via 'docker run -e'."
+            )
+        if not cls.DB_URL:
+            raise ValueError(
+                "DB_URL is missing. "
                 "Ensure it is in your .env or passed via 'docker run -e'."
             )
 

@@ -90,11 +90,15 @@ async def researcher_node(state: BlogAgentState) -> dict:
                  f"Summary: {research_summary}")
     )
 
+        # Check current response instead of historical messages
+    has_new_tool_calls = len(response.tool_calls) > 0 if response.tool_calls else False
+
     return {
-        "messages":[ai_msg],
+        "messages": [ai_msg],
         "research_results": research_results,
         "research_summary": research_summary,
         "tool_call_count": tool_call_count,
+        "has_tool_calls": has_new_tool_calls # Add this flag for easier checking
     }
 
 async def test_researcher():
@@ -103,8 +107,8 @@ async def test_researcher():
     # 1. Create a mock state
     # Ensure research_queries is populated since the node uses it
     initial_state = BlogAgentState(
-        prompt="Write a blog post about the latest iPhone features",
-        research_queries=["Latest features of the iPhone 15"],
+        prompt="Write a blog post about 2026 MLOps",
+        research_queries=["2026 MLOps"],
         messages=[],
         tool_call_count=0,
         research_summary=""
