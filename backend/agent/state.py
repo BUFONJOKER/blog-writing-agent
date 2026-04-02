@@ -29,9 +29,9 @@ class BlogAgentState(BaseModel):
         description="Search queries generated from the prompt."
     )
 
-    research_results: List[dict] = Field(
+    research_results: Annotated[List[dict], operator.add] = Field(
         default_factory=list,
-        description="Raw outputs returned by research tools."
+        description="Accumulated results from research tools."
     )
 
     research_summary: str = Field(
@@ -138,14 +138,14 @@ class BlogAgentState(BaseModel):
         description="Confidence level of the final output."
     )
 
-    tool_call_count: int = Field(
+    tool_call_count: Annotated[int, operator.add] = Field(
         default=0,
         ge=0,
-        description="Total tool calls executed."
+        description="Cumulative count of tool invocations."
     )
 
     max_tool_calls: int = Field(
-        default=8,
+        default=20,
         ge=1,
         description="Hard cap for tool calls."
     )
@@ -153,4 +153,9 @@ class BlogAgentState(BaseModel):
     messages: Annotated[list[AnyMessage], add_messages] = Field(
         default_factory=list,
         description="Chronological list of all messages exchanged with the LLM."
+    )
+
+    has_tool_calls: bool = Field(
+        default=False,
+        description="Flag indicating if the last LLM response contained tool calls."
     )

@@ -1,137 +1,87 @@
-from agent.tools import initialize_tools
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from agent.model import load_model
-from agent.state import BlogAgentState
-from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
 import asyncio
+from typing import List
+from langchain_core.messages import AIMessage, ToolMessage, SystemMessage, HumanMessage
+from agent.state import BlogAgentState
+from agent.model import load_model
 
-async def get_research_tools():
-    tools = await initialize_tools(tools_place='local')
-
-    tools_by_name = {tool.name: tool for tool in tools}
-
-    allowed_tools = ["web_search_tool", "fetch_page_tool"]
-
-    specific_tools = [tools_by_name[tool_name] for tool_name in allowed_tools if tool_name in tools_by_name]
-
-    return specific_tools
-
-async def researcher_node(state: BlogAgentState) -> dict:
-    """Perform research based on the user's prompt and update the state with findings.
-
-    This node is responsible for executing the research phase of the agent's workflow.
-    It uses the search queries generated in the previous node to fetch relevant information
-    using the tools registered in the MCP server. The results are then processed and
-    stored in the state for use in later stages of planning and drafting.
-
-    Args:
-        state: Current graph state containing the user's prompt, routing decision, and generated search queries.
-
-    Returns:
-        A partial state dictionary with a new field `research_results` containing the aggregated findings from the research phase.
+async def researcher_node(state: BlogAgentState, tools: list) -> dict:
     """
-
-    # Load tools from MCP server
-
-    tools = await get_research_tools()
-
+    Executes the 'Retrieval Phase' with logic to encourage deep extraction via fetch_page_tool.
+    This node loops until the LLM decides it has enough detailed information.
+    """
     model = load_model()
+    # Bind the provided tools (web_search_tool and fetch_page_tool) to the model
+    model_with_tools = model.bind_tools(tools)
 
-    llm_with_tools = model.bind_tools(tools)
+    # 1. Context Injection: Extract previous tool results to provide a "memory" of URLs
+    search_history_context = ""
+    new_results = []
 
+    for msg in state.messages:
+        if isinstance(msg, ToolMessage):
+            # Ensure content is a string
+            content_str = msg.content
+            if isinstance(content_str, list):
+                # Extract text if it's a list of blocks
+                content_str = content_str[0].get("text", str(content_str)) if content_str else ""
 
-    system_prompt = """
-    You are the Lead Researcher for a technical blog post.
+            # Create the dictionary that matches your State's List[dict] requirement
+            result_entry = {
+                "tool": getattr(msg, "name", "web_search"),
+                "content": content_str,
+                "url": msg.additional_kwargs.get("url", "N/A") # Optional: capture URL if available
+            }
 
-    Use tools in this order:
-    1. web_search_tool → find URLs
-    2. fetch_page_tool → get content
+            new_results.append(result_entry)
+            search_history_context += f"\n--- Previous Tool Output ---\n{content_str}\n"
 
-    Rules:
-    - Do not repeat queries
-    - Focus on factual, technical data
-    - Stop when enough info is gathered
-    """
+    # 2. Refined System Prompt: Directing the LLM's strategy
+    system_prompt = (
+        "You are a Senior Research Assistant. Your goal is to gather deep, factual information.\n\n"
+        "STRATEGY:\n"
+        "1. Initial Phase: Use 'web_search_tool' to find authoritative source URLs.\n"
+        "2. Extraction Phase: If search snippets are brief or generic, identify the most promising URL "
+        "and use 'fetch_page_tool' to extract the full article content. High-quality blogs require "
+        "deep text extraction, not just snippets.\n\n"
+        "CRITICAL RULE: When calling 'web_search_tool', you MUST ONLY provide the 'query' argument.\n"
+        "CRITICAL RULE: When calling 'fetch_page_tool', you MUST provide both the 'url' (from your search results) "
+        "and a 'query' to focus the extraction."
+    )
 
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", system_prompt),MessagesPlaceholder(variable_name="research_queries")
-    ])
+    # 3. Construct the Human Message with injected URL context
+    query_text = ", ".join(state.research_queries)
+    user_content = f"Research these topics deeply: {query_text}"
 
-    chain = prompt | llm_with_tools
+    # If we have previous results, we tell the model to use them as a target for fetching
+    if search_history_context:
+        user_content += (
+            f"\n\nReview your previous findings below. If any URL looks highly relevant but the "
+            f"snippet is too short, use 'fetch_page_tool' on that URL now:\n{search_history_context}"
+        )
 
-    research_queries = state.research_queries
-
-    response: AIMessage = await chain.ainvoke({"research_queries": research_queries})
-
-    research_results = [
-        {
-            "tool_name": getattr(msg, "name", ""),
-            "tool_call_id": getattr(msg, "tool_call_id", ""),
-            "content": msg.content,
-        }
-        for msg in state.messages
-        if isinstance(msg, ToolMessage)
+    clean_messages = [
+        SystemMessage(content=system_prompt),
+        HumanMessage(content=user_content)
     ]
 
-    tool_call_count = state.tool_call_count + len(response.tool_calls or [])
+    # 4. Invoke model
+    response = await model_with_tools.ainvoke(clean_messages)
 
-    research_summary = state.research_summary or ""
+    # 5. Determine state updates for the LangGraph loop
+    has_tool_calls = bool(response.tool_calls)
 
-    if not response.tool_calls:
-        research_summary = response.content
-
-    ai_msg = AIMessage(
-        content=(f"Generated Research Results: {research_results}\n"
-                 f"Summary: {research_summary}")
-    )
-
-        # Check current response instead of historical messages
-    has_new_tool_calls = len(response.tool_calls) > 0 if response.tool_calls else False
-
-    return {
-        "messages": [ai_msg],
-        "research_results": research_results,
-        "research_summary": research_summary,
-        "tool_call_count": tool_call_count,
-        "has_tool_calls": has_new_tool_calls # Add this flag for easier checking
+    update = {
+        "messages": [response],
+        "research_results": new_results, # Now correctly passes List[dict] validation
+        "has_tool_calls": bool(response.tool_calls),
+        "tool_call_count": len(response.tool_calls) if response.tool_calls else 0
     }
 
-async def test_researcher():
-    print("--- Initializing Test ---")
+    # Signal if we need to stay in the research loop or proceed to writing
+    if not response.tool_calls:
+        update["research_summary"] = response.content
+        update["more_research_needed"] = False
+    else:
+        update["more_research_needed"] = True
 
-    # 1. Create a mock state
-    # Ensure research_queries is populated since the node uses it
-    initial_state = BlogAgentState(
-        prompt="Write a blog post about 2026 MLOps",
-        research_queries=["2026 MLOps"],
-        messages=[],
-        tool_call_count=0,
-        research_summary=""
-    )
-
-    try:
-        # 2. Run the node
-        print("--- Running Researcher Node ---")
-        result = await researcher_node(initial_state)
-
-        # 3. Validate the results
-        print("\n--- Node Execution Results ---")
-        print(f"Messages count: {len(result['messages'])}")
-        print(f"Tool call count: {result['tool_call_count']}")
-
-        # Check if the LLM actually decided to use tools
-        if result['research_results']:
-            print("Tools used:")
-            for tool in result['research_results']:
-                print(f"- {tool['tool_name']}")
-        else:
-            print("No tool calls were generated by the LLM.")
-
-        if result['research_summary']:
-            print(f"\nSummary generated: {result['research_summary'][:100]}...")
-
-    except Exception as e:
-        print(f"An error occurred during testing: {e}")
-
-if __name__ == "__main__":
-    asyncio.run(test_researcher())
+    return update

@@ -8,4 +8,4 @@ from .editor import editor_node
 from .finalize import finalize_node
 from .critic import critic_node
 from .research_loop import research_loop_node
-from .researcher import researcher_node, get_research_tools
+from .researcher import researcher_node

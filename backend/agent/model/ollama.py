@@ -7,6 +7,6 @@ def load_model():
     Load the Ollama model using the ChatOllama class from langchain_ollama.
     '''
 
-    model = ChatOllama(model="qwen3.5:cloud")
+    model = ChatOllama(model="qwen3.5:cloud",temperature=0)
 
     return model

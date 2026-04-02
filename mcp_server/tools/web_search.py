@@ -10,42 +10,27 @@ if __package__ is None or __package__ == "":
 from config import Config
 from pydantic import Field
 
-def web_search_tool(query: str = Field(..., description="A precise, technical search string. Example: 'Python 3.13 JIT compiler performance vs 3.12' or 'FastAPI best practices 2026'")) -> dict:
+def web_search_tool(
+    query: str = Field(..., description="A precise, technical search string."),
+    max_results: int = Field(5, description="Number of results to return (1-10).") # Add this
+) -> dict:
     """
-    Performs a real-time internet search to retrieve technical documentation, news, and factual data.
-
-    WHEN TO USE:
-    - Use as the initial 'Discovery Phase' to find authoritative source URLs for a blog topic.
-    - Use to verify specific version numbers (e.g., 'Python 3.13 features'), benchmarks, or release dates.
-    - Use when the required information is likely updated after your internal knowledge cutoff (2026 context).
-
-    WHEN NOT TO USE:
-    - Do not use if the user provides a specific URL (use fetch_page_tool instead).
-    - Do not use for general logic, coding assistance, or internal data science concepts already in your training data.
-
-    INPUTS:
-    - query (str): A precise, technical search string.
-      Example: 'Python 3.13 JIT compiler performance vs 3.12' or 'FastAPI best practices 2026'.
-    - max_results (int): The number of search results to return.
-      Range: 1 to 10. Default: 5.
-
-    OUTPUT:
-    - Returns a list of result objects. Each object contains:
-        * 'title': The headline of the webpage.
-        * 'url': The absolute link (needed for fetch_page_tool).
-        * 'content': A short text snippet for initial relevance filtering.
-        * 'score': A relevancy ranking from 0.0 to 1.0.
+    Performs a real-time internet search...
     """
 
     if not query or not query.strip():
         raise ValueError("Query must be a non-empty string")
 
-    if not Config.TAVILY_API_KEY:
-        raise ValueError("TAVILY_API_KEY is not configured")
+    # Ensure max_results is an integer even if the LLM sends a string
+    try:
+        max_results = int(max_results)
+    except (ValueError, TypeError):
+        max_results = 5
 
     try:
         tavily_client = TavilyClient(api_key=Config.TAVILY_API_KEY)
-        response = tavily_client.search(query)
+        # Pass max_results to the tavily client
+        response = tavily_client.search(query, max_results=max_results)
     except Exception as exc:
         raise RuntimeError(f"Tavily search request failed: {exc}") from exc
 

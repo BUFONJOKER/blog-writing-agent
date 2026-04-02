@@ -1,17 +1,15 @@
 from pathlib import Path
 import re
 import sys
-
 from tavily import TavilyClient
 import tiktoken
+from pydantic import Field
 
-# Support running this file directly from tools/ as a script.
+# Support running this file directly
 if __package__ is None or __package__ == "":
     sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from config import Config
-from pydantic import Field
-
 
 # Initialize client
 tavily = TavilyClient(api_key=Config.TAVILY_API_KEY)
@@ -19,87 +17,83 @@ tavily = TavilyClient(api_key=Config.TAVILY_API_KEY)
 # ---------------------------
 # Helper: Clean content
 # ---------------------------
-def clean_content(raw_content: str):
-    text = raw_content.replace("\n", " ").strip()
+def clean_content(raw_content: str, metadata_title: str = None):
+    # Remove excessive newlines but keep some structure
+    text = re.sub(r'\n{3,}', '\n\n', raw_content).strip()
 
-    # Extract title
-    lines = raw_content.split("\n")
+    # Determine Title: Use Tavily's metadata title first
     title = "No Title Found"
-    for line in lines:
-        line = line.strip()
-        if len(line) > 20:
-            title = line
-            break
+    if metadata_title and len(metadata_title.strip()) > 5:
+        title = metadata_title.strip()
+    else:
+        # Fallback: Look for the first substantial line
+        lines = [line.strip() for line in raw_content.split("\n") if len(line.strip()) > 20]
+        if lines:
+            title = lines[0]
 
-    # Remove junk
+    # Remove junk/UI elements
     junk_patterns = [
         r"Jump to content", r"Main menu", r"Search",
-        r"Donate", r"Log in", r"Toggle the table of contents"
+        r"Donate", r"Log in", r"Toggle the table of contents",
+        r"Cookie Policy", r"Privacy Policy", r"Terms of Service"
     ]
 
     for pattern in junk_patterns:
         text = re.sub(pattern, "", text, flags=re.IGNORECASE)
 
-    text = re.sub(r"\s+", " ", text)
+    # Clean up whitespace
+    text = re.sub(r" +", " ", text)
 
     return title, text
 
 # ---------------------------
 # Helper: Token truncation
 # ---------------------------
-def truncate_tokens(text: str, max_tokens=1000):
+def truncate_tokens(text: str, max_tokens=1200): # Increased slightly for better context
     enc = tiktoken.get_encoding("cl100k_base")
     tokens = enc.encode(text)
-    return enc.decode(tokens[:max_tokens])
+    if len(tokens) <= max_tokens:
+        return text
+    return enc.decode(tokens[:max_tokens]) + "\n\n[...Content Truncated due to Limit...]"
 
-def fetch_page_tool(url: str = Field(..., description="The absolute URL of the webpage to fetch (e.g., 'https://www.infoq.com/news/python-313-latest-features')"), query: str = Field("", description="The specific query to focus the extraction on, ensuring the resulting text is relevant to your blog goal.")) -> dict:
+def fetch_page_tool(
+    url: str = Field(..., description="The absolute URL to fetch."),
+    query: str = Field("", description="The query to focus extraction on.")
+) -> dict:
     """
-    Core tool for the 'Extraction Phase'. Retrieves and cleans full-text content from a specific URL.
-
-    WHEN TO USE:
-    - Use AFTER obtaining a high-authority URL from the web_search_tool to get the full article text.
-    - Use to extract the main technical content while automatically removing 'junk' like navigation menus, ads, and footers.
-    - Use to ensure the content is formatted as safe, LLM-ready Markdown within token limits.
-
-    WHEN NOT TO USE:
-    - Do not use for initial broad research; use web_search_tool first to find relevant URLs.
-    - Do not use if the search snippet from Tavily already contains all the factual data required.
-
-    INPUTS:
-    - url (str): The absolute URL of the webpage to fetch (e.g., 'https://www.infoq.com/news/python-313-latest-features').
-    - query (str): The specific query to focus the extraction on, ensuring the resulting text is relevant to your blog goal.
-
-    OUTPUT:
-    - Returns a dictionary containing:
-        * 'title': The cleaned page title.
-        * 'content': The main article text in Markdown, truncated to approximately 1,000 tokens for efficient LLM processing.
-        * 'source': The original URL for citation.
+    Retrieves and cleans full-text content from a specific URL for deep research.
     """
 
-    # 1. Validate input
     if not url.startswith("http"):
-        raise ValueError("URL must start with http/https")
+        raise ValueError(f"Invalid URL: {url}. Must start with http/https")
 
     try:
+        # Use advanced depth for better quality technical content
         response = tavily.extract(
-        urls=url,
-        query=query if query else None,
-        extract_depth="advanced"
-    )
+            urls=url,
+            query=query if query else None,
+            extract_depth="advanced"
+        )
     except Exception as exc:
-        raise RuntimeError(f"Tavily extraction failed: {exc}") from exc
+        return {"error": f"Tavily extraction failed: {str(exc)}", "source": url}
 
-    if not response.get("results"):
-        raise LookupError("No content found")
+    if not response.get("results") or len(response["results"]) == 0:
+        return {"error": "No content could be extracted from this URL.", "source": url}
 
-    raw_content = response["results"][0]["raw_content"]
+    result_data = response["results"][0]
+    raw_content = result_data.get("raw_content", "")
+    metadata_title = result_data.get("title", "")
 
-    title, cleaned_text = clean_content(raw_content)
+    if not raw_content:
+        return {"error": "URL returned empty content.", "source": url}
 
-    safe_text = truncate_tokens(cleaned_text, max_tokens=1000)
+    # Clean and Format
+    title, cleaned_text = clean_content(raw_content, metadata_title)
+    safe_text = truncate_tokens(cleaned_text, max_tokens=1200)
 
     return {
         "title": title,
         "content": safe_text,
-        "source": url
+        "source": url,
+        "word_count": len(cleaned_text.split())
     }

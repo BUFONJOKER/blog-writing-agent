@@ -136,7 +136,7 @@ def research_query_gen_node(state: BlogAgentState) -> dict:
         "research_queries": response.research_queries,
         "research_gaps": response.research_gaps,
         "more_research_needed": response.more_research_needed,
-        "messages": [ai_msg]
+        # REMOVE "messages": [ai_msg] to keep the history clean for the researcher
     }
 
 
