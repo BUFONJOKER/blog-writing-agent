@@ -100,5 +100,5 @@ async def build_workflow(checkpointer):
     graph.add_edge("editor_node", "critic_node")
     graph.add_edge("finalize_node", END)
 
-    workflow = graph.compile(checkpointer=checkpointer, interrupt_after=['planner_node'])
+    workflow = graph.compile(checkpointer=checkpointer, interrupt_after=['assembler_node'])
     return workflow

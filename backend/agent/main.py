@@ -1,5 +1,4 @@
 import asyncio
-from psycopg_pool import AsyncConnectionPool
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from agent.workflow import build_workflow
 from agent.config import Config
@@ -9,7 +8,11 @@ if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
     # Force stdout to use utf-8 to prevent 'charmap' errors on Windows
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+import os
+os.environ["PSYCOPG_IMPL"] = "python"
 
+# Your existing imports continue below...
+from psycopg_pool import AsyncConnectionPool
 
 async def main():
     DB_URI = Config.DB_URL
@@ -20,10 +23,10 @@ async def main():
         app = await build_workflow(checkpointer)
 
         # 2. Thread ID identifies this specific conversation
-        config = {"configurable": {"thread_id": "91_local_mcp_sever_blog_thread_2"}}
+        config = {"configurable": {"thread_id": "92_local_mcp_sever_blog_thread_2"}}
 
         # 3. Start the process
-        initial_input = {"prompt": "worst team of icc t20 cricket world cup 2026"}
+        initial_input = {"prompt": "Write a blog post about the benefits of using MCP servers for Minecraft."}
         async for event in app.astream(initial_input, config, stream_mode="values"):
             print(event)
 
