@@ -117,7 +117,7 @@ def task_executer_node(state: BlogAgentState) -> dict:
     audience = blog_plan['audience']
     sections = blog_plan['sections']
 
-    tasks_output = []
+    tasks_output_dict = {}
 
     for i in range(len(tasks)):
 
@@ -154,12 +154,12 @@ def task_executer_node(state: BlogAgentState) -> dict:
             "research_summary": research_summary
         })
 
-        tasks_output.append(response.content)
+        tasks_output_dict[section_name] = response.content
 
-    print(f"Length of tasks_output: {len(tasks_output)}")
+    # print(f"Length of tasks_output: {len(tasks_output)}")
 
     return {
-        'tasks_output': tasks_output
+        'tasks_output': tasks_output_dict
     }
 
 # --------------- code to test the file -------------------------

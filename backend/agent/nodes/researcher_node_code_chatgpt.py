@@ -126,4 +126,4 @@ if __name__ == "__main__":
         prompt="Write a blog post about Python 3.13 JIT compiler improvements and comparisons with 3.12."
     )
     result = asyncio.run(researcher_node(test_state))
-    print(result)
+    # print(result)

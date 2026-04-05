@@ -53,7 +53,10 @@ def planner_node(state: BlogAgentState):
     - TITLE & SUBTITLE: Must be punchy, benefit-driven, and include at least one primary SEO keyword.
     - SECTIONS: Ensure there is a clear distinction between the purpose of each section.
     - KEY POINTS: Provide at least 3-5 specific bullet points per section to ensure depth.
-    - TASKS: Write these as clear directives for the next agent (e.g., "Draft the Technical Deep-Dive focusing on edge device integration metrics").
+    - TASKS: Generate exactly ONE task per section in the SAME ORDER as sections.
+      * Match task[i] to section[i] by purpose and scope.
+      * Each task must be a clear directive (e.g., "Draft the Technical Deep-Dive focusing on edge device integration metrics").
+      * The number of tasks MUST equal the number of sections.
 
     ### FINAL AUDIT:
     Before finalizing, ensure the 'estimated_total_words' across all sections aligns with the user's expected blog length (default to 1000-1500 words if unspecified).
@@ -74,6 +77,18 @@ def planner_node(state: BlogAgentState):
         "prompt": prompt,
         "research_summary": research_summary
     })
+
+    # Validation: Ensure 1:1 mapping of tasks to sections
+    if len(response.tasks) != len(response.sections):
+        # Trim or pad to match section count
+        if len(response.tasks) > len(response.sections):
+            response.tasks = response.tasks[:len(response.sections)]
+        else:
+            # Generate missing tasks based on section names
+            missing_count = len(response.sections) - len(response.tasks)
+            for i in range(missing_count):
+                section = response.sections[len(response.tasks) + i]
+                response.tasks.append(f"Draft the {section.name} section with focus on: {', '.join(section.key_points[:2])}")
 
     ai_msg = AIMessage(
     content=(
@@ -101,4 +116,4 @@ if __name__ == "__main__":
 
     plan = planner_node(state)
 
-    print(plan)
+    # #print(plan)

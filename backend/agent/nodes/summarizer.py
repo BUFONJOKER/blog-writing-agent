@@ -61,4 +61,4 @@ if __name__ == "__main__":
         research_summary="AI has automated 40% of manual data entry tasks by 2026."
     )
     result = asyncio.run(summarizer_node(state))
-    print(f"Summary: {result['research_summary']}")
+    # print(f"Summary: {result['research_summary']}")

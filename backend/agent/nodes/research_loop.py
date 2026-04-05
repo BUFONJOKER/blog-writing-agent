@@ -10,7 +10,7 @@ def research_loop_node(state: BlogAgentState) -> dict:
 
     # 2. Safety Check: Hard cap on tool usage to prevent API credit drain or infinite loops
     if state.tool_call_count >= state.max_tool_calls:
-        print(f"--- MAX TOOL CALLS ({state.max_tool_calls}) REACHED: FORCING EXIT ---")
+        # print(f"--- MAX TOOL CALLS ({state.max_tool_calls}) REACHED: FORCING EXIT ---")
         need_more = False
 
     # 3. Logic: If we don't need more research, we should ensure the 'more_research_needed'

@@ -78,34 +78,36 @@ def research_query_gen_node(state: BlogAgentState) -> dict:
     llm_structured_output = model.with_structured_output(schema=ResearchQueryGenNodeOutput, method='function_calling')
 
     system_prompt = """
-    You are an Expert Research Strategist for technical content and MLOps.
-    Transform the user prompt into 3-5 high-signal search queries for MCP tools, minimizing noise and maximizing factual grounding.
+    You are an Expert Research Strategist for any topic or domain.
+    Transform the user prompt into 3-5 high-signal search queries for web research, minimizing noise and maximizing factual grounding.
 
     Search Strategy:
-    1. Technical: architectures, algorithms, protocols, definitions.
-    2. Temporal (2024-2026): latest updates, benchmarks, news.
-    3. Practical: code patterns, deployment tips, tutorials.
-    4. Comparative: competitors, pros/cons, benchmark comparisons.
+    1. Core Concepts: foundational definitions, principles, terminology, and key entities for the topic.
+    2. Temporal Relevance (2024-2026): latest updates, trends, benchmarks, policy/news, or market shifts related to the topic.
+    3. Practical Application: implementation patterns, workflows, case studies, tutorials, and real-world execution details.
+    4. Comparative Perspective: alternatives, pros/cons, benchmark comparisons, and tradeoffs.
 
-    Output Requirements:
-    - research_queries: 3-5 distinct, targeted search strings to retrieve factual data, technical specs, and diverse perspectives.
-    - research_gaps: specific topics or questions still unanswered; an audit of missing info.
-    - more_research_needed: boolean; True if critical gaps remain that prevent a complete, accurate draft.
+    Structured Output Contract (MUST follow schema exactly):
+    - Return only valid structured output matching ResearchQueryGenNodeOutput.
+    - Include all fields: research_queries (List[str]), research_gaps (List[str]), more_research_needed (bool).
+    - research_queries must contain 3-5 distinct, targeted search strings.
+    - research_gaps should list concrete unanswered questions or missing data points.
+    - more_research_needed must be True only when critical gaps remain.
 
     Constraints:
-    - Output only structured data; no explanations or preamble.
-    - SEO-optimized, keyword-dense, search-engine style.
-    - Each query must cover a distinct silo; avoid redundancy.
-    - Queries must work with web_search_tool and fetch_page_tool.
+    - No prose, markdown, or preamble outside the structured schema fields.
+    - Keep queries search-engine friendly, specific, and non-redundant.
+    - Ensure query set is diverse across the strategy silos.
+    - Queries must be directly usable as search-engine queries.
 
-    Step: Identify knowledge gaps in the user prompt to guide query diversity.
+    Step: Identify knowledge gaps from the user prompt to maximize query diversity and coverage.
     """
 
 
 
     prompt_template = ChatPromptTemplate.from_messages([
         ("system", system_prompt),
-        ("user", '''Analyze the following user request and generate a Research Roadmap.
+        ("user", '''Analyze the following user request and generate a research roadmap.
 
                 USER REQUEST:
                 ---
@@ -113,11 +115,16 @@ def research_query_gen_node(state: BlogAgentState) -> dict:
                 ---
 
                 Generate 3-5 high-signal search queries that:
-                1. Fill knowledge gaps in core technology.
-                2. Include current (2024-2026) benchmarks or news.
-                3. Find relevant code patterns or architectural best practices.
+                1. Cover foundational concepts and key terms for the topic.
+                2. Include current (2024-2026) updates, trends, benchmarks, policy/news, or market shifts.
+                3. Capture practical guidance, case studies, examples, and best practices.
+                4. Add comparative or alternative viewpoints where relevant.
 
-                Output must strictly follow the structured `research_queries` schema for web_search_tool.''')
+                Return only structured output that exactly matches ResearchQueryGenNodeOutput.
+                Include all required fields with correct types:
+                - research_queries: list of 3-5 distinct strings
+                - research_gaps: list of strings (can be empty if none)
+                - more_research_needed: boolean''')
     ])
 
 
@@ -149,4 +156,4 @@ if __name__ == "__main__":
     )
 
     output = research_query_gen_node(test_state)
-    print(output)
+    # print(output)
