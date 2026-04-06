@@ -130,7 +130,9 @@ def research_query_gen_node(state: BlogAgentState) -> dict:
 
     chain = prompt_template | llm_structured_output
 
-    response: ResearchQueryGenNodeOutput = chain.invoke({"prompt": state.prompt})
+    input_variables = {"prompt": state.prompt}
+
+    response: ResearchQueryGenNodeOutput = chain.invoke(input_variables)
 
     ai_msg = AIMessage(
         content=(

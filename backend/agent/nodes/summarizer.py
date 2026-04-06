@@ -38,10 +38,12 @@ async def summarizer_node(state: BlogAgentState) -> dict:
     # 3. Generate Summary directly via LLM
     chain = prompt_template | model
 
-    final_response = await chain.ainvoke({
+    input_variables = {
         "topic": state.topic,
         "data": source_data
-    })
+    }
+
+    final_response = await chain.ainvoke(input_variables)
 
     # 4. Prepare messages for state tracking
     # We store the final summary as an AIMessage

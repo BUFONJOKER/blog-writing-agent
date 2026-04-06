@@ -92,9 +92,9 @@ def critic_node(state: BlogAgentState):
 
     chain = prompt_template | structured_model
 
-    response = chain.invoke(
-        {"edited_draft": edited_draft, "keywords": list(set(keywords_used))}
-    )
+    input_variables = {"edited_draft": edited_draft, "keywords": list(set(keywords_used))}
+
+    response = chain.invoke(input_variables)
 
     return {
         "critic_feedback": response.feedback.model_dump(),

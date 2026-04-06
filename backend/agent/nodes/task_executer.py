@@ -119,7 +119,6 @@ def task_executer_node(state: BlogAgentState) -> dict:
 
     if needs_revision:
         revision_cycles = state.revision_cycles
-        critic_feedback = state.critic_feedback
         edited_draft = state.edited_draft
         system_prompt = """
         You are an expert Senior Technical Content Strategist. Your task is to refine and rewrite a blog based on detailed feedback.
@@ -154,10 +153,10 @@ def task_executer_node(state: BlogAgentState) -> dict:
         """
 
         user_prompt = """
-        Draft the revised version of the "{edited_draft} draft of blog
+        Draft the revised version of the "{edited_draft} draft of blog.
 
         Ensure that you specifically solve the issues identified by the critic: {issues}.
-        The content must remain aligned with the tone for a {audience} audience and must fully integrate the SEO keywords: {seo_keywords}.
+        The content must remain aligned with the tone for a {audience} audience.
 
         Checklist before generating:
         - Does the content fully cover all key points?
@@ -169,7 +168,6 @@ def task_executer_node(state: BlogAgentState) -> dict:
         Generate the revised Markdown now.
         """
 
-        revision_cycles += 1
 
         prompt_template = ChatPromptTemplate.from_messages(
             [("system", system_prompt), ("human", user_prompt)]
@@ -177,23 +175,24 @@ def task_executer_node(state: BlogAgentState) -> dict:
 
         chain = prompt_template | model
 
-        response = chain.invoke(
-            {
+        input_variables = {
                 "title": title,
                 "subtitle": subtitle,
                 "tone": tone,
                 "audience": audience,
                 "research_summary": research_summary,
-                "issues": state.critic_feedback["issues"] if needs_revision else None,
+                "issues": state.critic_feedback["issues"],
                 "suggestions": (
-                    state.critic_feedback["suggestions"] if needs_revision else None
+                    state.critic_feedback["suggestions"]
                 ),
-                "confidence_score": state.quality_score if needs_revision else None,
-                "quality_score": state.quality_score if needs_revision else None,
-                "revision_cycles": state.revision_cycles if needs_revision else None,
-                'edited_draft': state.edited_draft if needs_revision else None,
+                "confidence_score": state.quality_score,
+                "quality_score": state.quality_score,
+                'edited_draft': state.edited_draft,
             }
-        )
+
+        revision_cycles += 1
+
+        response = chain.invoke(input_variables)
 
         edited_draft = response.content
 
@@ -225,8 +224,7 @@ def task_executer_node(state: BlogAgentState) -> dict:
 
         chain = prompt_template | model
 
-        response = chain.invoke(
-            {
+        input_variables = {
                 "title": title,
                 "subtitle": subtitle,
                 "tone": tone,
@@ -238,17 +236,10 @@ def task_executer_node(state: BlogAgentState) -> dict:
                 "section_key_points": section_key_points,
                 "section_seo_keywords": section_seo_keywords,
                 "estimated_total_words": estimated_total_words,
-                "research_summary": research_summary,
-                "issues": state.critic_feedback["issues"] if needs_revision else None,
-                "suggestions": (
-                    state.critic_feedback["suggestions"] if needs_revision else None
-                ),
-                "confidence_score": state.quality_score if needs_revision else None,
-                "quality_score": state.quality_score if needs_revision else None,
-                "revision_cycles": state.revision_cycles if needs_revision else None,
-                'edited_draft': state.edited_draft if needs_revision else None,
+                "research_summary": research_summary
             }
-        )
+
+        response = chain.invoke(input_variables)
 
         tasks_output_dict[section_name] = response.content
 

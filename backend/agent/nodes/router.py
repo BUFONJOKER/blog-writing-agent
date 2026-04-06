@@ -77,8 +77,10 @@ def router_node(state: BlogAgentState) -> dict:
 
     chain = prompt_template | llm_structured_output
 
+    input_variables = {"prompt": state.prompt}
+
     # We pass only the prompt field from the state
-    response = chain.invoke({"prompt": state.prompt})
+    response = chain.invoke(input_variables)
 
     ai_msg = AIMessage(
         content=f"Decision: Research={response.needs_research}, Topic={response.topic}"

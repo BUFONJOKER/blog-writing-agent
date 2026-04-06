@@ -73,10 +73,12 @@ def planner_node(state: BlogAgentState):
 
     chain = prompt_template | model_with_structured_output
 
-    response = chain.invoke({
+    input_variables = {
         "prompt": prompt,
         "research_summary": research_summary
-    })
+    }
+
+    response = chain.invoke(input_variables)
 
     # Validation: Ensure 1:1 mapping of tasks to sections
     if len(response.tasks) != len(response.sections):

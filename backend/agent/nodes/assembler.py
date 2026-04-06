@@ -10,20 +10,12 @@ class BlogDraft(BaseModel):
     title: str = Field(..., description="The main H1 title of the blog post.")
     meta_description: str = Field(
         ...,
-        min_length=120,
-        max_length=160,
         description="A compelling summary for SEO search results (120-160 chars)."
     )
     content: str = Field(..., description="The full markdown body of the blog.")
     keywords_used: List[str] = Field(default_factory=list, description="List of SEO keywords included in the text.")
     slug: str = Field(..., description="The URL-friendly version of the title.")
 
-    @field_validator("meta_description")
-    @classmethod
-    def check_meta_length(cls, v: str) -> str:
-        if len(v) > 160:
-            return v[:157] + "..."
-        return v
 
 # --- 2. Updated Assembler Node ---
 
@@ -31,7 +23,7 @@ def assembler_node(state: BlogAgentState) -> dict:
     # Load model and bind the Pydantic schema for structured output
     if state.edited_draft:
         return {'edited_draft': state.edited_draft}
-    
+
     base_model = load_model()
     structured_model = base_model.with_structured_output(schema=BlogDraft, method='function_calling')
 
@@ -56,7 +48,7 @@ def assembler_node(state: BlogAgentState) -> dict:
     {section_content}
     """
 
-    raw_blog_input = f"# {blog_title}\n## {blog_subtitle}\n{sections_block}"
+    raw_blog_input = "# {blog_title}\n## {blog_subtitle}\n{sections_block}"
 
     system_prompt = """
     You are an expert Content Strategist and SEO Editor. Your task is to assemble fragmented section drafts into a premium, publication-ready blog post.
@@ -67,11 +59,11 @@ def assembler_node(state: BlogAgentState) -> dict:
     3. SEO INTEGRATION: Naturally weave primary keywords into headings (H1, H2) and the first 100 words of the content.
     4. FORMATTING: Use clean Markdown. Ensure a logical hierarchy (H1 > H2 > H3).
     5. META DATA:
-    - Meta Description must be a high-click-through-rate (CTR) summary between 120-160 characters.
-    - Slug must be lowercase, hyphen-separated, and contain the primary keyword.
+    - Meta Description MUST be between 120 and 150 characters.
+    - CRITICAL: Do NOT exceed 160 characters under any circumstances.
     """
 
-    user_prompt = f"""
+    user_prompt = """
     I have a raw collection of blog sections and a target keyword list.
 
     RAW CONTENT:
@@ -94,10 +86,17 @@ def assembler_node(state: BlogAgentState) -> dict:
         ("human", user_prompt),
     ])
 
-    # Invoke the model with structure
-    # This returns a BlogDraft object instead of a raw string
-    final_output: BlogDraft = structured_model.invoke(chat_prompt.format_messages())
+    chain = chat_prompt | structured_model
 
+    input_variables = {
+            "blog_title": blog_title,
+            "blog_subtitle": blog_subtitle,
+            "raw_blog_input": raw_blog_input,
+            "all_keywords": all_keywords,
+            "sections_block": sections_block,
+        }
+
+    final_output: BlogDraft = chain.invoke(input_variables)
 
     return {
         'draft': final_output.content,

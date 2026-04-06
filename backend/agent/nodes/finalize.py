@@ -59,7 +59,11 @@ def finalize_node(state: BlogAgentState) -> dict:
         ]
     )
 
-    response = model.invoke(prompt.format_messages(draft=edited_draft))
+    chain = prompt | model
+
+    input_variables = {"draft": edited_draft}
+
+    response = chain.invoke(input_variables)
 
     final_post = response.content
     file_name = state.prompt[:50].replace(" ", "_").replace("/", "_")  # Create a safe file name from the prompt

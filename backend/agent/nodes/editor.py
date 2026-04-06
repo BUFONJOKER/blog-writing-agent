@@ -63,7 +63,7 @@ def editor_node(state: BlogAgentState) -> dict:
     Return the **fully edited, clean, and polished blog draft** in proper markdown format, ready for publishing."
     '''
 
-    user_prompt = f'''
+    user_prompt = '''
     Here’s a **clean and aligned User Prompt** for your Editor Node:
 
     ---
@@ -97,7 +97,11 @@ def editor_node(state: BlogAgentState) -> dict:
         ("user", user_prompt)
     ])
 
-    response = model.invoke(prompt_template.format_messages())
+    chain = prompt_template | model
+
+    input_variables = {"draft": draft}
+
+    response = chain.invoke(input_variables)
 
     edited_draft = response.content
 
