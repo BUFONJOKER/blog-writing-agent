@@ -119,7 +119,7 @@ class BlogAgentState(BaseModel):
     )
 
     meta_description: str = Field(
-        ...,
+        default="",
         min_length=120,
         max_length=160,
         description="A compelling summary for SEO search results (120-160 chars).",

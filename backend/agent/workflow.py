@@ -1,13 +1,19 @@
 from langgraph.graph import StateGraph, START, END
 from agent.state import BlogAgentState
-from agent.nodes import (
-    router_node, research_query_gen_node,
-    summarizer_node, research_loop_node,
-    planner_node, task_executer_node,
-    assembler_node, editor_node,
-    critic_node, finalize_node,
-    researcher_node
-)
+# import all nodes
+from agent.nodes.router import router_node
+from agent.nodes.research_query_gen import research_query_gen_node
+from agent.nodes.summarizer import summarizer_node
+from agent.nodes.research_query_gen import research_query_gen_node
+from agent.nodes.planner import planner_node
+from agent.nodes.task_executer import task_executer_node
+from agent.nodes.assembler import assembler_node
+from agent.nodes.editor import editor_node
+from agent.nodes.critic import critic_node
+from agent.nodes.finalize import finalize_node
+from agent.nodes.researcher import researcher_node
+from agent.nodes.research_loop import research_loop_node
+
 from langgraph.prebuilt import ToolNode
 from agent.tools import initialize_tools
 from functools import partial
