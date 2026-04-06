@@ -1,0 +1,33 @@
+For commit message:
+"Analyze the following git diff of modified files and the list of untracked files. Write a detailed, professional commit message using the Conventional Commits format.
+
+Requirements:
+
+Subject Line: A concise summary (max 50 chars) starting with an appropriate type (feat, fix, refactor, docs, chore).
+
+Body: A bulleted list explaining what changed and why, specifically focusing on logic changes in the backend and state management.
+
+Context: Mention any new dependencies added via uv or changes to the LangGraph BlogAgentState.
+
+Footer: Note any breaking changes or specific issues fixed."
+
+Check the notion profile and workflow.md:
+
+"Review Task 3.11 – Build the Editor Node from my Notion project. In addition, carefully analyze the attached .md file to fully understand the current implementation and context.
+
+Based on both sources, clearly explain the following:
+
+Editor Node Responsibilities
+What specific tasks the editor node should perform in the workflow
+How it should process and refine the generated content
+What improvements (e.g., clarity, coherence, grammar, SEO, structure) it should apply
+Critic Node Responsibilities
+What the critic node should evaluate in the content
+The criteria or standards it should use for evaluation
+How it should provide feedback (e.g., scoring, suggestions, issue detection)
+Interaction Between Editor and Critic Nodes
+How these nodes should work together in the pipeline
+Whether there should be an iterative loop (e.g., critic → editor → critic)
+When the process should stop (termination condition)
+
+Ensure the explanation is practical and implementation-focused so it can be directly used to design or improve these nodes in my agent workflow."

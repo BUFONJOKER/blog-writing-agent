@@ -172,3 +172,8 @@ class BlogAgentState(BaseModel):
     slug: str = Field(..., description="The URL-friendly version of the title.")
 
     title: str = Field(..., description="The main H1 title of the blog post.")
+
+    edited_draft: str = Field(
+        default="",
+        description="The final edited version of the draft after passing through the Editor Node."
+    )
