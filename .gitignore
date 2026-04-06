@@ -1,15 +1,36 @@
-# add all venv folder in main or sub folders
+# --- Python / Backend (FastAPI) ---
 .venv/
-
-# environment variables file
-.env
-
-# ipynb checkpoints
-.ipynb_checkpoints/
-
-#also include pycache files
+env/
+venv/
+ENV/
 __pycache__/
-
-# also include pytest cache files
+*.py[cod]
+*$py.class
+.ipynb_checkpoints/
 .pytest_cache/
+*.egg-info/
 backend.egg-info/
+dist/
+build/
+
+# --- Frontend (Next.js / pnpm) ---
+**/node_modules/
+.pnpm-debug.log*
+frontend/.next/
+frontend/out/
+frontend/build/
+frontend/next-env.d.ts
+
+# --- Environment / Secrets (CRITICAL) ---
+.env
+.env.*
+!.env.example
+*.env.local
+frontend/.env*
+backend/.env*
+
+# --- IDE & OS ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
