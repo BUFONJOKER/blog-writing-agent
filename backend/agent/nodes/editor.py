@@ -12,6 +12,9 @@ def editor_node(state: BlogAgentState) -> dict:
 
     draft = state.draft
 
+    if state.edited_draft:
+        draft = state.edited_draft
+
     system_prompt = '''
     You are an expert **Editor Node** in a blog generation pipeline. Your role is to perform a **final-pass edit** on an already assembled draft. You must **refine and improve the existing content**, not generate new content or alter its core meaning.
 
@@ -95,7 +98,7 @@ def editor_node(state: BlogAgentState) -> dict:
     ])
 
     response = model.invoke(prompt_template.format_messages())
-    
+
     edited_draft = response.content
 
     return {

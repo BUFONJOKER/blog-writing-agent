@@ -22,7 +22,7 @@ class CriticFeedback(BaseModel):
     )
 
     needs_revision: bool = Field(
-        ..., description="Indicates whether the content requires revision."
+        ..., description="needs_revision will be True if the draft has critical issues that require a revision cycle and False if the draft is of sufficient quality to proceed without changes."
     )
 
     quality_score: int = Field(

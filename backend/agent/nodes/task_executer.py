@@ -113,21 +113,15 @@ def task_executer_node(state: BlogAgentState) -> dict:
     if needs_revision:
         revision_cycles = state.revision_cycles
         critic_feedback = state.critic_feedback
-
+        edited_draft = state.edited_draft
         system_prompt = """
-        You are an expert Senior Technical Content Strategist. Your task is to refine and rewrite a specific blog section based on detailed feedback.
+        You are an expert Senior Technical Content Strategist. Your task is to refine and rewrite a blog based on detailed feedback.
 
         ### CONTEXT
         - **Title:** {title}
         - **Subtitle:** {subtitle}
         - **Tone:** {tone}
         - **Target Audience:** {audience}
-
-        ### SECTION SPECIFICATIONS
-        - **Section Name:** {section_name}
-        - **Target Word Count:** {section_word_count} (±10% tolerance)
-        - **Required SEO Keywords:** {section_seo_keywords}
-        - **Key Points to Cover:** {section_key_points}
 
         ### RESEARCH DATA
         {research_summary}
@@ -153,10 +147,10 @@ def task_executer_node(state: BlogAgentState) -> dict:
         """
 
         user_prompt = """
-        Draft the revised version of the "{section_name}" section.
+        Draft the revised version of the "{edited_draft} draft of blog
 
         Ensure that you specifically solve the issues identified by the critic: {issues}.
-        The content must remain aligned with the tone for a {audience} audience and adhere to the {section_word_count} word limit.
+        The content must remain aligned with the tone for a {audience} audience and must fully integrate the SEO keywords: {seo_keywords}.
 
         Checklist before generating:
         - Does the content fully cover all key points?
@@ -169,6 +163,11 @@ def task_executer_node(state: BlogAgentState) -> dict:
         """
 
         revision_cycles += 1
+
+        return {
+            'edited_draft': edited_draft,
+            'revision_cycles': revision_cycles,
+        }
 
     tasks = state.tasks
     blog_plan = state.blog_plan
@@ -220,6 +219,7 @@ def task_executer_node(state: BlogAgentState) -> dict:
                 "confidence_score": state.quality_score if needs_revision else None,
                 "quality_score": state.quality_score if needs_revision else None,
                 "revision_cycles": state.revision_cycles if needs_revision else None,
+                'edited_draft': state.edited_draft if needs_revision else None,
             }
         )
 

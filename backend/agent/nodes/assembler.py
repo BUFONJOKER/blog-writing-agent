@@ -29,6 +29,9 @@ class BlogDraft(BaseModel):
 
 def assembler_node(state: BlogAgentState) -> dict:
     # Load model and bind the Pydantic schema for structured output
+    if state.edited_draft:
+        return {'edited_draft': state.edited_draft}
+    
     base_model = load_model()
     structured_model = base_model.with_structured_output(schema=BlogDraft, method='function_calling')
 
