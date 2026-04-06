@@ -159,3 +159,16 @@ class BlogAgentState(BaseModel):
         default=False,
         description="Flag indicating if the last LLM response contained tool calls."
     )
+
+    meta_description: str = Field(
+        ...,
+        min_length=120,
+        max_length=160,
+        description="A compelling summary for SEO search results (120-160 chars)."
+    )
+
+    keywords_used: List[str] = Field(default_factory=list, description="List of SEO keywords included in the text.")
+
+    slug: str = Field(..., description="The URL-friendly version of the title.")
+
+    title: str = Field(..., description="The main H1 title of the blog post.")

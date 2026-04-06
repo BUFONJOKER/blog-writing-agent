@@ -23,7 +23,7 @@ async def main():
         app = await build_workflow(checkpointer)
 
         # 2. Thread ID identifies this specific conversation
-        config = {"configurable": {"thread_id": "141_local_mcp_sever_blog_thread_2"},'run_name': "blog_mcp_server"}
+        config = {"configurable": {"thread_id": "203_local_mcp_sever_blog_thread_2"},'run_name': "blog_writing_agent_run_6"}
 
         # 3. Start the process
         initial_input = {"prompt": "Write a blog post about the benefits of using MCP servers for Minecraft."}
