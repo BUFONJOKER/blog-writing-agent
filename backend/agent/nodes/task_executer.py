@@ -109,6 +109,13 @@ def task_executer_node(state: BlogAgentState) -> dict:
         """
 
     needs_revision = state.needs_revision
+    blog_plan = state.blog_plan
+    research_summary = state.research_summary
+
+    title = blog_plan["title"]
+    subtitle = blog_plan["subtitle"]
+    tone = blog_plan["tone"]
+    audience = blog_plan["audience"]
 
     if needs_revision:
         revision_cycles = state.revision_cycles
@@ -164,19 +171,39 @@ def task_executer_node(state: BlogAgentState) -> dict:
 
         revision_cycles += 1
 
+        prompt_template = ChatPromptTemplate.from_messages(
+            [("system", system_prompt), ("human", user_prompt)]
+        )
+
+        chain = prompt_template | model
+
+        response = chain.invoke(
+            {
+                "title": title,
+                "subtitle": subtitle,
+                "tone": tone,
+                "audience": audience,
+                "research_summary": research_summary,
+                "issues": state.critic_feedback["issues"] if needs_revision else None,
+                "suggestions": (
+                    state.critic_feedback["suggestions"] if needs_revision else None
+                ),
+                "confidence_score": state.quality_score if needs_revision else None,
+                "quality_score": state.quality_score if needs_revision else None,
+                "revision_cycles": state.revision_cycles if needs_revision else None,
+                'edited_draft': state.edited_draft if needs_revision else None,
+            }
+        )
+
+        edited_draft = response.content
+
         return {
             'edited_draft': edited_draft,
             'revision_cycles': revision_cycles,
         }
 
     tasks = state.tasks
-    blog_plan = state.blog_plan
-    research_summary = state.research_summary
 
-    title = blog_plan["title"]
-    subtitle = blog_plan["subtitle"]
-    tone = blog_plan["tone"]
-    audience = blog_plan["audience"]
     sections = blog_plan["sections"]
 
     tasks_output_dict = {}
