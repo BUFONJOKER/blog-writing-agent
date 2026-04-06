@@ -70,7 +70,7 @@ def assembler_node(state: BlogAgentState) -> dict:
     {raw_blog_input}
 
     TARGET SEO KEYWORDS:
-    {list(set(all_keywords))}
+    {all_keywords}
 
     EDITORIAL REQUIREMENTS:
     - TITLE: Craft a compelling H1 if the current one is weak.
