@@ -8,6 +8,7 @@ def task_executer_node(state: BlogAgentState) -> dict:
     This function write blog content
     """
     model = load_model()
+
     system_prompt = """
         You are a senior technical blog writer and content strategist.
 
@@ -107,6 +108,68 @@ def task_executer_node(state: BlogAgentState) -> dict:
         Now generate the section.
         """
 
+    needs_revision = state.needs_revision
+
+    if needs_revision:
+        critic_feedback = state.critic_feedback
+        issues = critic_feedback['issues']
+        suggestions = critic_feedback['suggestions']
+        quality_score = state.quality_score
+        confidence_score = state.confidence_score
+
+        system_prompt = f"""
+        You are an expert Senior Technical Content Strategist. Your task is to refine and rewrite a specific blog section based on detailed feedback.
+
+        ### CONTEXT
+        - **Title:** {title}
+        - **Subtitle:** {subtitle}
+        - **Tone:** {tone}
+        - **Target Audience:** {audience}
+
+        ### SECTION SPECIFICATIONS
+        - **Section Name:** {section_name}
+        - **Target Word Count:** {section_word_count} (±10% tolerance)
+        - **Required SEO Keywords:** {section_seo_keywords}
+        - **Key Points to Cover:** {section_key_points}
+
+        ### RESEARCH DATA
+        {research_summary}
+
+        ### CRITIC FEEDBACK (ACTION REQUIRED)
+        The previous draft was flagged for improvement. You must address the following:
+        - **Quality Score:** {quality_score}/10
+        - **Identified Issues:** {issues}
+        - **Suggested Improvements:** {suggestions}
+
+        ### WRITING CONSTRAINTS
+        1. **Precision:** No fluff or "corporate speak." Use technical examples where relevant.
+        2. **Integration:** Naturally weave in SEO keywords; avoid keyword stuffing.
+        3. **Accuracy:** Use provided research only. Do not hallucinate external facts.
+        4. **Scope:** Write ONLY this section. Do not include intros or outros for the full blog.
+        5. **Formatting:** Use Markdown (##, ###), **bold** for emphasis, and code blocks for technical snippets.
+
+        ### OUTPUT RULES
+        - Return ONLY the final Markdown content.
+        - No conversational filler (e.g., "Sure, here is the revised section...").
+        - No meta-commentary on the instructions.
+        """
+
+        user_prompt = f"""
+        Draft the revised version of the "{section_name}" section.
+
+        Ensure that you specifically solve the issues identified by the critic: {issues}.
+        The content must remain aligned with the tone for a {audience} audience and adhere to the {section_word_count} word limit.
+
+        Checklist before generating:
+        - Does the content fully cover all key points?
+        - Is the tone aligned with the audience?
+        - Are SEO keywords used naturally?
+        - Is the structure clean and readable in markdown?
+        - Is the content within the word count range?
+
+        Generate the revised Markdown now.
+        """
+
     tasks = state.tasks
     blog_plan = state.blog_plan
     research_summary = state.research_summary
@@ -131,7 +194,6 @@ def task_executer_node(state: BlogAgentState) -> dict:
         estimated_total_words = section['estimated_total_words']
 
 
-
         prompt_template = ChatPromptTemplate.from_messages([
             ("system", system_prompt),
             ("human", user_prompt)
@@ -151,7 +213,9 @@ def task_executer_node(state: BlogAgentState) -> dict:
             "section_key_points": section_key_points,
             "section_seo_keywords": section_seo_keywords,
             "estimated_total_words": estimated_total_words,
-            "research_summary": research_summary
+            "research_summary": research_summary,
+            'issues': state.critic_feedback['issues'] if needs_revision else None,
+            'suggestions': state.critic_feedback['suggestions'] if needs_revision else None,
         })
 
         tasks_output_dict[section_name] = response.content
