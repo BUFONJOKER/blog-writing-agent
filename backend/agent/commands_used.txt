@@ -1,0 +1,12 @@
+Remove pycache folders:
+Get-ChildItem -Recurse -Directory -Filter "__pycache__" | Remove-Item -Recurse -Force
+
+Run any file:
+python -m file_path_without_extension
+Example:
+python -m agent.nodes.finalize
+
+Run file and save output to a text file:
+python -m file_path_without_extension > output.txt 2>&1
+Example:
+python -m agent.main > run_output.txt 2>&1
