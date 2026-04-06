@@ -62,9 +62,9 @@ def finalize_node(state: BlogAgentState) -> dict:
     response = model.invoke(prompt.format_messages(draft=edited_draft))
 
     final_post = response.content
-
+    file_name = state.prompt[:50].replace(" ", "_").replace("/", "_")  # Create a safe file name from the prompt
     # write code to make .md with the final post content
-    with open("agent/final_blog_post.md", "w", encoding="utf-8") as md_file:
+    with open(f"agent/final_blog_post_{file_name}.md", "w", encoding="utf-8") as md_file:
         md_file.write(final_post)
 
     return {"final_post": final_post}
