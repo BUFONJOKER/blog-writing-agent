@@ -31,3 +31,16 @@ Whether there should be an iterative loop (e.g., critic → editor → critic)
 When the process should stop (termination condition)
 
 Ensure the explanation is practical and implementation-focused so it can be directly used to design or improve these nodes in my agent workflow."
+
+
+Explanation of Error:
+"Analyze this Python traceback and:
+
+Explain the error clearly
+Identify the root cause
+Provide a fixed code example
+Explain why it happens (especially library-specific issues like Pydantic v2)
+Suggest best practices
+
+Traceback:
+<PASTE ERROR HERE>"

@@ -177,3 +177,15 @@ class BlogAgentState(BaseModel):
         default="",
         description="The final edited version of the draft after passing through the Editor Node."
     )
+
+    critic_feedback: dict = Field(
+        default_factory=dict,
+        description="Structured feedback from the Critic Node, including issues and suggestions for improvement."
+    )
+
+    quality_score: int = Field(
+        ...,
+        ge=1,
+        le=10,
+        description="Overall quality score (1-10).",
+    )
