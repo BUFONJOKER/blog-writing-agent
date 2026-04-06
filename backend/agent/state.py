@@ -189,3 +189,10 @@ class BlogAgentState(BaseModel):
         le=10,
         description="Overall quality score (1-10).",
     )
+
+    revision_cycles: int = Field(
+        default=0,
+        ge=0,
+        le=5,
+        description="Number of times the content has been revised based on critic feedback."
+    )

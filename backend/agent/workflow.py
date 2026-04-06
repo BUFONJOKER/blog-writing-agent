@@ -82,7 +82,7 @@ async def build_workflow(checkpointer):
     })
 
     def needs_revision(state: BlogAgentState):
-        if state.needs_revision:
+        if state.needs_revision and state.revision_cycles<=5:
             return "task_executer_node"
         return "finalize_node"
 

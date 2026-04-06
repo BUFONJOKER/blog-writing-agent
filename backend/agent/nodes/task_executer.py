@@ -111,6 +111,7 @@ def task_executer_node(state: BlogAgentState) -> dict:
     needs_revision = state.needs_revision
 
     if needs_revision:
+        revision_cycles = state.revision_cycles
         critic_feedback = state.critic_feedback
         issues = critic_feedback['issues']
         suggestions = critic_feedback['suggestions']
@@ -138,6 +139,7 @@ def task_executer_node(state: BlogAgentState) -> dict:
         ### CRITIC FEEDBACK (ACTION REQUIRED)
         The previous draft was flagged for improvement. You must address the following:
         - **Quality Score:** {quality_score}/10
+        - **Confidence Score:** {confidence_score}
         - **Identified Issues:** {issues}
         - **Suggested Improvements:** {suggestions}
 
@@ -169,6 +171,8 @@ def task_executer_node(state: BlogAgentState) -> dict:
 
         Generate the revised Markdown now.
         """
+
+        revision_cycles += 1
 
     tasks = state.tasks
     blog_plan = state.blog_plan
@@ -216,6 +220,9 @@ def task_executer_node(state: BlogAgentState) -> dict:
             "research_summary": research_summary,
             'issues': state.critic_feedback['issues'] if needs_revision else None,
             'suggestions': state.critic_feedback['suggestions'] if needs_revision else None,
+            'confidence_score': state.quality_score if needs_revision else None,
+            'quality_score': state.quality_score if needs_revision else None,
+            'revision_cycles': state.revision_cycles if needs_revision else None
         })
 
         tasks_output_dict[section_name] = response.content
@@ -223,7 +230,8 @@ def task_executer_node(state: BlogAgentState) -> dict:
     # print(f"Length of tasks_output: {len(tasks_output)}")
 
     return {
-        'tasks_output': tasks_output_dict
+        'tasks_output': tasks_output_dict,
+        'revision_cycles': revision_cycles if needs_revision else 0
     }
 
 # --------------- code to test the file -------------------------
