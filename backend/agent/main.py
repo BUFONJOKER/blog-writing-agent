@@ -23,14 +23,14 @@ async def main():
         app = await build_workflow(checkpointer)
 
         # 2. Thread ID identifies this specific conversation
-        config = {"configurable": {"thread_id": "11_final_blog_test"},'run_name': "blog_writing_agent_run_17"}
+        config = {"configurable": {"thread_id": "12_final_blog_test_with_images"},'run_name': "blog_writing_agent_run_18"}
 
         # 3. Start the process
         initial_input = {"prompt": "Write a blog post about the benefits of using MCP servers for Minecraft."}
         async for event in app.astream(initial_input, config, stream_mode="values"):
             print(event)
 
-        # --- THE GRAPH IS NOW INTERRUPTED AFTER PLANNER_NODE ---
+        # --- THE GRAPH IS NOW INTERRUPTED AFTER IMAGE_GENERATION_NODE ---
 
         # 4. Fetch the state to show the human the plan
         state = await app.aget_state(config)
@@ -42,8 +42,8 @@ async def main():
 
         if feedback.lower() != "proceed":
             # Update the state with feedback and go back to a previous node if necessary
-            await app.aupdate_state(config, {"human_feedback": feedback}, as_node="planner_node")
-            print("Feedback saved. You might want to re-run the planner or resume.")
+            await app.aupdate_state(config, {"human_feedback": feedback}, as_node="image_planner_node")
+            print("Feedback saved. You might want to re-run the image planner or resume.")
 
         # 6. Resume execution
         # Passing None tells LangGraph to look at the last checkpoint and continue

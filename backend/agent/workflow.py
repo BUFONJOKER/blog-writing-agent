@@ -112,7 +112,7 @@ async def build_workflow(checkpointer):
     graph.add_edge("image_planner_node", "image_generation_node")
     graph.add_edge("image_generation_node", END)
 
-    workflow = graph.compile(checkpointer=checkpointer, interrupt_after=['finalize_node'])
+    workflow = graph.compile(checkpointer=checkpointer, interrupt_after=['image_generation_node'])
     return workflow
 
 # write code to run this file and save the workflow image as workflow.png
