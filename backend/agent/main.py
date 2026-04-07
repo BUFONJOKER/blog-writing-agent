@@ -29,8 +29,8 @@ async def main():
 
         # 2. Thread ID identifies this specific conversation
         config = {
-            "configurable": {"thread_id": "28_final_blog_test_with_images"},
-            "run_name": "blog_writing_agent_run_34",
+            "configurable": {"thread_id": "29_final_blog_test_with_images"},
+            "run_name": "blog_writing_agent_run_35",
         }  # You can generate a unique thread_id for each conversation or use a fixed one for testing
 
         # 3. Start the process and stream events until completion.

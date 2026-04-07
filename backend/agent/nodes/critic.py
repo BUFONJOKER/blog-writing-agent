@@ -1,7 +1,8 @@
+import json
 from typing import List
 
 from langchain_core.prompts import ChatPromptTemplate
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from agent.model import load_model
 from agent.state import BlogAgentState
@@ -21,8 +22,21 @@ class CriticFeedback(BaseModel):
         ..., description="Structured feedback containing issues and suggestions."
     )
 
+    @field_validator("feedback", mode="before")
+    @classmethod
+    def coerce_feedback(cls, value):
+        # Some models return nested objects as JSON strings; normalize before validation.
+        if isinstance(value, str):
+            try:
+                parsed = json.loads(value)
+            except json.JSONDecodeError as exc:
+                raise ValueError("feedback must be a valid JSON object string") from exc
+            return parsed
+        return value
+
     needs_revision: bool = Field(
-        ..., description="needs_revision will be True if the draft has critical issues that require a revision cycle and False if the draft is of sufficient quality to proceed without changes."
+        ...,
+        description="needs_revision will be True if the draft has critical issues that require a revision cycle and False if the draft is of sufficient quality to proceed without changes.",
     )
 
     quality_score: int = Field(
@@ -92,7 +106,10 @@ def critic_node(state: BlogAgentState):
 
     chain = prompt_template | structured_model
 
-    input_variables = {"edited_draft": edited_draft, "keywords": list(set(keywords_used))}
+    input_variables = {
+        "edited_draft": edited_draft,
+        "keywords": list(set(keywords_used)),
+    }
 
     response = chain.invoke(input_variables)
 
