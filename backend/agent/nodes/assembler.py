@@ -48,8 +48,6 @@ def assembler_node(state: BlogAgentState) -> dict:
     {section_content}
     """
 
-    raw_blog_input = "# {blog_title}\n## {blog_subtitle}\n{sections_block}"
-
     system_prompt = """
     You are an expert Content Strategist and SEO Editor. Your task is to assemble fragmented section drafts into a premium, publication-ready blog post.
 
@@ -67,7 +65,9 @@ def assembler_node(state: BlogAgentState) -> dict:
     I have a raw collection of blog sections and a target keyword list.
 
     RAW CONTENT:
-    {raw_blog_input}
+    Blog Title: {blog_title}
+    Blog Subtitle: {blog_subtitle}
+    Sections: {sections_block}
 
     TARGET SEO KEYWORDS:
     {all_keywords}
@@ -91,7 +91,6 @@ def assembler_node(state: BlogAgentState) -> dict:
     input_variables = {
             "blog_title": blog_title,
             "blog_subtitle": blog_subtitle,
-            "raw_blog_input": raw_blog_input,
             "all_keywords": all_keywords,
             "sections_block": sections_block,
         }

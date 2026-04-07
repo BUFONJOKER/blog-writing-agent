@@ -4,7 +4,6 @@ from agent.state import BlogAgentState
 from agent.nodes.router import router_node
 from agent.nodes.research_query_gen import research_query_gen_node
 from agent.nodes.summarizer import summarizer_node
-from agent.nodes.research_query_gen import research_query_gen_node
 from agent.nodes.planner import planner_node
 from agent.nodes.task_executer import task_executer_node
 from agent.nodes.assembler import assembler_node
@@ -92,7 +91,7 @@ async def build_workflow(checkpointer):
     })
 
     def needs_revision(state: BlogAgentState):
-        if state.needs_revision and state.revision_cycles<=3:
+        if state.needs_revision and state.revision_cycles<3:
             return "task_executer_node"
         return "finalize_node"
 
