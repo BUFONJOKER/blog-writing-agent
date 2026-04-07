@@ -1,7 +1,7 @@
 import asyncio
 from psycopg_pool import AsyncConnectionPool
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
-from agent.config import Config
+from backend.agent.config import Config
 import sys
 
 

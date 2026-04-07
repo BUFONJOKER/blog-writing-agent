@@ -1,4 +1,4 @@
-# --- Python / Backend (FastAPI) ---
+# --- Python / Backend (FastAPI, LangGraph) ---
 .venv/
 env/
 venv/
@@ -12,6 +12,7 @@ __pycache__/
 backend.egg-info/
 dist/
 build/
+generated_images
 
 # --- Frontend (Next.js / pnpm) ---
 **/node_modules/

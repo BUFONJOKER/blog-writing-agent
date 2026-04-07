@@ -31,6 +31,10 @@ While MCP handled obfuscation historically, modern development relies on special
 
 ## Modern Server Frameworks Compared
 
+<img src="generated_images/blog_img_1.png" alt="Blog Image" width="800" />
+
+
+
 Effective **server framework selection** dictates infrastructure requirements and mod compatibility. In 2026, the ecosystem is divided primarily between Forge, Fabric, and Paper. It is crucial to distinguish between the server loader (runtime) and the build tools (development), such as **ForgeGradle** and **Fabric Loom**. These tools replace MCP's development role but do not run on production servers.
 
 ### Forge: Stability for Large Modpacks
@@ -90,6 +94,10 @@ Maintain 20 TPS (ticks per second). Use monitoring tools to track entity counts 
 
 ## Server Deployment Guide: Step-by-Step
 
+<img src="generated_images/blog_img_2.png" alt="Blog Image" width="800" />
+
+
+
 Follow this technical workflow for a successful **modded server setup**. Precision in this phase prevents runtime errors and security vulnerabilities.
 
 ### Phase 1: Environment Preparation
@@ -122,6 +130,10 @@ Follow this technical workflow for a successful **modded server setup**. Precisi
 
 ## Hosting Considerations for Modded Servers
 
+<img src="generated_images/blog_img_3.png" alt="Blog Image" width="800" />
+
+
+
 Resource allocation must account for the specific overhead of the chosen loader.
 
 ### Resource Requirements
@@ -137,6 +149,10 @@ Resource allocation must account for the specific overhead of the chosen loader.
 Managed hosting provides automated backups and one-click installer support, reducing administrative overhead. Self-hosting offers full control over JVM flags and hardware but requires deep knowledge of Linux networking and security hardening.
 
 ## Minecraft Server Migration Best Practices
+
+<img src="generated_images/blog_img_4.png" alt="Blog Image" width="800" />
+
+
 
 Migrating legacy worlds to modern frameworks requires data integrity checks.
 

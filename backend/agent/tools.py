@@ -1,6 +1,6 @@
 import asyncio
 from langchain_mcp_adapters.client import MultiServerMCPClient
-from agent.config import Config
+from agent.config import HORIZON_TOKEN
 from typing import Literal
 
 async def get_local_mcp_tools() -> list:
@@ -38,7 +38,7 @@ async def get_hosted_mcp_tools() -> list:
             "url": "https://Blog-Research-Tools.fastmcp.app/mcp",
             "transport": "streamable_http",
             "headers": {
-                "Authorization": f"Bearer {Config.HORIZON_TOKEN}",
+                "Authorization": f"Bearer {HORIZON_TOKEN}",
             },
         }
     }

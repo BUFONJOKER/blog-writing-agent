@@ -1,7 +1,7 @@
 import asyncio
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from agent.workflow import build_workflow
-from agent.config import Config
+from agent.config import DB_URL
 import sys
 import io
 if sys.platform == "win32":
@@ -15,7 +15,7 @@ os.environ["PSYCOPG_IMPL"] = "python"
 from psycopg_pool import AsyncConnectionPool
 
 async def main():
-    DB_URI = Config.DB_URL
+    DB_URI = DB_URL
 
     async with AsyncConnectionPool(conninfo=DB_URI, max_size=20, kwargs={"autocommit": True}) as pool:
         checkpointer = AsyncPostgresSaver(pool)

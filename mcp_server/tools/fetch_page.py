@@ -10,10 +10,10 @@ from pydantic import Field
 if __package__ is None or __package__ == "":
     sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-from config import Config
+from config import TAVILY_API_KEY
 
 # Initialize Tavily client
-tavily = TavilyClient(api_key=Config.TAVILY_API_KEY)
+tavily = TavilyClient(api_key=TAVILY_API_KEY)
 
 # ---------------------------
 # Helper: Clean content (Unicode-safe)

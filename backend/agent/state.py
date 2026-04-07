@@ -154,3 +154,8 @@ class BlogAgentState(BaseModel):
         default=0,
         description="Number of times the content has been revised based on critic feedback.",
     )
+
+    image_plan: List[dict] = Field(
+        default_factory=list,
+        description="List of image generation prompts and their associated section placements.",
+    )

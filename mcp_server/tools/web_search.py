@@ -7,7 +7,7 @@ import json
 if __package__ is None or __package__ == "":
     sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-from config import Config
+from config import TAVILY_API_KEY
 from pydantic import Field
 
 def web_search_tool(
@@ -30,7 +30,7 @@ def web_search_tool(
     max_results = max(1, min(max_results, 10))  # clamp 1–10
 
     try:
-        tavily_client = TavilyClient(api_key=Config.TAVILY_API_KEY)
+        tavily_client = TavilyClient(api_key=TAVILY_API_KEY)
         # Pass max_results to the tavily client
         response = tavily_client.search(query, max_results=max_results)
     except Exception as exc:

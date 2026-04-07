@@ -2,38 +2,25 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-# 1. Setup paths for local development
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
-env_path = BASE_DIR / ".env"
+def get_project_root() -> Path:
+    """Climbs up from the current file to find the project root."""
+    current = Path(__file__).resolve()
+    # Look for a marker that only exists in your root directory
+    for parent in current.parents:
+        if (parent / ".env").exists() or (parent / "pyproject.toml").exists():
+            return parent
+    return current.parent # Fallback
 
-# 2. Load .env ONLY if it exists (Local WSL logic)
-# In Docker, this will simply skip if you didn't copy the .env into the image.
-if env_path.exists():
-    load_dotenv(dotenv_path=env_path)
+# Global Constants
+BASE_DIR = get_project_root()
+ENV_PATH = BASE_DIR / ".env"
+
+# Load the environment variables
+if ENV_PATH.exists():
+    load_dotenv(dotenv_path=ENV_PATH)
 else:
-    # Fallback to standard loading for Docker/Production environments
-    load_dotenv()
+    load_dotenv() # Fallback for Docker/Prod
 
-class Config:
-    # 3. Access variables (Works for both .env and Docker -e flags)
-    HORIZON_TOKEN = os.getenv("HORIZON_TOKEN")
-    DB_URL = os.getenv("DB_URL")
-    DEBUG = os.getenv("DEBUG", "False").lower() == "true"
-
-    @classmethod
-    def validate(cls):
-        """Ensure critical vars are present"""
-        if not cls.HORIZON_TOKEN:
-            # Provide a more helpful error for Docker users
-            raise ValueError(
-                "HORIZON_TOKEN is missing. "
-                "Ensure it is in your .env or passed via 'docker run -e'."
-            )
-        if not cls.DB_URL:
-            raise ValueError(
-                "DB_URL is missing. "
-                "Ensure it is in your .env or passed via 'docker run -e'."
-            )
-
-# Validate on import
-Config.validate()
+HORIZON_TOKEN = os.getenv("HORIZON_TOKEN")
+DB_URL = os.getenv("DB_URL")
+HUGGINGFACEHUB_API_TOKEN = os.getenv("HUGGINGFACEHUB_API_TOKEN")
