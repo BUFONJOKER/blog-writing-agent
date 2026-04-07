@@ -1,36 +1,126 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🖥️ Frontend Service
 
-## Getting Started
+> The user-facing app for prompt input, progress visibility, review steps, and final blog output.
 
-First, run the development server:
+[![Next.js](https://img.shields.io/badge/Next.js-App_Router-black?logo=nextdotjs)](https://nextjs.org)
+[![React](https://img.shields.io/badge/React-19-blue?logo=react)](https://react.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Enabled-3178C6?logo=typescript)](https://www.typescriptlang.org)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+---
+
+## 📖 Table of Contents
+
+- [What This Service Does](#-what-this-service-does)
+- [Tech Stack](#-tech-stack)
+- [Architecture Flow](#-architecture-flow)
+- [Project Areas](#-project-areas)
+- [Requirements](#-requirements)
+- [Getting Started](#-getting-started)
+- [Environment Variables](#-environment-variables)
+- [Current Status](#-current-status)
+- [Next Milestones](#-next-milestones)
+- [Planning Source](#-planning-source)
+
+---
+
+## 🎯 What This Service Does
+
+- Accepts blog topics/prompts from users
+- Calls backend endpoints for run lifecycle operations
+- Displays progress and run state to the user
+- Presents review and result experiences
+
+---
+
+## 🧱 Tech Stack
+
+- Next.js
+- React
+- TypeScript
+- Tailwind CSS
+
+---
+
+## 🏗️ Architecture Flow
+
+```text
+User Input
+	↓
+Frontend Pages/Components
+	↓
+API Utility Layer
+	↓
+Backend Endpoints
+	↓
+Progress + Review + Result UI
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📁 Project Areas
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- app/: route-based pages and screens
+- components/: reusable UI pieces
+- lib/: API utility layer and helpers
+- stores/: client-side state management
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## ⚙️ Requirements
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Node.js 18+
+- pnpm
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 🚀 Getting Started
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+cd frontend
+pnpm install
+pnpm dev
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Open: http://localhost:3000
+
+---
+
+## 🔐 Environment Variables
+
+Create frontend/.env with at least:
+
+- NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
+
+This is the base URL used by frontend API calls.
+
+---
+
+## 📌 Current Status
+
+Implemented:
+
+- Next.js app setup with core dependencies
+- Base folder layout for pages, components, API utilities, and state
+
+In progress:
+
+- Full prompt-to-result user flow implementation
+- Rich progress/review/history/result pages
+- More robust loading/error states and UX polish
+
+---
+
+## 🛠️ Next Milestones
+
+- Complete prompt submission and run start flow
+- Add live progress and backend status integration
+- Implement plan review and draft review interfaces
+- Add run history and final output pages
+- Improve resilience and error feedback across views
+
+---
+
+## 🗺️ Planning Source
+
+- Root project plan: ../README.md
+- Detailed planning exports: ../docs/
