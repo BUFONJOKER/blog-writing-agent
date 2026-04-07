@@ -18,33 +18,49 @@ from psycopg_pool import AsyncConnectionPool
 
 
 async def main():
+    # 1. Ensure you use the DIRECT connection string (Port 5432)
+    # instead of the Transaction Pooler (Port 6543).
     DB_URI = DB_URL
 
     async with AsyncConnectionPool(
-        conninfo=DB_URI, max_size=20, kwargs={"autocommit": True}
+        conninfo=DB_URI,
+        max_size=20,
+        # Adding keepalives and disabling prepared statements for Supabase stability
+        kwargs={
+            "autocommit": True,
+            "prepare_threshold": None,  # Crucial for Supabase Pooler compatibility
+            "keepalives": 1,           # Sends a "heartbeat" to prevent timeout
+            "keepalives_idle": 30,     # If idle for 30s, send heartbeat
+            "keepalives_interval": 10,
+            "keepalives_count": 5
+        }
     ) as pool:
+        # Use the AsyncPostgresSaver with the pool
+        # It's recommended to call .setup() once if tables aren't created yet
         checkpointer = AsyncPostgresSaver(pool)
-        # 1. Compile the graph with memory
+
+        # Optional: Ensure tables exist (only needs to run once ever)
+        # await checkpointer.setup()
+
         app = await build_workflow(checkpointer)
 
-        # 2. Thread ID identifies this specific conversation
         config = {
-            "configurable": {"thread_id": "29_final_blog_test_with_images"},
-            "run_name": "blog_writing_agent_run_35",
-        }  # You can generate a unique thread_id for each conversation or use a fixed one for testing
-
-        # 3. Start the process and stream events until completion.
-        initial_input = {
-            "prompt": "Local LLMs for Privacy: Create a guide for non-technical small business owners on why they should run Ollama locally instead of using cloud APIs. Focus on data sovereignty and cost-benefit analysis."
+            "configurable": {"thread_id": "30_final_blog_test_with_images"},
+            "run_name": "blog_writing_agent_run_36",
         }
-        async for event in app.astream(initial_input, config, stream_mode="values"):
-            print(event)
 
-        # 4. Print final state summary after workflow completion.
-        state = await app.aget_state(config)
-        print("\n--- FINAL STATE SUMMARY ---")
-        print(f"status: {state.values.get('status')}")
-        print(f"title: {state.values.get('blog_title')}")
+        initial_input = {
+            "prompt": "Local LLMs for Privacy: Create a guide for non-technical small business owners..."
+        }
+
+        try:
+            async for event in app.astream(initial_input, config, stream_mode="values"):
+                # Printing 'event' can be very messy if it contains the whole state.
+                # Just printing the keys or a status update is often cleaner.
+                print(f"Node completed: {list(event.keys())}")
+
+        except Exception as e:
+            print(f"An error occurred during graph execution: {e}")
 
 
 if __name__ == "__main__":
