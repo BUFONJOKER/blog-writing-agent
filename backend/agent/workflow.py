@@ -1,5 +1,6 @@
 from langgraph.graph import StateGraph, START, END
 from agent.state import BlogAgentState
+
 # import all nodes
 from agent.nodes.router import router_node
 from agent.nodes.research_query_gen import research_query_gen_node
@@ -19,11 +20,12 @@ from langgraph.prebuilt import ToolNode
 from agent.tools import initialize_tools
 from functools import partial
 
+
 async def build_workflow(checkpointer):
     graph = StateGraph(BlogAgentState)
 
     # Initialize shared tools (must include both web_search_tool and fetch_page_tool)
-    shared_tools = await initialize_tools('local')
+    shared_tools = await initialize_tools("local")
 
     # 1. Define Nodes
     researcher_tools_node = ToolNode(shared_tools)
@@ -52,20 +54,26 @@ async def build_workflow(checkpointer):
             return "research_query_gen_node"
         return "summarizer_node"
 
-    graph.add_conditional_edges("router_node", route_research, {
-        "research_query_gen_node": "research_query_gen_node",
-        "summarizer_node": "summarizer_node"
-    })
-
+    graph.add_conditional_edges(
+        "router_node",
+        route_research,
+        {
+            "research_query_gen_node": "research_query_gen_node",
+            "summarizer_node": "summarizer_node",
+        },
+    )
 
     def should_execute_tools(state: BlogAgentState):
-    # Ensure has_tool_calls is checked accurately
-        if state.has_tool_calls and (state.tool_call_count or 0) < (state.max_tool_calls or 8):
+        # Ensure has_tool_calls is checked accurately
+        if state.has_tool_calls and (state.tool_call_count or 0) < (
+            state.max_tool_calls or 8
+        ):
             return "researcher_tools"
 
         # If the researcher_node returned False for has_tool_calls,
         # it means the LLM provided a final text response.
         return "summarizer_node"
+
     # 3. Add the Researcher -> Tools -> Researcher Loop
     graph.add_conditional_edges(
         "researcher_node",
@@ -85,20 +93,22 @@ async def build_workflow(checkpointer):
             return "router_node"
         return "planner_node"
 
-    graph.add_conditional_edges("research_loop", needs_research_loop, {
-        "router_node": "router_node",
-        "planner_node": "planner_node"
-    })
+    graph.add_conditional_edges(
+        "research_loop",
+        needs_research_loop,
+        {"router_node": "router_node", "planner_node": "planner_node"},
+    )
 
     def needs_revision(state: BlogAgentState):
-        if state.needs_revision and state.revision_cycles<3:
+        if state.needs_revision and state.revision_cycles < 3:
             return "task_executer_node"
         return "finalize_node"
 
-    graph.add_conditional_edges("critic_node", needs_revision, {
-        "task_executer_node": "task_executer_node",
-        "finalize_node": "finalize_node"
-    })
+    graph.add_conditional_edges(
+        "critic_node",
+        needs_revision,
+        {"task_executer_node": "task_executer_node", "finalize_node": "finalize_node"},
+    )
 
     # Linear flow for remaining nodes
     graph.add_edge("research_query_gen_node", "researcher_node")
@@ -111,8 +121,10 @@ async def build_workflow(checkpointer):
     graph.add_edge("image_planner_node", "image_generation_node")
     graph.add_edge("image_generation_node", END)
 
-    workflow = graph.compile(checkpointer=checkpointer, interrupt_after=['image_generation_node'])
+    # HIL is temporarily disabled until the interactive review flow is fully implemented.
+    workflow = graph.compile(checkpointer=checkpointer)
     return workflow
+
 
 # write code to run this file and save the workflow image as workflow.png
 # code to save to workflow image
