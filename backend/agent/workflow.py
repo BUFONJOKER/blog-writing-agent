@@ -13,6 +13,8 @@ from agent.nodes.critic import critic_node
 from agent.nodes.finalize import finalize_node
 from agent.nodes.researcher import researcher_node
 from agent.nodes.research_loop import research_loop_node
+from agent.nodes.image_generation import image_generation_node
+from agent.nodes.image_planner import image_planner_node
 
 from langgraph.prebuilt import ToolNode
 from agent.tools import initialize_tools
@@ -40,6 +42,8 @@ async def build_workflow(checkpointer):
     graph.add_node("editor_node", editor_node)
     graph.add_node("critic_node", critic_node)
     graph.add_node("finalize_node", finalize_node)
+    graph.add_node("image_planner_node", image_planner_node)
+    graph.add_node("image_generation_node", image_generation_node)
 
     # 2. Define Routing Logic
     graph.add_edge(START, "router_node")
@@ -104,7 +108,22 @@ async def build_workflow(checkpointer):
     graph.add_edge("task_executer_node", "assembler_node")
     graph.add_edge("assembler_node", "editor_node")
     graph.add_edge("editor_node", "critic_node")
-    graph.add_edge("finalize_node", END)
+    graph.add_edge("finalize_node", "image_planner_node")
+    graph.add_edge("image_planner_node", "image_generation_node")
+    graph.add_edge("image_generation_node", END)
 
     workflow = graph.compile(checkpointer=checkpointer, interrupt_after=['finalize_node'])
     return workflow
+
+# write code to run this file and save the workflow image as workflow.png
+if __name__ == "__main__":
+    import asyncio
+
+    async def main():
+        workflow = await build_workflow(checkpointer=None)
+        png_bytes = workflow.get_graph().draw_mermaid_png()  # Uses Mermaid.ink (online, no deps)
+        with open("workflow.png", "wb") as f:
+            f.write(png_bytes)
+        print("Saved workflow.png")
+
+    asyncio.run(main())
