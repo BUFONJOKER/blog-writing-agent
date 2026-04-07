@@ -30,3 +30,8 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
 packages = ["agent", "api", "db"]
+
+[dependency-groups]
+dev = [
+    "supabase>=2.28.3",
+]
