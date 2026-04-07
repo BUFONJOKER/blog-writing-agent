@@ -144,6 +144,16 @@ def task_executer_node(state: BlogAgentState) -> dict:
     - Clear, useful, and actionable insights are present
     - SEO + readability + clarity are all optimized
 
+    ### 11. HUMAN EDGE & ENGAGEMENT (CRITICAL)
+
+    You MUST:
+    - Introduce at least 1 strong insight, misconception, or “hard truth” per section
+    - Occasionally challenge common assumptions
+    - Add micro-tension (problem → solution flow)
+
+    Avoid sounding like documentation.
+    Write like a real expert explaining what most people get wrong.
+
     This must feel like a top-ranking blog section.
     """
     user_prompt = """
