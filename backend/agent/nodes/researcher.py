@@ -18,7 +18,6 @@ FUTURE_KEYWORDS = [
     "no results available",
 ]
 
-MAX_PARSED_RESULTS = 8
 MAX_RESULTS_FOR_PROMPT = 5
 MAX_CONTEXT_MESSAGES = 8
 
@@ -58,6 +57,19 @@ def _is_http_url(value: str) -> bool:
     return bool(value) and value.startswith(("http://", "https://"))
 
 
+def _normalize_url(value: object) -> str:
+    return str(value or "").strip()
+
+
+def _build_result_snippet(result: dict, max_chars: int = 300) -> str:
+    content = " ".join((result.get("content") or "").split())
+    if not content:
+        return "No content"
+    if len(content) <= max_chars:
+        return content
+    return content[:max_chars] + "..."
+
+
 def _extract_results_from_tool_message(msg: ToolMessage) -> list[dict]:
     parsed: list[dict] = []
     content_str = _normalize_content(msg.content)
@@ -72,7 +84,7 @@ def _extract_results_from_tool_message(msg: ToolMessage) -> list[dict]:
             for r in data["results"]:
                 if not isinstance(r, dict):
                     continue
-                url = (r.get("url") or "").strip()
+                url = _normalize_url(r.get("url"))
                 if not _is_http_url(url):
                     continue
                 parsed.append(
@@ -85,7 +97,7 @@ def _extract_results_from_tool_message(msg: ToolMessage) -> list[dict]:
                     }
                 )
         else:
-            url = (data.get("url") or data.get("source") or "").strip()
+            url = _normalize_url(data.get("url") or data.get("source"))
             if _is_http_url(url):
                 parsed.append(
                     {
@@ -118,7 +130,7 @@ def _merge_unique_results(existing: list[dict], new_items: list[dict]) -> list[d
     seen_urls = set()
 
     for item in [*(existing or []), *(new_items or [])]:
-        url = (item.get("url") or "").strip()
+        url = _normalize_url(item.get("url"))
         if not _is_http_url(url) or url in seen_urls:
             continue
         seen_urls.add(url)
@@ -129,28 +141,26 @@ def _merge_unique_results(existing: list[dict], new_items: list[dict]) -> list[d
 
 def _build_research_summary(synthesis: str, results: list[dict]) -> str:
     sections: list[str] = []
-    synthesis_text = (synthesis or "").strip()
+    synthesis_text = _normalize_content(synthesis).strip()
 
     if synthesis_text:
-        sections.append(synthesis_text)
+        sections.append("Summary of Findings:\n" + synthesis_text)
 
     if results:
         datapoints = []
         for i, result in enumerate(results, start=1):
             title = (result.get("title") or "Untitled source").strip()
-            url = (result.get("url") or "").strip()
-            content = " ".join((result.get("content") or "").split())
-            snippet = content[:280] + ("..." if len(content) > 280 else "")
+            url = _normalize_url(result.get("url"))
+            snippet = _build_result_snippet(result)
 
-            datapoints.append(f"{i}. {title}\n   URL: {url}\n   Data point: {snippet}")
+            datapoints.append(f"{i}. {title}\n   URL: {url}\n   Insight: {snippet}")
 
-        sections.append("Retrieved data points:\n" + "\n".join(datapoints))
+        sections.append("Detailed Extracted Data:\n" + "\n".join(datapoints))
+
+    if not sections:
+        return "No useful research data could be generated."
 
     return "\n\n".join(sections).strip()
-
-
-def _build_terminal_summary(message: str, results: list[dict]) -> str:
-    return _build_research_summary(message, results)
 
 
 def _extract_results_from_tool_messages(messages: list[ToolMessage]) -> list[dict]:
@@ -158,20 +168,6 @@ def _extract_results_from_tool_messages(messages: list[ToolMessage]) -> list[dic
     for msg in messages:
         results.extend(_extract_results_from_tool_message(msg))
     return results
-
-
-def _unique_by_url(results: list[dict]) -> list[dict]:
-    unique_results: list[dict] = []
-    seen_urls = set()
-
-    for result in results:
-        url = (result.get("url") or "").strip()
-        if not _is_http_url(url) or url in seen_urls:
-            continue
-        seen_urls.add(url)
-        unique_results.append(result)
-
-    return unique_results
 
 
 async def researcher_node(state: BlogAgentState, tools: list) -> dict:
@@ -185,27 +181,28 @@ async def researcher_node(state: BlogAgentState, tools: list) -> dict:
 
     # Rebuild the full accumulated memory from every tool message seen in the session.
     all_tool_messages = [msg for msg in state.messages if isinstance(msg, ToolMessage)]
-    historical_results = _unique_by_url(
-        _extract_results_from_tool_messages(all_tool_messages)
-    )
+    historical_results = _extract_results_from_tool_messages(all_tool_messages)
 
     combined_results = _merge_unique_results(state.research_results, historical_results)
+    existing_urls = {
+        _normalize_url(existing.get("url"))
+        for existing in (state.research_results or [])
+        if _is_http_url(_normalize_url(existing.get("url")))
+    }
     parsed_new_results = [
         result
         for result in historical_results
-        if (result.get("url") or "").strip()
-        and (result.get("url") or "").strip()
-        not in {
-            ((existing.get("url") or "").strip()) for existing in state.research_results
-        }
-    ][:MAX_PARSED_RESULTS]
-    prompt_results = sorted(
+        if _normalize_url(result.get("url"))
+        and _normalize_url(result.get("url")) not in existing_urls
+    ]
+    sorted_results = sorted(
         combined_results, key=lambda x: x.get("score", 0.0), reverse=True
-    )[:MAX_RESULTS_FOR_PROMPT]
+    )
+    prompt_results = sorted_results[:MAX_RESULTS_FOR_PROMPT]
     visited_urls = [
         r.get("url", "")
         for r in combined_results
-        if _is_http_url((r.get("url") or "").strip())
+        if _is_http_url(_normalize_url(r.get("url")))
     ]
 
     search_history_context = ""
@@ -223,7 +220,7 @@ async def researcher_node(state: BlogAgentState, tools: list) -> dict:
         return {
             "messages": [],
             "research_results": [],
-            "research_summary": _build_terminal_summary(
+            "research_summary": _build_research_summary(
                 "No useful data could be retrieved.",
                 combined_results,
             ),
@@ -231,11 +228,11 @@ async def researcher_node(state: BlogAgentState, tools: list) -> dict:
             "more_research_needed": False,
         }
 
-    if is_futile_context(prompt_results):
+    if is_futile_context(combined_results):
         return {
             "messages": [],
             "research_results": parsed_new_results,
-            "research_summary": _build_terminal_summary(
+            "research_summary": _build_research_summary(
                 (
                     "The requested information does not exist yet. "
                     "This topic refers to a future or incomplete event, "
@@ -255,7 +252,7 @@ async def researcher_node(state: BlogAgentState, tools: list) -> dict:
         return {
             "messages": [],
             "research_results": parsed_new_results,
-            "research_summary": _build_terminal_summary(
+            "research_summary": _build_research_summary(
                 (
                     "Research stopped due to insufficient or unavailable data. "
                     "Further tool calls are unlikely to provide new insights."
@@ -284,7 +281,16 @@ async def researcher_node(state: BlogAgentState, tools: list) -> dict:
         "- Fetching the same URL multiple times\n\n"
         "RULES:\n"
         "- web_search_tool → only 'query'\n"
-        "- fetch_page_tool → 'url' + 'query'"
+        "- fetch_page_tool → 'url' + 'query'\n\n"
+        "FINAL OUTPUT REQUIREMENTS:\n"
+        "- ALWAYS produce a research summary\n"
+        "- The summary MUST NEVER be empty\n"
+        "- If no data is found, explicitly say so\n"
+        "- Include key findings and extracted insights\n"
+        "- Use structured format with bullet points or numbered sections\n"
+        "- If sources exist, summarize them clearly\n\n"
+        "FAILURE CONDITION:\n"
+        "Returning empty or vague output is NOT allowed"
     )
 
     # 3. Construct the Human Message with injected URL context
@@ -317,10 +323,13 @@ async def researcher_node(state: BlogAgentState, tools: list) -> dict:
     has_tool_calls = bool(response.tool_calls)
 
     current_calls = len(response.tool_calls) if response.tool_calls else 0
+    synthesis_text = response.content if not response.tool_calls else ""
+    summary_snapshot = _build_research_summary(synthesis_text, combined_results)
 
     update = {
         "messages": [response],
         "research_results": parsed_new_results,
+        "research_summary": summary_snapshot,
         "has_tool_calls": has_tool_calls,
         # BlogAgentState uses operator.add for tool_call_count; return only the delta for this step.
         "tool_call_count": current_calls,
@@ -328,10 +337,6 @@ async def researcher_node(state: BlogAgentState, tools: list) -> dict:
 
     # Signal if we need to stay in the research loop or proceed to writing
     if not response.tool_calls:
-        update["research_summary"] = _build_terminal_summary(
-            response.content,
-            combined_results,
-        )
         update["more_research_needed"] = False
     else:
         update["more_research_needed"] = True

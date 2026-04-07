@@ -23,10 +23,10 @@ async def main():
         app = await build_workflow(checkpointer)
 
         # 2. Thread ID identifies this specific conversation
-        config = {"configurable": {"thread_id": "24_final_blog_test_with_images"},'run_name': "blog_writing_agent_run_30"}  # You can generate a unique thread_id for each conversation or use a fixed one for testing
+        config = {"configurable": {"thread_id": "26_final_blog_test_with_images"},'run_name': "blog_writing_agent_run_32"}  # You can generate a unique thread_id for each conversation or use a fixed one for testing
 
         # 3. Start the process
-        initial_input = {"prompt": "The Rise of Agentic Workflows: Write a 1,500-word deep dive into how AI agents are moving from simple chat interfaces to autonomous workflows using tools like LangGraph. Compare 'Chain' vs. 'Graph' architectures."}
+        initial_input = {"prompt": "Local LLMs for Privacy: Create a guide for non-technical small business owners on why they should run Ollama locally instead of using cloud APIs. Focus on data sovereignty and cost-benefit analysis."}
         async for event in app.astream(initial_input, config, stream_mode="values"):
             print(event)
 
