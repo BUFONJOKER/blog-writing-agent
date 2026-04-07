@@ -1,9 +1,11 @@
 import asyncio
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from agent.workflow import build_workflow
-from agent.config import DB_URL
+from agent.config import DB_URL, DB_POOLER_URL
 import sys
 import io
+import socket
+from urllib.parse import urlparse
 
 if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
@@ -17,26 +19,60 @@ os.environ["PSYCOPG_IMPL"] = "python"
 from psycopg_pool import AsyncConnectionPool
 
 
+def _host_has_ipv4(hostname: str) -> bool:
+    """Return True if hostname resolves to at least one IPv4 address."""
+    try:
+        infos = socket.getaddrinfo(hostname, None)
+    except socket.gaierror:
+        return False
+    return any(info[0] == socket.AF_INET for info in infos)
+
+
+def _ensure_sslmode(conninfo: str) -> str:
+    """Supabase requires SSL; enforce it if missing."""
+    if "sslmode=" in conninfo:
+        return conninfo
+    separator = "&" if "?" in conninfo else "?"
+    return f"{conninfo}{separator}sslmode=require"
+
+
+def resolve_conninfo() -> str:
+    """Pick a reachable Postgres URL, preferring direct URL when IPv4 is available."""
+    if not DB_URL:
+        raise RuntimeError("DB_URL is not set. Please configure backend/.env")
+
+    direct = _ensure_sslmode(DB_URL)
+    hostname = urlparse(direct).hostname
+    if hostname and _host_has_ipv4(hostname):
+        return direct
+
+    if DB_POOLER_URL:
+        print(
+            "Direct DB host appears IPv6-only from this environment. "
+            "Falling back to DB_POOLER_URL."
+        )
+        return _ensure_sslmode(DB_POOLER_URL)
+
+    raise RuntimeError(
+        "Direct DB host resolves without IPv4 in this environment. "
+        "Set DB_POOLER_URL (Supabase Session/Transaction Pooler URL) in backend/.env "
+        "or use an IPv6-capable network."
+    )
+
+
 async def main():
-    # 1. Ensure you use the DIRECT connection string (Port 5432)
-    # instead of the Transaction Pooler (Port 6543).
-    DB_URI = DB_URL
+    conninfo = resolve_conninfo()
 
     async with AsyncConnectionPool(
-        conninfo=DB_URI,
-        max_size=20,
-        # Adding keepalives and disabling prepared statements for Supabase stability
+        conninfo=conninfo,
+        max_size=10,
+        min_size=1,
         kwargs={
             "autocommit": True,
-            "prepare_threshold": None,  # Crucial for Supabase Pooler compatibility
-            "keepalives": 1,           # Sends a "heartbeat" to prevent timeout
-            "keepalives_idle": 30,     # If idle for 30s, send heartbeat
-            "keepalives_interval": 10,
-            "keepalives_count": 5
-        }
+            "connect_timeout": 10,
+            "prepare_threshold": None,
+        },
     ) as pool:
-        # Use the AsyncPostgresSaver with the pool
-        # It's recommended to call .setup() once if tables aren't created yet
         checkpointer = AsyncPostgresSaver(pool)
 
         # Optional: Ensure tables exist (only needs to run once ever)
@@ -45,12 +81,12 @@ async def main():
         app = await build_workflow(checkpointer)
 
         config = {
-            "configurable": {"thread_id": "30_final_blog_test_with_images"},
-            "run_name": "blog_writing_agent_run_36",
+            "configurable": {"thread_id": "34_final_blog_test_with_images"},
+            "run_name": "blog_writing_agent_run_40",
         }
 
         initial_input = {
-            "prompt": "Local LLMs for Privacy: Create a guide for non-technical small business owners..."
+            "prompt": "Local LLMs for Privacy: Create a guide for non-technical small business owners on why they should run Ollama locally instead of using cloud APIs. Focus on data sovereignty and cost-benefit analysis."
         }
 
         try:
