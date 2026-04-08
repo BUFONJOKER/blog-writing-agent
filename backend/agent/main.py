@@ -3,6 +3,7 @@ import sys
 import io
 import uuid
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
+from langgraph.types import Command
 from psycopg_pool import AsyncConnectionPool
 from agent.workflow import build_workflow
 from agent.config import DB_URL
@@ -111,9 +112,6 @@ async def main():
                     interrupt_type="human_review",
                 )
 
-                # Inject the human decision into state
-                await app.aupdate_state(config, {"human_approved": approval})
-
                 # Update database to running
                 await update_run_status(
                     pool=pool,
@@ -125,7 +123,9 @@ async def main():
                 print("Resuming workflow...")
                 # Stream the remaining execution after resuming
                 try:
-                    async for event in app.astream(None, config, stream_mode="values"):
+                    async for event in app.astream(
+                        Command(resume=approval), config, stream_mode="values"
+                    ):
                         pass
                 except Exception as e:
                     print(f"Error during workflow resumption: {e}")
@@ -165,9 +165,13 @@ async def main():
         print()
 
         print("\n--- RETRIEVAL SECTION ---")
-        print("If you want to see the blog of any user with thread_id then enter user_id and thread_id\n")
+        print(
+            "If you want to see the blog of any user with thread_id then enter user_id and thread_id\n"
+        )
         search_user_id = input("Enter user ID to retrieve blog output: ").strip()
-        search_thread_id = input("Enter thread ID (or leave blank to see all blogs for this user): ").strip()
+        search_thread_id = input(
+            "Enter thread ID (or leave blank to see all blogs for this user): "
+        ).strip()
 
         if search_thread_id and search_user_id:
             # Note: get_output only needs pool and thread_id based on our CRUD update
@@ -180,12 +184,16 @@ async def main():
                 print(output["final_post_markdown"])
                 print("-" * 30)
             else:
-                print(f"No output found for thread_id={search_thread_id} belonging to user_id={search_user_id}.")
+                print(
+                    f"No output found for thread_id={search_thread_id} belonging to user_id={search_user_id}."
+                )
 
         elif search_user_id:
             outputs = await get_all_outputs_of_user(pool, search_user_id)
             if outputs:
-                print(f"\nRetrieved {len(outputs)} Blog Post(s) for user_id={search_user_id}:\n")
+                print(
+                    f"\nRetrieved {len(outputs)} Blog Post(s) for user_id={search_user_id}:\n"
+                )
                 for i, post in enumerate(outputs, 1):
                     print(f"--- Post {i} (Thread: {post['thread_id']}) ---")
                     # Displaying title from meta if it exists
@@ -195,7 +203,6 @@ async def main():
                     print("-" * 30)
             else:
                 print(f"No outputs found for user_id={search_user_id}.")
-
 
 
 if __name__ == "__main__":

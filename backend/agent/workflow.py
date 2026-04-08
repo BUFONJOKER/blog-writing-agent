@@ -1,5 +1,3 @@
-from turtle import write
-
 from langgraph.graph import StateGraph, START, END
 from agent.state import BlogAgentState
 
@@ -23,6 +21,7 @@ from agent.tools import initialize_tools
 from functools import partial
 from langgraph.types import interrupt
 
+
 async def build_workflow(checkpointer):
     graph = StateGraph(BlogAgentState)
 
@@ -33,13 +32,14 @@ async def build_workflow(checkpointer):
     researcher_tools_node = ToolNode(shared_tools)
 
     async def human_review_node(state: BlogAgentState):
-        """Interrupt here for human approval."""
-        interrupt(
+        """Pause execution and wait for a human approval decision."""
+        approved = interrupt(
             value={
                 "feedback": state.critic_feedback,
                 "draft": state.edited_draft,
             }
         )
+        return {"human_approved": bool(approved)}
 
     # ✅ FIXED: Consistent node name
     graph.add_node("human_review", human_review_node)
@@ -127,7 +127,6 @@ async def build_workflow(checkpointer):
         },
     )
 
-
     # Linear flow for remaining nodes
     graph.add_edge("research_query_gen_node", "researcher_node")
     graph.add_edge("summarizer_node", "research_loop")
@@ -145,14 +144,16 @@ async def build_workflow(checkpointer):
     return workflow
 
 
-#write code to run this file and save the workflow image as workflow.png
-#code to save to workflow image
+# write code to run this file and save the workflow image as workflow.png
+# code to save to workflow image
 if __name__ == "__main__":
     import asyncio
 
     async def main():
         workflow = await build_workflow(checkpointer=None)
-        png_bytes = workflow.get_graph().draw_mermaid_png()  # Uses Mermaid.ink (online, no deps)
+        png_bytes = (
+            workflow.get_graph().draw_mermaid_png()
+        )  # Uses Mermaid.ink (online, no deps)
         with open("workflow.png", "wb") as f:
             f.write(png_bytes)
         print("Saved workflow.png")
