@@ -157,3 +157,8 @@ class BlogAgentState(BaseModel):
         default_factory=list,
         description="List of image generation prompts and their associated section placements.",
     )
+
+    human_approved: bool = Field(
+    default=False,
+    description="Human approval after critic review."
+    )

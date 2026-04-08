@@ -1,3 +1,5 @@
+from turtle import write
+
 from langgraph.graph import StateGraph, START, END
 from agent.state import BlogAgentState
 
@@ -19,7 +21,7 @@ from agent.nodes.image_planner import image_planner_node
 from langgraph.prebuilt import ToolNode
 from agent.tools import initialize_tools
 from functools import partial
-
+from langgraph.types import interrupt
 
 async def build_workflow(checkpointer):
     graph = StateGraph(BlogAgentState)
@@ -29,6 +31,18 @@ async def build_workflow(checkpointer):
 
     # 1. Define Nodes
     researcher_tools_node = ToolNode(shared_tools)
+
+    async def human_review_node(state: BlogAgentState):
+        """Interrupt here for human approval."""
+        interrupt(
+            value={
+                "feedback": state.critic_feedback,
+                "draft": state.edited_draft,
+            }
+        )
+
+    # ✅ FIXED: Consistent node name
+    graph.add_node("human_review", human_review_node)
 
     graph.add_node("router_node", router_node)
     # Pass tools to researcher so it can bind them to the LLM internally
@@ -99,16 +113,20 @@ async def build_workflow(checkpointer):
         {"router_node": "router_node", "planner_node": "planner_node"},
     )
 
-    def needs_revision(state: BlogAgentState):
-        if state.needs_revision and state.revision_cycles < 3:
+    def route_after_human(state: BlogAgentState):
+        if state.human_approved and state.revision_cycles < 3:
             return "task_executer_node"
         return "finalize_node"
 
     graph.add_conditional_edges(
-        "critic_node",
-        needs_revision,
-        {"task_executer_node": "task_executer_node", "finalize_node": "finalize_node"},
+        "human_review",  # ✅ Matches add_node name
+        route_after_human,
+        {
+            "task_executer_node": "task_executer_node",
+            "finalize_node": "finalize_node",
+        },
     )
+
 
     # Linear flow for remaining nodes
     graph.add_edge("research_query_gen_node", "researcher_node")
@@ -117,6 +135,7 @@ async def build_workflow(checkpointer):
     graph.add_edge("task_executer_node", "assembler_node")
     graph.add_edge("assembler_node", "editor_node")
     graph.add_edge("editor_node", "critic_node")
+    graph.add_edge("critic_node", "human_review")  # ✅ To human_review (not _node)
     graph.add_edge("finalize_node", "image_planner_node")
     graph.add_edge("image_planner_node", "image_generation_node")
     graph.add_edge("image_generation_node", END)
@@ -126,16 +145,16 @@ async def build_workflow(checkpointer):
     return workflow
 
 
-# write code to run this file and save the workflow image as workflow.png
-# code to save to workflow image
-# if __name__ == "__main__":
-#     import asyncio
+#write code to run this file and save the workflow image as workflow.png
+#code to save to workflow image
+if __name__ == "__main__":
+    import asyncio
 
-#     async def main():
-#         workflow = await build_workflow(checkpointer=None)
-#         png_bytes = workflow.get_graph().draw_mermaid_png()  # Uses Mermaid.ink (online, no deps)
-#         with open("workflow.png", "wb") as f:
-#             f.write(png_bytes)
-#         print("Saved workflow.png")
+    async def main():
+        workflow = await build_workflow(checkpointer=None)
+        png_bytes = workflow.get_graph().draw_mermaid_png()  # Uses Mermaid.ink (online, no deps)
+        with open("workflow.png", "wb") as f:
+            f.write(png_bytes)
+        print("Saved workflow.png")
 
-#     asyncio.run(main())
+    asyncio.run(main())
