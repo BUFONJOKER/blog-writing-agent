@@ -1,50 +1,49 @@
-error connecting in 'pool-1': failed to resolve host 'db.onwtlwmyegaulotjznxk.supabase.co': [Errno 11001] getaddrinfo failed
-error connecting in 'pool-1': failed to resolve host 'db.onwtlwmyegaulotjznxk.supabase.co': [Errno 11001] getaddrinfo failed
-error connecting in 'pool-1': failed to resolve host 'db.onwtlwmyegaulotjznxk.supabase.co': [Errno 11001] getaddrinfo failed
-error connecting in 'pool-1': failed to resolve host 'db.onwtlwmyegaulotjznxk.supabase.co': [Errno 11001] getaddrinfo failed
-error connecting in 'pool-1': failed to resolve host 'db.onwtlwmyegaulotjznxk.supabase.co': [Errno 11001] getaddrinfo failed
-error connecting in 'pool-1': failed to resolve host 'db.onwtlwmyegaulotjznxk.supabase.co': [Errno 11001] getaddrinfo failed
-error connecting in 'pool-1': failed to resolve host 'db.onwtlwmyegaulotjznxk.supabase.co': [Errno 11001] getaddrinfo failed
-error connecting in 'pool-1': failed to resolve host 'db.onwtlwmyegaulotjznxk.supabase.co': [Errno 11001] getaddrinfo failed
-error connecting in 'pool-1': failed to resolve host 'db.onwtlwmyegaulotjznxk.supabase.co': [Errno 11001] getaddrinfo failed
-
-
-+-----------------------------------------------------------------------------+
-|                                                                             |
-|                                                                             |
-|                        \u2584\u2580\u2580 \u2584\u2580\u2588 \u2588\u2580\u2580 \u2580\u2588\u2580 \u2588\u2580\u2584\u2580\u2588 \u2588\u2580\u2580 \u2588\u2580\u2588                        |
-|                        \u2588\u2580  \u2588\u2580\u2588 \u2584\u2584\u2588  \u2588  \u2588 \u2580 \u2588 \u2588\u2584\u2584 \u2588\u2580\u2580                        |
-|                                                                             |
-|                                                                             |
-|                                FastMCP 3.1.1                                |
-|                            https://gofastmcp.com                            |
-|                                                                             |
-|                 \U0001f5a5  Server:      blog-research-tools, 3.1.1                  |
-|                 \U0001f680 Deploy free: https://fastmcp.cloud                       |
-|                                                                             |
-+-----------------------------------------------------------------------------+
-+-----------------------------------------------------------------------------+
-|                         \U0001f389 Update available: 3.2.0                          |
-|                     Run: pip install --upgrade fastmcp                      |
-+-----------------------------------------------------------------------------+
-
-
-[04/08/26 03:17:28] INFO     Starting MCP server               transport.py:183
-                             'blog-research-tools' with                        
-                             transport 'stdio'                                 
-error connecting in 'pool-1': failed to resolve host 'db.onwtlwmyegaulotjznxk.supabase.co': [Errno 11001] getaddrinfo failed
-error connecting in 'pool-1': failed to resolve host 'db.onwtlwmyegaulotjznxk.supabase.co': [Errno 11001] getaddrinfo failed
-error connecting in 'pool-1': failed to resolve host 'db.onwtlwmyegaulotjznxk.supabase.co': [Errno 11001] getaddrinfo failed
-error connecting in 'pool-1': failed to resolve host 'db.onwtlwmyegaulotjznxk.supabase.co': [Errno 11001] getaddrinfo failed
-error connecting in 'pool-1': failed to resolve host 'db.onwtlwmyegaulotjznxk.supabase.co': [Errno 11001] getaddrinfo failed
-error connecting in 'pool-1': failed to resolve host 'db.onwtlwmyegaulotjznxk.supabase.co': [Errno 11001] getaddrinfo failed
-error connecting in 'pool-1': failed to resolve host 'db.onwtlwmyegaulotjznxk.supabase.co': [Errno 11001] getaddrinfo failed
-error connecting in 'pool-1': failed to resolve host 'db.onwtlwmyegaulotjznxk.supabase.co': [Errno 11001] getaddrinfo failed
-error connecting in 'pool-1': failed to resolve host 'db.onwtlwmyegaulotjznxk.supabase.co': [Errno 11001] getaddrinfo failed
-error connecting in 'pool-1': failed to resolve host 'db.onwtlwmyegaulotjznxk.supabase.co': [Errno 11001] getaddrinfo failed
-error connecting in 'pool-1': failed to resolve host 'db.onwtlwmyegaulotjznxk.supabase.co': [Errno 11001] getaddrinfo failed
-error connecting in 'pool-1': failed to resolve host 'db.onwtlwmyegaulotjznxk.supabase.co': [Errno 11001] getaddrinfo failed
-error connecting in 'pool-1': failed to resolve host 'db.onwtlwmyegaulotjznxk.supabase.co': [Errno 11001] getaddrinfo failed
-error connecting in 'pool-1': failed to resolve host 'db.onwtlwmyegaulotjznxk.supabase.co': [Errno 11001] getaddrinfo failed
-error connecting in 'pool-1': failed to resolve host 'db.onwtlwmyegaulotjznxk.supabase.co': [Errno 11001] getaddrinfo failed
-An error occurred during graph execution: couldn't get a connection after 30.00 sec
+error connecting in 'pool-1': failed to resolve host 'db.ukyrttzhkdmoienbvawh.supabase.co': [Errno 11001] getaddrinfo failed
+error connecting in 'pool-1': failed to resolve host 'db.ukyrttzhkdmoienbvawh.supabase.co': [Errno 11001] getaddrinfo failed
+error connecting in 'pool-1': failed to resolve host 'db.ukyrttzhkdmoienbvawh.supabase.co': [Errno 11001] getaddrinfo failed
+error connecting in 'pool-1': failed to resolve host 'db.ukyrttzhkdmoienbvawh.supabase.co': [Errno 11001] getaddrinfo failed
+error connecting in 'pool-1': failed to resolve host 'db.ukyrttzhkdmoienbvawh.supabase.co': [Errno 11001] getaddrinfo failed
+error connecting in 'pool-1': failed to resolve host 'db.ukyrttzhkdmoienbvawh.supabase.co': [Errno 11001] getaddrinfo failed
+error connecting in 'pool-1': failed to resolve host 'db.ukyrttzhkdmoienbvawh.supabase.co': [Errno 11001] getaddrinfo failed
+error connecting in 'pool-1': failed to resolve host 'db.ukyrttzhkdmoienbvawh.supabase.co': [Errno 11001] getaddrinfo failed
+error connecting in 'pool-1': failed to resolve host 'db.ukyrttzhkdmoienbvawh.supabase.co': [Errno 11001] getaddrinfo failed
+error connecting in 'pool-1': failed to resolve host 'db.ukyrttzhkdmoienbvawh.supabase.co': [Errno 11001] getaddrinfo failed
+error connecting in 'pool-1': failed to resolve host 'db.ukyrttzhkdmoienbvawh.supabase.co': [Errno 11001] getaddrinfo failed
+error connecting in 'pool-1': failed to resolve host 'db.ukyrttzhkdmoienbvawh.supabase.co': [Errno 11001] getaddrinfo failed
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "D:\llm-projects\blog-writing-agent\backend\agent\main.py", line 54, in <module>
+    asyncio.run(main())
+  File "C:\Users\mani\AppData\Roaming\uv\python\cpython-3.11-windows-x86_64-none\Lib\asyncio\runners.py", line 190, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\mani\AppData\Roaming\uv\python\cpython-3.11-windows-x86_64-none\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\mani\AppData\Roaming\uv\python\cpython-3.11-windows-x86_64-none\Lib\asyncio\base_events.py", line 654, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "D:\llm-projects\blog-writing-agent\backend\agent\main.py", line 32, in main
+    await checkpointer.setup()
+  File "D:\llm-projects\blog-writing-agent\backend\.venv\Lib\site-packages\langgraph\checkpoint\postgres\aio.py", line 89, in setup
+    async with self._cursor() as cur:
+  File "C:\Users\mani\AppData\Roaming\uv\python\cpython-3.11-windows-x86_64-none\Lib\contextlib.py", line 210, in __aenter__
+    return await anext(self.gen)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\llm-projects\blog-writing-agent\backend\.venv\Lib\site-packages\langgraph\checkpoint\postgres\aio.py", line 363, in _cursor
+    async with self.lock, _ainternal.get_connection(self.conn) as conn:
+  File "C:\Users\mani\AppData\Roaming\uv\python\cpython-3.11-windows-x86_64-none\Lib\contextlib.py", line 210, in __aenter__
+    return await anext(self.gen)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\llm-projects\blog-writing-agent\backend\.venv\Lib\site-packages\langgraph\checkpoint\postgres\_ainternal.py", line 20, in get_connection
+    async with conn.connection() as conn:
+  File "C:\Users\mani\AppData\Roaming\uv\python\cpython-3.11-windows-x86_64-none\Lib\contextlib.py", line 210, in __aenter__
+    return await anext(self.gen)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\llm-projects\blog-writing-agent\backend\.venv\Lib\site-packages\psycopg_pool\pool_async.py", line 216, in connection
+    conn = await self.getconn(timeout=timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\llm-projects\blog-writing-agent\backend\.venv\Lib\site-packages\psycopg_pool\pool_async.py", line 251, in getconn
+    raise PoolTimeout(
+psycopg_pool.PoolTimeout: couldn't get a connection after 30.00 sec

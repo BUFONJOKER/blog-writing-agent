@@ -25,7 +25,7 @@ async def build_workflow(checkpointer):
     graph = StateGraph(BlogAgentState)
 
     # Initialize shared tools (must include both web_search_tool and fetch_page_tool)
-    shared_tools = await initialize_tools("local")
+    shared_tools = await initialize_tools("hosted")
 
     # 1. Define Nodes
     researcher_tools_node = ToolNode(shared_tools)
