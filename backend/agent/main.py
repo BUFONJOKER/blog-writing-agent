@@ -19,7 +19,8 @@ async def main():
     ) as pool:
 
         checkpointer = AsyncPostgresSaver(pool)
-        await checkpointer.setup()
+        # run the setup to create necessary tables if they don't exist. Safe to run multiple times.
+        # await checkpointer.setup()
 
         app = await build_workflow(checkpointer)
 
