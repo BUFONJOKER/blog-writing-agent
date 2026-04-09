@@ -17,7 +17,14 @@ from db.crud.blog_outputs import save_output, get_output, get_all_outputs_of_use
 #     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
 
 
-async def agent(workflow, pool: AsyncConnectionPool, user_id: str, thread_id:str, prompt: str):
+async def agent(
+    workflow,
+    pool: AsyncConnectionPool,
+    user_id: str,
+    thread_id: str,
+    prompt: str,
+    run_name: str,
+):
     """Main function to run the agent workflow for blog generation.
 
     Args:
@@ -44,7 +51,6 @@ async def agent(workflow, pool: AsyncConnectionPool, user_id: str, thread_id:str
 
     app = workflow
 
-
     # user_id = input("Enter your user ID: ")
     # prompt = input("Enter your blog post prompt: ")
     # run_name = f"blog_writing_agent_run_{thread_id[:8]}"
@@ -58,9 +64,7 @@ async def agent(workflow, pool: AsyncConnectionPool, user_id: str, thread_id:str
         interrupt_type=None,
     )
 
-    config = {
-        "configurable": {"thread_id": thread_id}
-    }
+    config = {"configurable": {"thread_id": thread_id}, "run_name": run_name}
 
     initial_input = {"prompt": prompt}
 
@@ -87,7 +91,7 @@ async def agent(workflow, pool: AsyncConnectionPool, user_id: str, thread_id:str
             await finalize_workflow(app, config, pool, thread_id)
 
     except Exception as e:
-        print(f"An error occurred: {e}")
+
         await update_run_status(
             pool=pool,
             thread_id=thread_id,
@@ -95,11 +99,15 @@ async def agent(workflow, pool: AsyncConnectionPool, user_id: str, thread_id:str
             interrupt_type="error",
             error_message=str(e),
         )
-    return {'thread_id': thread_id}
+
+        raise e
+        # Update database status to failed if any error occurs during execution
+
+    return {"thread_id": thread_id}
+
 
 async def finalize_workflow(app, config, pool, thread_id):
     """Function to finalize the workflow after completion and save the output to the database."""
-
 
     state = await app.aget_state(config)
     final_md = state.values.get("final_post") or "No final post markdown found."
@@ -119,8 +127,6 @@ async def finalize_workflow(app, config, pool, thread_id):
     await update_run_status(
         pool=pool, thread_id=thread_id, status="completed", completed_at=utc_now()
     )
-
-
 
 
 #     # --- HUMAN-IN-THE-LOOP / RESUME LOOP ---

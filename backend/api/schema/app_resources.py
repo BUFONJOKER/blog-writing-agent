@@ -32,3 +32,8 @@ class AppResources(BaseModel):
         default=None,
         description="Shared tool collection or client wrapper used by the app.",
     )
+
+    run_name: str = Field(
+        default="",
+        description="Run name for langsmith tracing"
+    )

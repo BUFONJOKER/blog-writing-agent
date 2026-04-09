@@ -111,9 +111,15 @@ async def build_workflow(checkpointer, model, shared_tools):
     )
 
     def route_after_human(state: BlogAgentState):
-        if state.human_approved and state.revision_cycles < 3:
+        '''After human review, if not approved and revision cycles < 3, go back to task execution. Otherwise, finalize.'''
+        if state.human_approved:
+            return "finalize_node"
+        elif state.revision_cycles < 3:
             return "task_executer_node"
-        return "finalize_node"
+        else:
+            return "finalize_node"
+
+
 
     graph.add_conditional_edges(
         "human_review",  # ✅ Matches add_node name
