@@ -12,7 +12,7 @@ from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from agent.workflow import build_workflow
 from agent.tools import initialize_tools
 from fastapi.middleware.cors import CORSMiddleware
-
+from api.routes.blog import blog_router
 
 
 if sys.platform == "win32":
@@ -79,6 +79,7 @@ async def health_check():
 
     raise HTTPException(status_code=503, detail="Service Degraded")
 
+app.include_router(blog_router)
 
 if __name__ == "__main__":
     uvicorn.run("api.main:app", host="0.0.0.0", port=8000, reload=True)
