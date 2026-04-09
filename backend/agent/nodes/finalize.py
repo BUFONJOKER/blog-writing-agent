@@ -67,9 +67,6 @@ def finalize_node(state: BlogAgentState, model) -> dict:
     final_post = response.content
 
     return {"final_post": final_post}
-
-
-if __name__ == "__main__":
     # Example usage
     state = BlogAgentState(
         prompt="Write a blog post about the benefits of using MCP servers for Minecraft.",

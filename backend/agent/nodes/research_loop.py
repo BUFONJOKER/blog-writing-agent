@@ -13,8 +13,6 @@ def research_loop_node(state: BlogAgentState) -> dict:
         # print(f"--- MAX TOOL CALLS ({state.max_tool_calls}) REACHED: FORCING EXIT ---")
         need_more = False
 
-    # 3. Logic: If we don't need more research, we should ensure the 'more_research_needed'
-    # flag is set to False so the conditional edge in workflow.py routes to 'planner_node'.
     return {
         "more_research_needed": need_more,
         "status": "planning" if not need_more else "researching"

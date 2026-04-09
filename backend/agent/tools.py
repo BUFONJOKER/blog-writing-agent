@@ -54,12 +54,4 @@ async def initialize_tools(tools_place: Literal['hosted', 'local']) -> list:
     else:
         tools = await get_local_mcp_tools()
 
-    # print(f"Discovered {len(tools)} tools from MCP server ({tools_place}):")
-    # for tool in tools:
-    #     print(f"- {tool.name}")
-
     return tools
-
-
-if __name__ == "__main__":
-    asyncio.run(initialize_tools('local'))

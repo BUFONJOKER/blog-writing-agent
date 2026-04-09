@@ -145,20 +145,3 @@ async def build_workflow(checkpointer, model, shared_tools):
     # HIL is temporarily disabled until the interactive review flow is fully implemented.
     workflow = graph.compile(checkpointer=checkpointer)
     return workflow
-
-
-# write code to run this file and save the workflow image as workflow.png
-# code to save to workflow image
-if __name__ == "__main__":
-    import asyncio
-
-    async def main():
-        workflow = await build_workflow(checkpointer=None)
-        png_bytes = (
-            workflow.get_graph().draw_mermaid_png()
-        )  # Uses Mermaid.ink (online, no deps)
-        with open("workflow.png", "wb") as f:
-            f.write(png_bytes)
-        print("Saved workflow.png")
-
-    asyncio.run(main())

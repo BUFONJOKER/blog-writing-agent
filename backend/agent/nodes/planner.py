@@ -107,14 +107,3 @@ def planner_node(state: BlogAgentState, model) -> dict:
         "human_feedback":"awaiting",
         "interrupt_type":"plan_review"
     }
-
-if __name__ == "__main__":
-    # Test execution
-    state = BlogAgentState(
-        prompt="Write a blog post about the latest trends in MLOps for 2026.",
-        research_summary="In 2026, MLOps has evolved to include automated model monitoring, real-time data drift detection, and seamless integration with edge devices."
-    )
-
-    plan = planner_node(state)
-
-    # #print(plan)

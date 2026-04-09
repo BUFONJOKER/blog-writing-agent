@@ -92,10 +92,6 @@ def router_node(state: BlogAgentState, model) -> dict:
 
     }
 
-
-# only for testing purposes, not part of the actual graph execution
-
-if __name__ == "__main__":
     import asyncio
     import time
     async def test_router():

@@ -108,7 +108,6 @@ def editor_node(state: BlogAgentState, model) -> dict:
         'edited_draft': edited_draft
     }
 
-if __name__ == "__main__":
     # Example usage
     state = BlogAgentState(
         prompt="Write a blog post about the benefits of using MCP servers for Minecraft.",

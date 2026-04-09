@@ -122,15 +122,3 @@ async def summarizer_node(state: BlogAgentState, model) -> dict:
     ai_msg = AIMessage(content=final_summary)
 
     return {"research_summary": final_summary, "messages": [ai_msg]}
-
-
-if __name__ == "__main__":
-    # Test execution
-    state = BlogAgentState(
-        prompt="Explain the benefits of AI in 2026.",
-        topic="Artificial Intelligence",
-        needs_research=False,
-        research_summary="AI has automated 40% of manual data entry tasks by 2026.",
-    )
-    result = asyncio.run(summarizer_node(state))
-    # print(f"Summary: {result['research_summary']}")

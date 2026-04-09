@@ -146,15 +146,3 @@ def research_query_gen_node(state: BlogAgentState, model) -> dict:
         "more_research_needed": response.more_research_needed,
         # REMOVE "messages": [ai_msg] to keep the history clean for the researcher
     }
-
-
-
-
-if __name__ == "__main__":
-    # Example test case for the research query generation node
-    test_state = BlogAgentState(
-        prompt="Write a blog post about the latest updates in LangGraph and how it compares to LangChain for building AI agents."
-    )
-
-    output = research_query_gen_node(test_state)
-    # print(output)
