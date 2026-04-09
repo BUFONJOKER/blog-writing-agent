@@ -2,11 +2,11 @@ import asyncio
 import sys
 import io
 import uuid
-from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
+# from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from langgraph.types import Command
-from psycopg_pool import AsyncConnectionPool
-from agent.workflow import build_workflow
-from agent.config import DB_URL
+# from psycopg_pool import AsyncConnectionPool
+# from agent.workflow import build_workflow
+# from agent.config import DB_URL
 from db.crud.blog_runs import create_blog_run, update_run_status, utc_now
 from db.crud.blog_outputs import save_output, get_output, get_all_outputs_of_user
 
@@ -15,23 +15,25 @@ if sys.platform == "win32":
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
 
 
-async def main():
-    async with AsyncConnectionPool(
-        conninfo=DB_URL,
-        max_size=20,
-        min_size=1,
-        kwargs={"autocommit": True},
-    ) as pool:
+async def agent(workflow, pool, user_id, prompt):
+    # async with AsyncConnectionPool(
+    #     conninfo=DB_URL,
+    #     max_size=20,
+    #     min_size=1,
+    #     kwargs={"autocommit": True},
+    # ) as pool:
 
-        checkpointer = AsyncPostgresSaver(pool)
+        # checkpointer = AsyncPostgresSaver(pool)
         # Ensure tables exist
         # await checkpointer.setup()
 
-        app = await build_workflow(checkpointer)
+        # app = await build_workflow(checkpointer)
+
+        app = workflow
 
         thread_id = str(uuid.uuid4())
-        user_id = input("Enter your user ID: ")
-        prompt = input("Enter your blog post prompt: ")
+        # user_id = input("Enter your user ID: ")
+        # prompt = input("Enter your blog post prompt: ")
         run_name = f"blog_writing_agent_run_{thread_id[:8]}"
 
         await create_blog_run(
@@ -207,6 +209,6 @@ async def main():
 
 if __name__ == "__main__":
     try:
-        asyncio.run(main())
+        asyncio.run(agent())
     except KeyboardInterrupt:
         print("\nScript stopped by user.")

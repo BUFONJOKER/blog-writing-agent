@@ -17,16 +17,13 @@ from agent.nodes.image_generation import image_generation_node
 from agent.nodes.image_planner import image_planner_node
 
 from langgraph.prebuilt import ToolNode
-from agent.tools import initialize_tools
 from functools import partial
 from langgraph.types import interrupt
+from functools import partial
 
-
-async def build_workflow(checkpointer):
+async def build_workflow(checkpointer, model, shared_tools):
     graph = StateGraph(BlogAgentState)
 
-    # Initialize shared tools (must include both web_search_tool and fetch_page_tool)
-    shared_tools = await initialize_tools("hosted")
 
     # 1. Define Nodes
     researcher_tools_node = ToolNode(shared_tools)
@@ -44,20 +41,20 @@ async def build_workflow(checkpointer):
     # ✅ FIXED: Consistent node name
     graph.add_node("human_review", human_review_node)
 
-    graph.add_node("router_node", router_node)
+    graph.add_node("router_node", partial(router_node, model=model))  # Pass model to router for classification
     # Pass tools to researcher so it can bind them to the LLM internally
-    graph.add_node("researcher_node", partial(researcher_node, tools=shared_tools))
+    graph.add_node("researcher_node", partial(researcher_node, tools=shared_tools, model=model))
     graph.add_node("researcher_tools", researcher_tools_node)
-    graph.add_node("research_query_gen_node", research_query_gen_node)
-    graph.add_node("summarizer_node", summarizer_node)
+    graph.add_node("research_query_gen_node", partial(research_query_gen_node, model=model))
+    graph.add_node("summarizer_node", partial(summarizer_node, model=model))
     graph.add_node("research_loop", research_loop_node)
-    graph.add_node("planner_node", planner_node)
-    graph.add_node("task_executer_node", task_executer_node)
-    graph.add_node("assembler_node", assembler_node)
-    graph.add_node("editor_node", editor_node)
-    graph.add_node("critic_node", critic_node)
-    graph.add_node("finalize_node", finalize_node)
-    graph.add_node("image_planner_node", image_planner_node)
+    graph.add_node("planner_node", partial(planner_node, model=model))
+    graph.add_node("task_executer_node", partial(task_executer_node, model=model))
+    graph.add_node("assembler_node", partial(assembler_node, model=model))
+    graph.add_node("editor_node", partial(editor_node, model=model))
+    graph.add_node("critic_node", partial(critic_node, model=model))
+    graph.add_node("finalize_node", partial(finalize_node, model=model))
+    graph.add_node("image_planner_node", partial(image_planner_node, model=model))
     graph.add_node("image_generation_node", image_generation_node)
 
     # 2. Define Routing Logic

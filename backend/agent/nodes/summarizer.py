@@ -1,6 +1,5 @@
 from agent.state import BlogAgentState
 import asyncio
-from agent.model import load_model
 from langchain_core.messages import AIMessage
 from langchain_core.prompts import ChatPromptTemplate
 
@@ -56,8 +55,8 @@ def _ensure_non_empty_summary(summary: object, fallback: object = "") -> str:
     return FALLBACK_SUMMARY
 
 
-async def summarizer_node(state: BlogAgentState) -> dict:
-    model = load_model()
+async def summarizer_node(state: BlogAgentState, model) -> dict:
+    # model = load_model()
     fallback_from_results = _build_fallback_research_summary(state.research_results)
     # 1. Determine the source of data
     if state.needs_research:

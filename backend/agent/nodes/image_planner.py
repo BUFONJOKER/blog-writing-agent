@@ -1,5 +1,4 @@
 from agent.state import BlogAgentState
-from agent.model import load_model
 from pydantic import BaseModel, Field
 from typing_extensions import List
 from langchain_core.prompts import ChatPromptTemplate
@@ -18,9 +17,9 @@ class ImagePlannerInput(BaseModel):
     image_plan: List[ImagePlacement]
 
 
-def image_planner_node(state: BlogAgentState) -> dict:
+def image_planner_node(state: BlogAgentState, model) -> dict:
 
-    model = load_model()
+    # model = load_model()
 
     structured_model = model.with_structured_output(
         schema=ImagePlannerInput, method="function_calling"

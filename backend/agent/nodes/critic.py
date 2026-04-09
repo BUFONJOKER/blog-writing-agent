@@ -4,7 +4,6 @@ from typing import List
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field, field_validator
 
-from agent.model import load_model
 from agent.state import BlogAgentState
 
 
@@ -54,9 +53,9 @@ class CriticFeedback(BaseModel):
     )
 
 
-def critic_node(state: BlogAgentState):
+def critic_node(state: BlogAgentState, model) -> dict:
 
-    model = load_model()
+    # model = load_model()
     structured_model = model.with_structured_output(
         schema=CriticFeedback, method="function_calling"
     )

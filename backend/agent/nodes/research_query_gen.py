@@ -1,7 +1,6 @@
 from agent.state import BlogAgentState
 from pydantic import Field, BaseModel
 from langchain_core.prompts import ChatPromptTemplate
-from agent.model import load_model
 from typing import List
 from langchain_core.messages import AIMessage
 
@@ -47,7 +46,7 @@ class ResearchQueryGenNodeOutput(BaseModel):
     )
 
 
-def research_query_gen_node(state: BlogAgentState) -> dict:
+def research_query_gen_node(state: BlogAgentState, model) -> dict:
     """
     Acts as the Senior Research Strategist to decompose the user prompt into a
     structured research roadmap.
@@ -73,7 +72,7 @@ def research_query_gen_node(state: BlogAgentState) -> dict:
             research_loop.
     """
 
-    model = load_model()
+    # model = load_model()
 
     llm_structured_output = model.with_structured_output(schema=ResearchQueryGenNodeOutput, method='function_calling')
 

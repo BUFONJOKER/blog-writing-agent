@@ -1,13 +1,12 @@
 from agent.state import BlogAgentState
-from agent.model import load_model
 from langchain_core.prompts import ChatPromptTemplate
 
 
-def task_executer_node(state: BlogAgentState) -> dict:
+def task_executer_node(state: BlogAgentState, model) -> dict:
     """
     This function write blog content
     """
-    model = load_model()
+    # model = load_model()
 
     system_prompt = """
     You are a SENIOR technical blog writer, SEO strategist, and content editor with 15+ years of experience.

@@ -2,8 +2,6 @@ import json
 import re
 from langchain_core.messages import ToolMessage, SystemMessage, HumanMessage
 from agent.state import BlogAgentState
-from agent.model import load_model
-
 
 # 🔥 Futility keywords
 FUTURE_KEYWORDS = [
@@ -170,12 +168,12 @@ def _extract_results_from_tool_messages(messages: list[ToolMessage]) -> list[dic
     return results
 
 
-async def researcher_node(state: BlogAgentState, tools: list) -> dict:
+async def researcher_node(state: BlogAgentState, tools: list, model) -> dict:
     """
     Executes the 'Retrieval Phase' with logic to encourage deep extraction via fetch_page_tool.
     This node loops until the LLM decides it has enough detailed information.
     """
-    model = load_model()
+    # model = load_model()
     # Bind the provided tools (web_search_tool and fetch_page_tool) to the model
     model_with_tools = model.bind_tools(tools)
 

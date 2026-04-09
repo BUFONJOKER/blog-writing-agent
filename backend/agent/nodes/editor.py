@@ -1,14 +1,13 @@
-from agent.model import load_model
 from agent.state import BlogAgentState
 from langchain_core.prompts import ChatPromptTemplate
 
 
-def editor_node(state: BlogAgentState) -> dict:
+def editor_node(state: BlogAgentState, model) -> dict:
     '''
     This node performs a final-pass edit on the assembled blog draft. It focuses on improving clarity, grammar, flow, and overall readability without changing the core meaning or adding new content. The editor ensures the blog reads as a polished, coherent article ready for publishing.
     '''
 
-    model = load_model()
+    # model = load_model()
 
     draft = state.draft
 

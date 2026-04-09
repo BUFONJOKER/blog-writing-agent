@@ -1,5 +1,4 @@
 from agent.state import BlogAgentState
-from agent.model import load_model
 from pydantic import BaseModel, Field
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import AIMessage
@@ -33,7 +32,7 @@ class BlogPlan(BaseModel):
     sections: List[SectionPlan] = Field(description="Detailed plan for each section of the blog post")
 
 
-def planner_node(state: BlogAgentState):
+def planner_node(state: BlogAgentState, model) -> dict:
 
     prompt = state.prompt
 
@@ -67,7 +66,7 @@ def planner_node(state: BlogAgentState):
         ("human", "Based on the following prompt {prompt} and a research summary\n {research_summary} create a detailed blog plan.")
     ])
 
-    model = load_model()
+    # model = load_model()
 
     model_with_structured_output = model.with_structured_output(schema=BlogPlan, method='function_calling')
 

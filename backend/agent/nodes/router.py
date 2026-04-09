@@ -1,4 +1,3 @@
-from agent.model import load_model
 from agent.state import BlogAgentState
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
@@ -31,18 +30,19 @@ class RouterNodeDecision(BaseModel):
         )
     )
 
-def router_node(state: BlogAgentState) -> dict:
+def router_node(state: BlogAgentState, model) -> dict:
     """Classify the incoming prompt and return a routing state update.
 
     Args:
         state: Current graph state containing the user's prompt.
+        model: The language model to use for classification.
 
     Returns:
         A partial state dictionary with the `needs_research` flag set to the
         model's classification result and `topic` of prompt.
     """
 
-    model = load_model()
+    # model = load_model()
     # Using 'tool_calling' is often more robust for Ollama models than 'function_calling'
     llm_structured_output = model.with_structured_output(schema=RouterNodeDecision,method='function_calling')
 

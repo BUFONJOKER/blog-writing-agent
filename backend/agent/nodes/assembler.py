@@ -2,7 +2,6 @@ from pydantic import BaseModel, Field, field_validator
 from typing import List
 from agent.state import BlogAgentState
 from langchain_core.prompts import ChatPromptTemplate
-from agent.model import load_model
 
 # --- 1. Define Pydantic Models ---
 
@@ -19,12 +18,12 @@ class BlogDraft(BaseModel):
 
 # --- 2. Updated Assembler Node ---
 
-def assembler_node(state: BlogAgentState) -> dict:
+def assembler_node(state: BlogAgentState, model) -> dict:
     # Load model and bind the Pydantic schema for structured output
     if state.edited_draft:
         return {'edited_draft': state.edited_draft}
 
-    base_model = load_model()
+    base_model = model
     structured_model = base_model.with_structured_output(schema=BlogDraft, method='function_calling')
 
     blog_plan = state.blog_plan

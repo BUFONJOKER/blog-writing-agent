@@ -1,9 +1,8 @@
 from agent.state import BlogAgentState
-from agent.model import load_model
 from langchain_core.prompts import ChatPromptTemplate
 
 
-def finalize_node(state: BlogAgentState) -> dict:
+def finalize_node(state: BlogAgentState, model) -> dict:
     """Finalize the blog post by refining the draft.
 
     Args:
@@ -12,7 +11,7 @@ def finalize_node(state: BlogAgentState) -> dict:
     Return:
         cleaned, formatted final blog post
     """
-    model = load_model()
+    # model = load_model()
 
     edited_draft = state.edited_draft
 
