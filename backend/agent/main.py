@@ -4,18 +4,18 @@ import io
 import uuid
 # from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from langgraph.types import Command
-# from psycopg_pool import AsyncConnectionPool
+from psycopg_pool import AsyncConnectionPool
 # from agent.workflow import build_workflow
 # from agent.config import DB_URL
 from db.crud.blog_runs import create_blog_run, update_run_status, utc_now
 from db.crud.blog_outputs import save_output, get_output, get_all_outputs_of_user
 
-if sys.platform == "win32":
-    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
+# if sys.platform == "win32":
+#     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+#     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
 
 
-async def agent(workflow, pool, user_id, prompt):
+async def agent(workflow, pool:AsyncConnectionPool, user_id:str, prompt:str):
     # async with AsyncConnectionPool(
     #     conninfo=DB_URL,
     #     max_size=20,
