@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict, Field
-from typing import Any, Optional
+from typing import Any
 from psycopg_pool import AsyncConnectionPool
 
 

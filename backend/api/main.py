@@ -4,7 +4,7 @@ import asyncio
 import uvicorn
 from fastapi import FastAPI, status, HTTPException
 from contextlib import asynccontextmanager
-from api.schema.app_resources import AppResources
+from api.app_resources import AppResources
 from psycopg_pool import AsyncConnectionPool
 from agent.config import DB_URL
 from langchain_ollama import ChatOllama
