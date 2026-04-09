@@ -97,7 +97,8 @@ def root():
             "/blog/generate": "POST - Start a new blog generation workflow",
             "/blog/review": "POST - Approve or reject a workflow at human-review step",
             "/blog/status": "GET - Check the status of an ongoing workflow by thread_id",
-            "/blog/final_post":"POST - Retrieve the final blog post content after workflow completion by giving thread_id"
+            "/blog/final_post":"POST - Retrieve the final blog post content after workflow completion by giving thread_id",
+            "/blog/user_posts/{user_id}": "GET - Retrieve all blog outputs associated with a user_id",
         },
     }
 
