@@ -43,20 +43,12 @@ async def get_hosted_horizon_mcp_tools() -> list:
         }
     }
 
-    mcp_server_config_hf = {
-        "blog-research-tools-hf": {
-            # Use the /sse suffix shown in your logs
-            "url": "https://bufon-joker-blog-writing-agent-mcp-server-v2.hf.space/sse",
-            # Change from 'streamable_http' to 'sse'
-            "transport": "sse",
-        }
-    }
 
     client = MultiServerMCPClient(mcp_server_config)
     return await client.get_tools()
 
 async def get_hosted_huggingface_mcp_tools() -> list:
-    """Fetch tool definitions from the hosted MCP server over HTTP.
+    """Fetch tool definitions from the hosted MCP server on huggingface space over sse.
 
     Returns:
         list: Tool objects discovered from the hosted MCP server.
@@ -65,9 +57,9 @@ async def get_hosted_huggingface_mcp_tools() -> list:
     mcp_server_config_hf = {
         "blog-research-tools-hf": {
             # Use the /sse suffix shown in your logs
-            # "url": "https://bufon-joker-blog-writing-agent-mcp-server-v2.hf.space/sse",
-            "url": "http://localhost:8000/sse",
-            # Change from 'streamable_http' to 'sse'
+            "url": "https://bufon-joker-blog-writing-agent-mcp-server-v2.hf.space/sse",
+            # "url": "http://localhost:8000/sse",
+            # # Change from 'streamable_http' to 'sse'
             "transport": "sse",
         }
     }
