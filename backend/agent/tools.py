@@ -65,7 +65,8 @@ async def get_hosted_huggingface_mcp_tools() -> list:
     mcp_server_config_hf = {
         "blog-research-tools-hf": {
             # Use the /sse suffix shown in your logs
-            "url": "https://bufon-joker-blog-writing-agent-mcp-server-v2.hf.space/sse",
+            # "url": "https://bufon-joker-blog-writing-agent-mcp-server-v2.hf.space/sse",
+            "url": "http://localhost:8000/sse",
             # Change from 'streamable_http' to 'sse'
             "transport": "sse",
         }
@@ -86,8 +87,8 @@ async def initialize_tools(tools_place: Literal['hosted_horizon', 'hosted_huggin
 
     return tools
 
-# if __name__ == "__main__":
-#     tools = asyncio.run(initialize_tools('hosted'))
-#     print(f"Discovered {len(tools)} tools:")
-#     for tool in tools:
-#         print(f" - {tool.name}")
+if __name__ == "__main__":
+    tools = asyncio.run(initialize_tools('hosted_huggingface'))
+    print(f"Discovered {len(tools)} tools:")
+    for tool in tools:
+        print(f" - {tool.name}")
