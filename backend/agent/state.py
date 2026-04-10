@@ -153,10 +153,7 @@ class BlogAgentState(BaseModel):
         description="Number of times the content has been revised based on critic feedback.",
     )
 
-    image_plan: List[dict] = Field(
-        default_factory=list,
-        description="List of image generation prompts and their associated section placements.",
-    )
+
 
     human_approved: bool = Field(
     default=False,

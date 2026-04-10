@@ -13,8 +13,6 @@ from agent.nodes.critic import critic_node
 from agent.nodes.finalize import finalize_node
 from agent.nodes.researcher import researcher_node
 from agent.nodes.research_loop import research_loop_node
-from agent.nodes.image_generation import image_generation_node
-from agent.nodes.image_planner import image_planner_node
 
 from langgraph.prebuilt import ToolNode
 from functools import partial
@@ -54,8 +52,7 @@ async def build_workflow(checkpointer, model, shared_tools):
     graph.add_node("editor_node", partial(editor_node, model=model))
     graph.add_node("critic_node", partial(critic_node, model=model))
     graph.add_node("finalize_node", partial(finalize_node, model=model))
-    graph.add_node("image_planner_node", partial(image_planner_node, model=model))
-    graph.add_node("image_generation_node", image_generation_node)
+
 
     # 2. Define Routing Logic
     graph.add_edge(START, "router_node")
@@ -138,10 +135,24 @@ async def build_workflow(checkpointer, model, shared_tools):
     graph.add_edge("assembler_node", "editor_node")
     graph.add_edge("editor_node", "critic_node")
     graph.add_edge("critic_node", "human_review")  # ✅ To human_review (not _node)
-    graph.add_edge("finalize_node", "image_planner_node")
-    graph.add_edge("image_planner_node", "image_generation_node")
-    graph.add_edge("image_generation_node", END)
+    graph.add_edge("finalize_node", END)
 
     # HIL is temporarily disabled until the interactive review flow is fully implemented.
     workflow = graph.compile(checkpointer=checkpointer)
     return workflow
+
+
+# write code to generate image of workflow using graph mermaid png and save to png file
+if __name__ == "__main__":
+    import asyncio
+
+    async def main():
+        app = await build_workflow(checkpointer=None, model=None, shared_tools=[])
+        graph_png_bytes = app.get_graph().draw_mermaid_png()
+        # 2. Save to a file
+        with open("blog_agent_workflow.png", "wb") as f:
+            f.write(graph_png_bytes)
+
+        print("✅ Workflow saved as blog_agent_workflow.png")
+
+    asyncio.run(main())

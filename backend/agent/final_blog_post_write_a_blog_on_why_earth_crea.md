@@ -6,6 +6,13 @@ While the Nebular Hypothesis remains the dominant framework, the mechanics are u
 
 ## The Nebular Hypothesis: Scientific Framework for Earth's Birth
 
+<div align="center">
+  <img src="https://image.pollinations.ai/prompt/A%20cinematic%203D%20render%20of%20a%20swirling%20protoplanetary%20disk%20around%20a%20young%20sun%2C%20showing%20dust%20grains%20coalescing%20into%20planetesimals.%20Warm%20inner%20zones%20glow%20orange%20while%20outer%20zones%20are%20icy%20blue.%20Isometric%20perspective%2C%20high%20detail%2C%20volumetric%20lighting%2C%20scientific%20visualization%20style%2C%20dramatic%20contrast%20between%20heat%20and%20cold%20regions.?width=1024&height=768&model=flux&seed=139734&nologo=true" alt="A cinematic 3D render of a swirling protoplanetary" width="800" />
+  <br><sub><i>Visualized via flux AI</i></sub>
+</div>
+
+
+
 Setting aside mythology, the **Nebular Hypothesis** stands as the prevailing scientific consensus for our planetary origins. It posits that exactly 4.57 billion years ago, a giant interstellar molecular cloud succumbed to catastrophic gravitational collapse. This wasn't a gentle drift but a violent contraction that spun a presolar nebula into a flattened, rotating structure known as a **protoplanetary disk**.
 
 Temperature gradients within this disk dictated planetary architecture. Close to the infant Sun, intense heat vaporized volatile compounds, allowing only refractory materials like silicates and metals to condense. This thermal differentiation explains why Earth became a rocky terrestrial world while gas giants accumulated further out in the colder zones.
