@@ -43,7 +43,16 @@ async def get_hosted_mcp_tools() -> list:
         }
     }
 
-    client = MultiServerMCPClient(mcp_server_config)
+    mcp_server_config_hf = {
+        "blog-research-tools-hf": {
+            # Use the /sse suffix shown in your logs
+            "url": "https://bufon-joker-blog-writing-agent-mcp-server-v2.hf.space/sse",
+            # Change from 'streamable_http' to 'sse'
+            "transport": "sse",
+        }
+    }
+
+    client = MultiServerMCPClient(mcp_server_config_hf)
     return await client.get_tools()
 
 
@@ -55,3 +64,9 @@ async def initialize_tools(tools_place: Literal['hosted', 'local']) -> list:
         tools = await get_local_mcp_tools()
 
     return tools
+
+if __name__ == "__main__":
+    tools = asyncio.run(initialize_tools('hosted'))
+    print(f"Discovered {len(tools)} tools:")
+    for tool in tools:
+        print(f" - {tool.name}")

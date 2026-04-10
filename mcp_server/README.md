@@ -1,117 +1,134 @@
+
+---
+
 # 🧰 MCP Server Service
 
-> Dedicated FastMCP tool server that provides research utilities for the Blog Writing Agent workflow.
+> A dedicated **FastMCP tool server** that powers research capabilities for the Blog Writing Agent workflow.
 
-[![Python](https://img.shields.io/badge/Python-3.11+-blue?logo=python)](https://python.org)
-[![FastMCP](https://img.shields.io/badge/FastMCP-Tool_Server-1f6feb)](https://github.com/jlowin/fastmcp)
-[![Docker](https://img.shields.io/badge/Docker-Supported-2496ED?logo=docker)](https://www.docker.com)
-
----
-
-## 📖 Table of Contents
-
-- [What This Service Does](#-what-this-service-does)
-- [Tech Stack](#-tech-stack)
-- [Architecture Flow](#-architecture-flow)
-- [Project Areas](#-project-areas)
-- [Requirements](#-requirements)
-- [Getting Started](#-getting-started)
-- [Environment Variables](#-environment-variables)
-- [Current Status](#-current-status)
-- [Next Milestones](#-next-milestones)
-- [Planning Source](#-planning-source)
+![Python](https://img.shields.io/badge/Python-3.11+-blue?logo=python)
+![FastMCP](https://img.shields.io/badge/FastMCP-Tool_Server-1f6feb)
+![Docker](https://img.shields.io/badge/Docker-Supported-2496ED?logo=docker)
 
 ---
 
-## 🎯 What This Service Does
+## 📖 Overview
 
-- Hosts MCP-compatible tools used by backend agent nodes
-- Exposes web research capabilities (search + page fetch)
-- Supports local stdio use and deployment-style SSE transport
-- Provides a separate deployable tool service for agent orchestration
+This service acts as a **tool execution layer** for your agent system. It exposes MCP-compatible tools that enable backend agents to perform web research, fetch content, and return structured data.
+
+---
+
+## 🎯 Core Responsibilities
+
+* Provide MCP-compatible tools for agent workflows
+* Enable web research (search + content fetching)
+* Support both **local development (stdio)** and **production (SSE transport)**
+* Run as an independent, deployable microservice
 
 ---
 
 ## 🧱 Tech Stack
 
-- Python
-- FastMCP
-- Tavily API (research/search source)
-- Docker (for containerized deployment)
+* **Python 3.11+**
+* **FastMCP**
+* **Tavily API** (search provider)
+* **Docker** (containerization)
 
 ---
 
-## 🏗️ Architecture Flow
+## 🏗️ Architecture
 
-```text
-Backend Agent Node
-  ↓
-MCP Client Connection
-  ↓
+```
+Agent Node
+   ↓
+MCP Client
+   ↓
 FastMCP Server
-  ↓
-Tool Calls (search/fetch)
-  ↓
-Structured Results Returned to Agent
+   ↓
+Tool Execution (Search / Fetch)
+   ↓
+Structured Response → Agent
 ```
 
 ---
 
-## 📁 Project Areas
+## 📁 Project Structure
 
-- server.py: FastMCP app setup and transport run modes
-- tools/web_search.py: web search tool implementation
-- tools/fetch_page.py: page fetching/scraping tool
-- config.py: environment loading and runtime settings
-- tests/: MCP/tool-focused tests
-- Dockerfile: container build and runtime configuration
+```
+mcp_server/
+│
+├── server.py              # FastMCP server setup & transport modes
+├── config.py              # Environment & runtime configuration
+│
+├── tools/
+│   ├── web_search.py      # Search tool
+│   └── fetch_page.py      # Web page fetch/scrape tool
+│
+├── tests/                 # Tool & MCP tests
+├── Dockerfile             # Container setup
+```
 
 ---
 
 ## ⚙️ Requirements
 
-- Python 3.11+
-- uv (recommended)
-- Tavily API key
+* Python **3.11+**
+* `uv` (recommended package manager)
+* Tavily API key
 
 ---
 
 ## 🚀 Getting Started
 
-### Install Dependencies
+### 1. Install Dependencies
 
 ```bash
 cd mcp_server
 uv sync
 ```
 
-### Run Locally (FastMCP CLI)
+---
+
+### 2. Run Locally
 
 ```bash
 uv run fastmcp run server.py
 ```
 
-### Run With Inspector (Debugging)
+---
+
+### 3. Run with Inspector (Debug Mode)
 
 ```bash
 uv run fastmcp dev inspector server.py
 ```
 
-### Run Deployment-Style SSE Transport
+---
+
+### 4. Run with SSE Transport (Production Mode)
 
 ```bash
 python server.py --sse
 ```
 
-### Hosted Endpoint
+---
 
-Current hosted MCP endpoint (as documented):
+## 🌐 Hosted Endpoints
 
-`https://Blog-Research-Tools.fastmcp.app/mcp`
+* **MCP Endpoint**
+
+  ```
+  https://Blog-Research-Tools.fastmcp.app/mcp
+  ```
+
+* **SSE Endpoint**
+
+  ```
+  https://bufon-joker-blog-writing-agent-mcp-server-v2.hf.space/sse
+  ```
 
 ---
 
-## 🐳 Docker Quick Run
+## 🐳 Docker Usage
 
 ### Build Image
 
@@ -128,36 +145,44 @@ docker run -it --rm \
   bufonjoker/blog-writing-agent-mcp-server:latest
 ```
 
-### Cursor MCP Setup (SSE)
+### Pull from Docker Hub
 
-- Type: sse
-- URL: http://localhost:8000/sse
+```bash
+docker pull bufonjoker/mcp-server
+```
+
+---
+
+## 🔌 Cursor MCP Configuration (SSE)
+
+```
+Type: sse
+URL:  http://localhost:8000/sse
+```
 
 ---
 
 ## 🔐 Environment Variables
 
-Common variables:
-
-- TAVILY_API_KEY
-- PORT (defaults to 8000)
-
----
-
-## 📌 Status
-
-Implemented:
-
-- FastMCP server bootstrapping
-- Tool registration for research functions
-- Local + SSE run mode support
-- Dockerized deployment path
+| Variable       | Description                 |
+| -------------- | --------------------------- |
+| TAVILY_API_KEY | API key for search tool     |
+| PORT           | Server port (default: 8000) |
 
 ---
 
+## 📌 Current Status
 
+✅ FastMCP server setup complete
+✅ Research tools implemented (search + fetch)
+✅ Supports stdio and SSE modes
+✅ Dockerized for deployment
 
-## 🗺️ Planning Source
+---
 
-- Root project plan: ../README.md
-- Detailed planning exports: ../docs/
+## 🗺️ Project Planning
+
+* Root Plan: `../README.md`
+* Detailed Docs: `../docs/`
+
+---

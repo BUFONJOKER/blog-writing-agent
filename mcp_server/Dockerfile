@@ -1,5 +1,5 @@
 # Multi-stage build for a slim image
-FROM python:3.12-slim-bookworm AS builder
+FROM python:3.11-slim-bookworm AS builder
 ENV UV_LINK_MODE=copy \
     UV_PYTHON_PREFERENCE=only-system
 WORKDIR /app
@@ -7,7 +7,7 @@ COPY --from=ghcr.io/astral-sh/uv:0.6.17 /uv /uvx /bin/
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-cache --no-dev
 
-FROM python:3.12-slim-bookworm
+FROM python:3.11-slim-bookworm
 WORKDIR /app
 
 # Install procps to get the 'pgrep' command
