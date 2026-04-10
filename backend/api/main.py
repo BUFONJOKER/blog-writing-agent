@@ -51,7 +51,7 @@ async def lifespan(app: FastAPI):
 
     checkpointer = AsyncPostgresSaver(resources.pool)
 
-    resources.tools = await initialize_tools("hosted")
+    resources.tools = await initialize_tools("hosted_horizon")
 
     resources.workflow = await build_workflow(
         checkpointer, resources.model, resources.tools
