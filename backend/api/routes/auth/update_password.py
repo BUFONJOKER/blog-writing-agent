@@ -1,15 +1,15 @@
-from fastapi import APIRouter, Request, HTTPException, Response, status
+from fastapi import APIRouter, Request, HTTPException, Response, status, Depends
 from api.schema.auth_states import UpdatePasswordRequest
 from api.utils.password_hashing import verify_password, hash_password
-
+from api.utils.auth import get_current_user
 # Rename the import to avoid collision
 from db.crud.user_data import get_user, update_password as update_password_db
 
 router = APIRouter()
 
 
-@router.post("/update_password")
-async def change_user_password(request: Request, payload: UpdatePasswordRequest):
+@router.put("/update_password")
+async def change_user_password(request: Request, payload: UpdatePasswordRequest, current_user_email:str= Depends(get_current_user)):
     """Verify the current password and persist a replacement password hash.
 
     Args:
@@ -22,7 +22,7 @@ async def change_user_password(request: Request, payload: UpdatePasswordRequest)
     Raises:
         HTTPException: If authentication fails or the database update fails.
     """
-    email = payload.email
+    email = current_user_email
     password = payload.password
     new_password = payload.new_password
 
@@ -30,7 +30,7 @@ async def change_user_password(request: Request, payload: UpdatePasswordRequest)
     pool = resources.pool
 
     # 1. Fetch User
-    user = await get_user(pool, user_id=email)
+    user = await get_user(pool, email=email)
     if not user:
         # Use 401 for auth failures
         raise HTTPException(
@@ -48,7 +48,7 @@ async def change_user_password(request: Request, payload: UpdatePasswordRequest)
 
     try:
         await update_password_db(
-            pool, user_id=email, hashed_password=new_password_hashed
+            pool, email=email, hashed_password=new_password_hashed
         )
     except Exception as e:
         # Log the error here

@@ -5,7 +5,7 @@ from api.routes.blog.status import router as status_router
 from api.routes.blog.final_post import router as final_post_router
 from api.routes.blog.user_posts import router as user_posts_router
 from api.routes.blog.stream import router as stream_router
-from backend.api.utils.auth import get_current_user
+from api.utils.auth import get_current_user
 
 
 blog_router = APIRouter(prefix="/blog", tags=["Blog Generation"], dependencies=[Depends(get_current_user)])

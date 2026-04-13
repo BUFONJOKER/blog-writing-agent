@@ -30,7 +30,7 @@ async def login(request: Request, payload: LoginRequest, response: Response):
     pool = resources.pool
 
     # 1. Fetch User
-    user = await get_user(pool, user_id=email)
+    user = await get_user(pool, email=email)
 
     if not user:
         raise HTTPException(status_code=401, detail="Invalid credentials")

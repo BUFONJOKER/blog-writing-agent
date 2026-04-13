@@ -1,29 +1,46 @@
-from passlib.context import CryptContext
-
-# Setup the hashing context
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+import hashlib
+import bcrypt
 
 
-def hash_password(password: str):
-    """Hash a plain-text password for secure database storage.
+def _prepare_password(password: str) -> bytes:
+    """Normalize user input into fixed-length bytes for bcrypt.
 
     Args:
         password: Plain-text password provided by the user.
 
     Returns:
-        str: Bcrypt-hashed password string ready to persist in the database.
+        bytes: SHA-256 digest bytes used as bcrypt input.
     """
-    return pwd_context.hash(password)
+    if not isinstance(password, str):
+        raise TypeError("password must be a string")
+    return hashlib.sha256(password.encode("utf-8")).digest()
 
 
-def verify_password(plain_password, hashed_password):
-    """Verify a plain-text password against a stored password hash.
+def hash_password(password: str):
+    """Hash a password for secure storage.
 
     Args:
-        plain_password: Plain-text password supplied during login or update.
-        hashed_password: Stored bcrypt hash fetched from the database.
+        password: Plain-text password provided by the user.
 
     Returns:
-        bool: True when the password matches the stored hash, otherwise False.
+        str: Bcrypt hash string safe to persist in the database.
     """
-    return pwd_context.verify(plain_password, hashed_password)
+    prepared_pw = _prepare_password(password)
+    return bcrypt.hashpw(prepared_pw, bcrypt.gensalt()).decode("utf-8")
+
+
+def verify_password(plain_password: str, hashed_password: str):
+    """Verify user-provided password against a stored hash.
+
+    Args:
+        plain_password: Plain-text password provided during authentication.
+        hashed_password: Previously stored bcrypt hash string.
+
+    Returns:
+        bool: True when credentials are valid, otherwise False.
+    """
+    prepared_pw = _prepare_password(plain_password)
+    try:
+        return bcrypt.checkpw(prepared_pw, hashed_password.encode("utf-8"))
+    except ValueError:
+        return False

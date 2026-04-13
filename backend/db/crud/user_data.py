@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 
 async def create_user(
     pool: AsyncConnectionPool,
-    user_id: str,
+    name: str,
     email: str,
     hashed_password: str,
 ) -> None:
@@ -13,7 +13,7 @@ async def create_user(
 
     Args:
         pool: Shared PostgreSQL connection pool.
-        user_id: Unique identifier for the user record.
+        name: User's full name.
         email: User email address used for login.
         hashed_password: Secure password hash to persist in the database.
 
@@ -21,25 +21,25 @@ async def create_user(
         None: The user record is inserted into the database.
     """
     query = """
-    insert into public.user_data (user_id, email, hashed_password)
+    insert into public.user_data (name, email, hashed_password)
     values (%s, %s, %s)
-    on conflict (user_id) do nothing;
+    on conflict do nothing;
     """
     async with pool.connection() as conn:
         async with conn.cursor() as cur:
-            await cur.execute(query, (user_id, email, hashed_password))
+            await cur.execute(query, (name, email, hashed_password))
 
 
 async def update_password(
     pool: AsyncConnectionPool,
-    user_id: str,
+    email: str,
     hashed_password: str,
 ) -> None:
     """Update a user's stored password hash.
 
     Args:
         pool: Shared PostgreSQL connection pool.
-        user_id: Unique identifier for the user record.
+        email: User email address used for login.
         hashed_password: New secure password hash to store.
 
     Returns:
@@ -49,29 +49,29 @@ async def update_password(
         ValueError: If the user record does not exist.
     """
 
-    user = await get_user(pool, user_id)
+    user = await get_user(pool, email=email)
     if not user:
         raise ValueError("User not found")
 
     query = """
     update public.user_data
     set hashed_password = %s
-    where user_id = %s;
+    where email = %s;
     """
     async with pool.connection() as conn:
         async with conn.cursor() as cur:
-            await cur.execute(query, (hashed_password, user_id))
+            await cur.execute(query, (hashed_password, email))
 
 
 async def get_user(
     pool: AsyncConnectionPool,
-    user_id: str,
+    email: str,
 ) -> Optional[Dict[str, Any]]:
     """Fetch a user record by user identifier.
 
     Args:
         pool: Shared PostgreSQL connection pool.
-        user_id: Unique identifier for the user record.
+        email: User email address used for login.
 
     Returns:
         Optional[Dict[str, Any]]: The user row when found, otherwise a
@@ -81,16 +81,16 @@ async def get_user(
     query = """
     select id, email, hashed_password
     from public.user_data
-    where thread_id = %s
+    where email = %s
     limit 1;
     """
     async with pool.connection() as conn:
         async with conn.cursor() as cur:
-            await cur.execute(query, (user_id,))
+            await cur.execute(query, (email,))
             row = await cur.fetchone()
             if row:
                 return {"id": row[0], "email": row[1], "hashed_password": row[2]}
-            return "User not found"
+            return None
 
 
 def utc_now() -> datetime:

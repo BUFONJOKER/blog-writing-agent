@@ -1,5 +1,5 @@
 from fastapi import Request, HTTPException, status
-from backend.api.utils.access_token import (
+from api.utils.access_token import (
     decode_access_token,
 )  # Your existing decode logic
 

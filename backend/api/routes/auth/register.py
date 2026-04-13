@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Request, HTTPException
 from api.schema.auth_states import RegisterRequest
-from backend.api.utils.password_hashing import hash_password
-from backend.db.crud.user_data import create_user, get_user, update_password
+from api.utils.password_hashing import hash_password
+from db.crud.user_data import create_user, get_user
 
 router = APIRouter()
 
@@ -27,9 +27,9 @@ async def register(request: Request, payload: RegisterRequest):
     password = payload.password
     password = hash_password(password)
 
-    await create_user(pool, user_id=name, email=email, hashed_password=password)
+    await create_user(pool, name=name, email=email, hashed_password=password)
 
-    user = await get_user(pool, user_id=name)
+    user = await get_user(pool, email=email)
     if not user:
         raise HTTPException(status_code=404, detail="User not found after creation")
 
