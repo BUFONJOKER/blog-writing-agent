@@ -3,6 +3,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 from langchain_core.messages import HumanMessage, AIMessage
 
+
 class RouterNodeDecision(BaseModel):
     """Structured router output returned by the LLM classifier.
 
@@ -12,14 +13,14 @@ class RouterNodeDecision(BaseModel):
 
     # Changed from Literal strings to a boolean for direct logic use
     needs_research: bool = Field(
-    default=False,
-    description=(
-        "Set to True if the prompt requires real-time information, current events, "
-        "specific factual grounding (e.g., statistics, technical documentation), or "
-        "data beyond the model's knowledge cutoff. Set to False if the request "
-        "is creative, general-purpose, or can be fulfilled using the model's "
-        "existing internal knowledge."
-        )
+        default=False,
+        description=(
+            "Set to True if the prompt requires real-time information, current events, "
+            "specific factual grounding (e.g., statistics, technical documentation), or "
+            "data beyond the model's knowledge cutoff. Set to False if the request "
+            "is creative, general-purpose, or can be fulfilled using the model's "
+            "existing internal knowledge."
+        ),
     )
 
     topic: str = Field(
@@ -27,8 +28,9 @@ class RouterNodeDecision(BaseModel):
         description=(
             "The main topic or subject of the user's prompt, extracted by the model. "
             "This can be used for downstream nodes to provide context-aware responses."
-        )
+        ),
     )
+
 
 def router_node(state: BlogAgentState, model) -> dict:
     """Classify the incoming prompt and return a routing state update.
@@ -44,8 +46,9 @@ def router_node(state: BlogAgentState, model) -> dict:
 
     # model = load_model()
     # Using 'tool_calling' is often more robust for Ollama models than 'function_calling'
-    llm_structured_output = model.with_structured_output(schema=RouterNodeDecision,method='function_calling')
-
+    llm_structured_output = model.with_structured_output(
+        schema=RouterNodeDecision, method="function_calling"
+    )
 
     prompt = state.prompt
     human_msg = HumanMessage(content=prompt)
@@ -70,10 +73,9 @@ def router_node(state: BlogAgentState, model) -> dict:
 """
 
     # It's better to pass the prompt directly to the template
-    prompt_template = ChatPromptTemplate.from_messages([
-        ("system", system_prompt),
-        ("user", "User Prompt: {prompt}")
-    ])
+    prompt_template = ChatPromptTemplate.from_messages(
+        [("system", system_prompt), ("user", "User Prompt: {prompt}")]
+    )
 
     chain = prompt_template | llm_structured_output
 
@@ -87,23 +89,30 @@ def router_node(state: BlogAgentState, model) -> dict:
     )
     return {
         "needs_research": response.needs_research,
-        'topic':response.topic,
-        'messages':[human_msg, ai_msg]
-
+        "topic": response.topic,
+        "messages": [human_msg, ai_msg],
     }
 
     import asyncio
     import time
+
     async def test_router():
+        """Run a small local sanity check for the router node.
+
+        Args:
+            None: The helper uses hard-coded sample prompts.
+
+        Returns:
+            None: Results are printed or measured locally for debugging only.
+        """
         test_prompts = [
             # Timeless / No Research Needed
             "Write a poem about a lonely robot in space.",
             "Explain the concept of 'hoisting' in JavaScript.",
-
             # Current Events / Research Needed
             "Who won the 2024 ICC Champions Trophy and what was the final score?",
             "What are the latest features released in LangGraph as of March 2026?",
-            "Summarize the performance of the Pakistan cricket team in their last series."
+            "Summarize the performance of the Pakistan cricket team in their last series.",
         ]
 
         # print(f"\n{'Prompt':<60} | {'Needs Research':<15}")
@@ -116,9 +125,9 @@ def router_node(state: BlogAgentState, model) -> dict:
             start_time = time.time()
             result = router_node(state)
             end_time = time.time()
-            #print(f"Time taken: {end_time - start_time:.2f}s") # Verify if < 2.00s
+            # print(f"Time taken: {end_time - start_time:.2f}s") # Verify if < 2.00s
 
             # Print results for verification
-            #print(f"{p[:58]:<60} | {str(result['needs_research']):<15}")
+            # print(f"{p[:58]:<60} | {str(result['needs_research']):<15}")
 
     asyncio.run(test_router())

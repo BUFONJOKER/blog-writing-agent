@@ -7,11 +7,24 @@ from agent.main import finalize_workflow
 
 router = APIRouter()
 
+
 # -------------------------
 # REVIEW
 # -------------------------
 @router.post("/review")
 async def review_blog(payload: ReviewRequest, request: Request):
+    """Resume a paused workflow after human review is submitted.
+
+    Args:
+        payload: Review payload containing the thread id and approval flag.
+        request: FastAPI request used to access shared application resources.
+
+    Returns:
+        dict: A confirmation message when review processing is accepted.
+
+    Raises:
+        HTTPException: If the run cannot be resumed or review processing fails.
+    """
     resources = request.app.state.resources
     stream_manager = request.app.state.stream_manager
 
@@ -58,6 +71,14 @@ async def review_blog(payload: ReviewRequest, request: Request):
             )
 
         async def _finalize_with_guard():
+            """Finalize the resumed workflow and close the stream on failure.
+
+            Args:
+                None: The helper captures the enclosing review context directly.
+
+            Returns:
+                None: Finalization is performed asynchronously as a background task.
+            """
             try:
                 await finalize_workflow(
                     workflow=resources.workflow,

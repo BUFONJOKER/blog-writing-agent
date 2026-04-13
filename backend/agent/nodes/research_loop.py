@@ -1,9 +1,14 @@
 from agent.state import BlogAgentState
 
+
 def research_loop_node(state: BlogAgentState) -> dict:
-    """
-    Gate whether another external research cycle is needed.
-    Acts as a safety valve for the iterative research process.
+    """Decide whether the workflow should keep researching or move on.
+
+    Args:
+        state: Current workflow state containing research progress flags.
+
+    Returns:
+        dict: Updated loop decision and coarse workflow status.
     """
     # 1. Pull the decision from the state (set by research_query_gen or researcher)
     need_more = bool(state.more_research_needed)
@@ -15,5 +20,5 @@ def research_loop_node(state: BlogAgentState) -> dict:
 
     return {
         "more_research_needed": need_more,
-        "status": "planning" if not need_more else "researching"
+        "status": "planning" if not need_more else "researching",
     }

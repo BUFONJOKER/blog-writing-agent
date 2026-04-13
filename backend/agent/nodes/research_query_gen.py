@@ -4,6 +4,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from typing import List
 from langchain_core.messages import AIMessage
 
+
 class ResearchQueryGenNodeOutput(BaseModel):
     """
     Structured output from the Research Query Generation node.
@@ -14,7 +15,6 @@ class ResearchQueryGenNodeOutput(BaseModel):
     (e.g., web_search_tool) to gather factual grounding for the blog post.
     """
 
-
     # 1. Research Queries: Optimized for Search Engine Retrieval
     research_queries: List[str] = Field(
         default_factory=list,
@@ -22,7 +22,7 @@ class ResearchQueryGenNodeOutput(BaseModel):
             "A set of 3-5 distinct, targeted search strings. These must be optimized "
             "to retrieve factual data, technical specifications, and diverse perspectives "
             "from the web to provide a grounded foundation for the blog post."
-        )
+        ),
     )
 
     # 2. Research Gaps: The "Informational Audit"
@@ -32,7 +32,7 @@ class ResearchQueryGenNodeOutput(BaseModel):
             "A detailed list of specific topics, data points, or questions that remain "
             "unanswered after the initial research. This serves as an audit trail of "
             "what information is still missing to fulfill the requirements of the blog_plan."
-        )
+        ),
     )
 
     # 3. More Research Needed: The "Workflow Governor"
@@ -42,39 +42,26 @@ class ResearchQueryGenNodeOutput(BaseModel):
             "A boolean flag that triggers a recursive research loop. Set to True only if "
             "the research_gaps list contains critical information voids that prevent "
             "the agent from generating a high-quality, factually accurate draft."
-        )
+        ),
     )
 
 
 def research_query_gen_node(state: BlogAgentState, model) -> dict:
-    """
-    Acts as the Senior Research Strategist to decompose the user prompt into a
-    structured research roadmap.
-
-    This node utilizes a Multi-Dimensional Search Strategy to generate 3-5
-    high-signal, SEO-optimized search strings. These queries are specifically
-    engineered to populate the `research_queries` field for downstream execution
-    by MCP-enabled search tools (e.g., web_search_tool).
-
-    The generation logic enforces four distinct silos:
-    1. Technical Core: Architectural and theoretical definitions.
-    2. Temporal Relevance: 2024-2026 trends and version-specific updates.
-    3. Practicality: Implementation patterns and real-world case studies.
-    4. Comparative Analysis: Competitive benchmarks and pros/cons.
+    """Turn the prompt into a structured set of research queries and gaps.
 
     Args:
-        state (BlogAgentState): The current global state, requiring the
-            `prompt` and `metadata` fields for context.
+        state: Current workflow state containing the original user prompt.
+        model: Language model used to generate research queries.
 
     Returns:
-        dict: A partial state update containing the `research_queries` list,
-            ensuring the graph can transition to the researcher_node or
-            research_loop.
+        dict: Research queries, unresolved gaps, and the research loop flag.
     """
 
     # model = load_model()
 
-    llm_structured_output = model.with_structured_output(schema=ResearchQueryGenNodeOutput, method='function_calling')
+    llm_structured_output = model.with_structured_output(
+        schema=ResearchQueryGenNodeOutput, method="function_calling"
+    )
 
     system_prompt = """
     You are an Expert Research Strategist for any topic or domain.
@@ -102,11 +89,12 @@ def research_query_gen_node(state: BlogAgentState, model) -> dict:
     Step: Identify knowledge gaps from the user prompt to maximize query diversity and coverage.
     """
 
-
-
-    prompt_template = ChatPromptTemplate.from_messages([
-        ("system", system_prompt),
-        ("user", '''Analyze the following user request and generate a research roadmap.
+    prompt_template = ChatPromptTemplate.from_messages(
+        [
+            ("system", system_prompt),
+            (
+                "user",
+                """Analyze the following user request and generate a research roadmap.
 
                 USER REQUEST:
                 ---
@@ -123,9 +111,10 @@ def research_query_gen_node(state: BlogAgentState, model) -> dict:
                 Include all required fields with correct types:
                 - research_queries: list of 3-5 distinct strings
                 - research_gaps: list of strings (can be empty if none)
-                - more_research_needed: boolean''')
-    ])
-
+                - more_research_needed: boolean""",
+            ),
+        ]
+    )
 
     chain = prompt_template | llm_structured_output
 

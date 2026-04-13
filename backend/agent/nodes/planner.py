@@ -4,35 +4,67 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import AIMessage
 from typing import List
 
+
 class SectionPlan(BaseModel):
+    """Structured outline for one section of the blog post."""
 
-    name: str = Field(description="The name of the section (e.g., Introduction, Technical Deep-Dive)")
+    name: str = Field(
+        description="The name of the section (e.g., Introduction, Technical Deep-Dive)"
+    )
 
-    description: str = Field(description="A brief description of the section's content and purpose")
+    description: str = Field(
+        description="A brief description of the section's content and purpose"
+    )
 
     word_count: str = Field(description="Approximate word count for the section")
 
-    key_points: List[str] = Field(description="Bullet points outlining the main ideas to cover in the section")
+    key_points: List[str] = Field(
+        description="Bullet points outlining the main ideas to cover in the section"
+    )
 
-    seo_keywords: List[str] = Field(description="Relevant SEO keywords to include in the section")
+    seo_keywords: List[str] = Field(
+        description="Relevant SEO keywords to include in the section"
+    )
 
-    estimated_total_words: int = Field(description="Estimated total word count for the section")
+    estimated_total_words: int = Field(
+        description="Estimated total word count for the section"
+    )
+
 
 class BlogPlan(BaseModel):
+    """Structured blog blueprint returned by the planning node."""
+
     title: str = Field(description="The title of the blog post")
 
     subtitle: str = Field(description="The subtitle of the blog post")
 
-    tone: str = Field(description="The tone of the blog post (e.g., formal, conversational, technical)")
+    tone: str = Field(
+        description="The tone of the blog post (e.g., formal, conversational, technical)"
+    )
 
-    audience: str = Field(description="The target audience for the blog post (e.g., developers, CTOs, general tech enthusiasts)")
+    audience: str = Field(
+        description="The target audience for the blog post (e.g., developers, CTOs, general tech enthusiasts)"
+    )
 
-    tasks: List[str] = Field(description="List of section-level writing tasks derived from the outline")
+    tasks: List[str] = Field(
+        description="List of section-level writing tasks derived from the outline"
+    )
 
-    sections: List[SectionPlan] = Field(description="Detailed plan for each section of the blog post")
+    sections: List[SectionPlan] = Field(
+        description="Detailed plan for each section of the blog post"
+    )
 
 
 def planner_node(state: BlogAgentState, model) -> dict:
+    """Create a structured blog plan from the prompt and research summary.
+
+    Args:
+        state: Current workflow state containing the prompt and research summary.
+        model: Language model used to generate the structured plan.
+
+    Returns:
+        dict: Blog plan data, section tasks, and assistant message history.
+    """
 
     prompt = state.prompt
 
@@ -61,21 +93,25 @@ def planner_node(state: BlogAgentState, model) -> dict:
     Before finalizing, ensure the 'estimated_total_words' across all sections aligns with the user's expected blog length (default to 1000-1500 words if unspecified).
     """
 
-    prompt_template = ChatPromptTemplate.from_messages([
-        ("system", system_prompt),
-        ("human", "Based on the following prompt {prompt} and a research summary\n {research_summary} create a detailed blog plan.")
-    ])
+    prompt_template = ChatPromptTemplate.from_messages(
+        [
+            ("system", system_prompt),
+            (
+                "human",
+                "Based on the following prompt {prompt} and a research summary\n {research_summary} create a detailed blog plan.",
+            ),
+        ]
+    )
 
     # model = load_model()
 
-    model_with_structured_output = model.with_structured_output(schema=BlogPlan, method='function_calling')
+    model_with_structured_output = model.with_structured_output(
+        schema=BlogPlan, method="function_calling"
+    )
 
     chain = prompt_template | model_with_structured_output
 
-    input_variables = {
-        "prompt": prompt,
-        "research_summary": research_summary
-    }
+    input_variables = {"prompt": prompt, "research_summary": research_summary}
 
     response = chain.invoke(input_variables)
 
@@ -83,25 +119,27 @@ def planner_node(state: BlogAgentState, model) -> dict:
     if len(response.tasks) != len(response.sections):
         # Trim or pad to match section count
         if len(response.tasks) > len(response.sections):
-            response.tasks = response.tasks[:len(response.sections)]
+            response.tasks = response.tasks[: len(response.sections)]
         else:
             # Generate missing tasks based on section names
             missing_count = len(response.sections) - len(response.tasks)
             for i in range(missing_count):
                 section = response.sections[len(response.tasks) + i]
-                response.tasks.append(f"Draft the {section.name} section with focus on: {', '.join(section.key_points[:2])}")
+                response.tasks.append(
+                    f"Draft the {section.name} section with focus on: {', '.join(section.key_points[:2])}"
+                )
 
     ai_msg = AIMessage(
-    content=(
-        f"Successfully generated a blog plan titled: '{response.title}'.\n"
-        f"Target Audience: {response.audience}\n"
-        f"Tone: {response.tone}\n"
-        f"Structure: {response.sections} sections with a {response.tasks} writing tasks."
+        content=(
+            f"Successfully generated a blog plan titled: '{response.title}'.\n"
+            f"Target Audience: {response.audience}\n"
+            f"Tone: {response.tone}\n"
+            f"Structure: {response.sections} sections with a {response.tasks} writing tasks."
         )
     )
 
     return {
-        "blog_plan": response.model_dump(), # Convert Pydantic object to dictionary
-        "tasks": response.tasks,       # Extract tasks for the next node
-        "messages": [ai_msg],          # Append to the message history
+        "blog_plan": response.model_dump(),  # Convert Pydantic object to dictionary
+        "tasks": response.tasks,  # Extract tasks for the next node
+        "messages": [ai_msg],  # Append to the message history
     }

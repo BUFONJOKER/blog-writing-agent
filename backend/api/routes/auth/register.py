@@ -5,9 +5,21 @@ from backend.db.crud.user_data import create_user, get_user, update_password
 
 router = APIRouter()
 
+
 @router.post("/register")
 async def register(request: Request, payload: RegisterRequest):
-    # Implement your registration logic here
+    """Register a new user with a hashed password stored in the database.
+
+    Args:
+        request: FastAPI request used to access shared application resources.
+        payload: Registration data containing name, email, and password.
+
+    Returns:
+        dict: A success message confirming user registration.
+
+    Raises:
+        HTTPException: If the new user cannot be found after creation.
+    """
     resources = request.app.state.resources
     pool = resources.pool
     name = payload.name

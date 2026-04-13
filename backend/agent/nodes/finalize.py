@@ -6,10 +6,11 @@ def finalize_node(state: BlogAgentState, model) -> dict:
     """Finalize the blog post by refining the draft.
 
     Args:
-        state: Current graph state containing the draft
-        A partial state dictionary with the finalized blog content ready for publication.
-    Return:
-        cleaned, formatted final blog post
+        state: Current workflow state containing the edited draft.
+        model: Language model used to produce the final publication-ready post.
+
+    Returns:
+        dict: The finalized blog content ready for persistence and delivery.
     """
     # model = load_model()
 
@@ -67,4 +68,3 @@ def finalize_node(state: BlogAgentState, model) -> dict:
     final_post = response.content
 
     return {"final_post": final_post}
-    

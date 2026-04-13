@@ -8,6 +8,8 @@ from agent.state import BlogAgentState
 
 
 class Feedback(BaseModel):
+    """Structured feedback payload containing issues and suggestions."""
+
     issues: List[str] = Field(
         ..., description="List of identified issues in the blog draft."
     )
@@ -17,6 +19,8 @@ class Feedback(BaseModel):
 
 
 class CriticFeedback(BaseModel):
+    """Structured critique produced by the critic node."""
+
     feedback: Feedback = Field(
         ..., description="Structured feedback containing issues and suggestions."
     )
@@ -24,6 +28,17 @@ class CriticFeedback(BaseModel):
     @field_validator("feedback", mode="before")
     @classmethod
     def coerce_feedback(cls, value):
+        """Normalize feedback values before Pydantic validates the field.
+
+        Args:
+            value: Raw feedback payload that may already be a mapping or a JSON string.
+
+        Returns:
+            Any: Parsed feedback data suitable for the nested Feedback model.
+
+        Raises:
+            ValueError: If a JSON string cannot be parsed into a valid object.
+        """
         # Some models return nested objects as JSON strings; normalize before validation.
         if isinstance(value, str):
             try:
@@ -54,6 +69,15 @@ class CriticFeedback(BaseModel):
 
 
 def critic_node(state: BlogAgentState, model) -> dict:
+    """Score the edited draft and decide whether revision is required.
+
+    Args:
+        state: Current workflow state containing the edited draft and keywords.
+        model: Language model used to evaluate the draft.
+
+    Returns:
+        dict: Critic feedback, revision decision, and scoring metadata.
+    """
 
     # model = load_model()
     structured_model = model.with_structured_output(

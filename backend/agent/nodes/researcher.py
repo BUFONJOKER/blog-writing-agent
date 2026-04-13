@@ -21,6 +21,14 @@ MAX_CONTEXT_MESSAGES = 8
 
 
 def is_futile_context(results):
+    """Detect whether the accumulated evidence suggests no useful result exists.
+
+    Args:
+        results: Research result dictionaries collected so far.
+
+    Returns:
+        bool: True when the search results mostly indicate unavailable data.
+    """
     if not results:
         return False
 
@@ -39,6 +47,14 @@ def is_futile_context(results):
 
 
 def _normalize_content(content: object) -> str:
+    """Normalize arbitrary tool content into a plain string.
+
+    Args:
+        content: Raw content that may be a string, list, or scalar.
+
+    Returns:
+        str: A normalized string value.
+    """
     if isinstance(content, str):
         return content
     if isinstance(content, list):
@@ -52,14 +68,39 @@ def _normalize_content(content: object) -> str:
 
 
 def _is_http_url(value: str) -> bool:
+    """Check whether a value looks like an HTTP or HTTPS URL.
+
+    Args:
+        value: Candidate string to validate.
+
+    Returns:
+        bool: True when the value starts with http:// or https://.
+    """
     return bool(value) and value.startswith(("http://", "https://"))
 
 
 def _normalize_url(value: object) -> str:
+    """Normalize a URL-like value into a trimmed string.
+
+    Args:
+        value: Raw URL value from tool output.
+
+    Returns:
+        str: A trimmed string representation of the URL.
+    """
     return str(value or "").strip()
 
 
 def _build_result_snippet(result: dict, max_chars: int = 300) -> str:
+    """Create a short human-readable snippet from a research result.
+
+    Args:
+        result: Research result dictionary containing content text.
+        max_chars: Maximum number of characters to include.
+
+    Returns:
+        str: A truncated content snippet or fallback text.
+    """
     content = " ".join((result.get("content") or "").split())
     if not content:
         return "No content"
@@ -69,6 +110,14 @@ def _build_result_snippet(result: dict, max_chars: int = 300) -> str:
 
 
 def _extract_results_from_tool_message(msg: ToolMessage) -> list[dict]:
+    """Parse a tool message into normalized research result dictionaries.
+
+    Args:
+        msg: Tool message returned by a research tool call.
+
+    Returns:
+        list[dict]: Normalized result records extracted from the message.
+    """
     parsed: list[dict] = []
     content_str = _normalize_content(msg.content)
 
@@ -124,6 +173,15 @@ def _extract_results_from_tool_message(msg: ToolMessage) -> list[dict]:
 
 
 def _merge_unique_results(existing: list[dict], new_items: list[dict]) -> list[dict]:
+    """Merge research results while deduplicating by canonical URL.
+
+    Args:
+        existing: Existing accumulated research result dictionaries.
+        new_items: Newly discovered research result dictionaries.
+
+    Returns:
+        list[dict]: Deduplicated list of research result dictionaries.
+    """
     merged: list[dict] = []
     seen_urls = set()
 
@@ -138,6 +196,15 @@ def _merge_unique_results(existing: list[dict], new_items: list[dict]) -> list[d
 
 
 def _build_research_summary(synthesis: str, results: list[dict]) -> str:
+    """Render the research synthesis and detailed results into text.
+
+    Args:
+        synthesis: High-level synthesis text from the model.
+        results: Normalized research result dictionaries.
+
+    Returns:
+        str: A readable summary block for downstream nodes.
+    """
     sections: list[str] = []
     synthesis_text = _normalize_content(synthesis).strip()
 
@@ -162,6 +229,14 @@ def _build_research_summary(synthesis: str, results: list[dict]) -> str:
 
 
 def _extract_results_from_tool_messages(messages: list[ToolMessage]) -> list[dict]:
+    """Extract normalized research results from all tool messages.
+
+    Args:
+        messages: Tool messages collected during the research loop.
+
+    Returns:
+        list[dict]: Flattened list of extracted research result dictionaries.
+    """
     results: list[dict] = []
     for msg in messages:
         results.extend(_extract_results_from_tool_message(msg))
@@ -169,9 +244,15 @@ def _extract_results_from_tool_messages(messages: list[ToolMessage]) -> list[dic
 
 
 async def researcher_node(state: BlogAgentState, tools: list, model) -> dict:
-    """
-    Executes the 'Retrieval Phase' with logic to encourage deep extraction via fetch_page_tool.
-    This node loops until the LLM decides it has enough detailed information.
+    """Run the retrieval phase and decide whether more external tools are needed.
+
+    Args:
+        state: Current workflow state containing the prompt and accumulated context.
+        tools: Tool definitions bound to the model for web or page retrieval.
+        model: Language model used to orchestrate the research loop.
+
+    Returns:
+        dict: Updated research results, summary, message history, and loop flags.
     """
     # model = load_model()
     # Bind the provided tools (web_search_tool and fetch_page_tool) to the model

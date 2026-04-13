@@ -9,6 +9,14 @@ from backend.db.crud.blog_outputs import save_output
 # JSON SERIALIZER
 # -------------------------
 def to_json_serializable(obj: Any) -> Any:
+    """Convert nested objects into JSON-serializable data.
+
+    Args:
+        obj: Arbitrary object, mapping, sequence, or scalar to normalize.
+
+    Returns:
+        Any: A JSON-safe structure or string representation of the input.
+    """
     from pydantic import BaseModel
 
     if isinstance(obj, BaseModel):
@@ -37,7 +45,20 @@ async def agent(
     prompt: str,
     run_name: str,
 ):
-    """Background agent execution with SSE publishing"""
+    """Execute the blog-generation workflow and publish SSE events.
+
+    Args:
+        workflow: Compiled LangGraph workflow used to run the blog pipeline.
+        pool: Shared PostgreSQL connection pool.
+        stream_manager: Queue-backed stream publisher for SSE consumers.
+        user_id: Identifier for the user who started the request.
+        thread_id: Unique identifier for the workflow run.
+        prompt: Original blog request prompt.
+        run_name: Human-readable name for tracing and debugging.
+
+    Returns:
+        None: The workflow runs asynchronously and reports progress via SSE.
+    """
 
     await create_blog_run(
         pool=pool,
@@ -103,10 +124,23 @@ async def agent(
 
         raise e
 
+
 # -------------------------
 # FINALIZE
 # -------------------------
 async def finalize_workflow(workflow, config, pool, thread_id, stream_manager):
+    """Persist the final blog output, update status, and end the stream.
+
+    Args:
+        workflow: Compiled LangGraph workflow used to inspect final state.
+        config: LangGraph configuration containing the workflow thread id.
+        pool: Shared PostgreSQL connection pool.
+        thread_id: Unique identifier for the workflow run.
+        stream_manager: Queue-backed stream publisher for SSE consumers.
+
+    Returns:
+        None: The final output is stored and the stream is closed.
+    """
     state = await workflow.aget_state(config)
 
     final_md = state.values.get("final_post") or "No final post markdown found."

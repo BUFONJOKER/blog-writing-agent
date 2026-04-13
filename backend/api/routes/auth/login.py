@@ -6,8 +6,22 @@ from api.utils.access_token import create_access_token
 
 router = APIRouter()
 
+
 @router.post("/login")
 async def login(request: Request, payload: LoginRequest, response: Response):
+    """Authenticate a user and issue a JWT access token cookie.
+
+    Args:
+        request: FastAPI request used to access shared application resources.
+        payload: Login credentials containing email and password.
+        response: Mutable HTTP response used to set the auth cookie.
+
+    Returns:
+        dict: A success message with the authenticated email address.
+
+    Raises:
+        HTTPException: If the credentials are invalid or the user is missing.
+    """
     email = payload.email
     password = payload.password
 
@@ -34,12 +48,12 @@ async def login(request: Request, payload: LoginRequest, response: Response):
     # 4. Set HttpOnly Cookie for Security
     response.set_cookie(
         key="access_token",
-        value=access_token, # We store just the raw token string
-        httponly=True,      # JS cannot read this
-        max_age=6000,       # 100 minutes in seconds
-        expires=6000,       # For older browsers
-        samesite="lax",     # CSRF protection
-        secure=False        # Change to True in production with HTTPS!
+        value=access_token,  # We store just the raw token string
+        httponly=True,  # JS cannot read this
+        max_age=6000,  # 100 minutes in seconds
+        expires=6000,  # For older browsers
+        samesite="lax",  # CSRF protection
+        secure=False,  # Change to True in production with HTTPS!
     )
 
     return {"message": "Login successful", "email": email}

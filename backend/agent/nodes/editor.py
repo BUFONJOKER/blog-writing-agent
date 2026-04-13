@@ -3,9 +3,15 @@ from langchain_core.prompts import ChatPromptTemplate
 
 
 def editor_node(state: BlogAgentState, model) -> dict:
-    '''
-    This node performs a final-pass edit on the assembled blog draft. It focuses on improving clarity, grammar, flow, and overall readability without changing the core meaning or adding new content. The editor ensures the blog reads as a polished, coherent article ready for publishing.
-    '''
+    """Perform a final editorial pass on the assembled blog draft.
+
+    Args:
+        state: Current workflow state containing the assembled draft.
+        model: Language model used to refine the draft.
+
+    Returns:
+        dict: The fully edited draft ready for critic review or finalization.
+    """
 
     # model = load_model()
 
@@ -14,7 +20,7 @@ def editor_node(state: BlogAgentState, model) -> dict:
     if state.edited_draft:
         draft = state.edited_draft
 
-    system_prompt = '''
+    system_prompt = """
     You are an expert **Editor Node** in a blog generation pipeline. Your role is to perform a **final-pass edit** on an already assembled draft. You must **refine and improve the existing content**, not generate new content or alter its core meaning.
 
     ### Objectives:
@@ -60,9 +66,9 @@ def editor_node(state: BlogAgentState, model) -> dict:
     ### Output:
 
     Return the **fully edited, clean, and polished blog draft** in proper markdown format, ready for publishing."
-    '''
+    """
 
-    user_prompt = '''
+    user_prompt = """
     Here’s a **clean and aligned User Prompt** for your Editor Node:
 
     ---
@@ -89,12 +95,11 @@ def editor_node(state: BlogAgentState, model) -> dict:
     ### Output:
 
     Return the fully edited and polished blog in clean markdown format, ready for publishing."
-    '''
+    """
 
-    prompt_template = ChatPromptTemplate.from_messages([
-        ("system", system_prompt),
-        ("user", user_prompt)
-    ])
+    prompt_template = ChatPromptTemplate.from_messages(
+        [("system", system_prompt), ("user", user_prompt)]
+    )
 
     chain = prompt_template | model
 
@@ -104,8 +109,4 @@ def editor_node(state: BlogAgentState, model) -> dict:
 
     edited_draft = response.content
 
-    return {
-        'edited_draft': edited_draft
-    }
-
-    
+    return {"edited_draft": edited_draft}

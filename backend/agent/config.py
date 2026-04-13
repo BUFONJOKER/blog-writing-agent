@@ -4,7 +4,15 @@ from dotenv import load_dotenv
 
 
 def get_project_root() -> Path:
-    """Climbs up from the current file to find the project root."""
+    """Locate the project root used by the agent package.
+
+    Args:
+        None: The lookup is derived from this module's filesystem path.
+
+    Returns:
+        Path: The nearest parent directory containing project markers such as
+        `.env` or `pyproject.toml`.
+    """
     current = Path(__file__).resolve()
     # Look for a marker that only exists in your root directory
     for parent in current.parents:

@@ -6,8 +6,21 @@ from agent.main import agent
 
 router = APIRouter()
 
+
 @router.post("/generate")
 async def generate_blog(payload: BlogRequest, request: Request):
+    """Start a new blog generation workflow and return the stream URL.
+
+    Args:
+        payload: Blog generation request containing the user id and prompt.
+        request: FastAPI request used to access shared application resources.
+
+    Returns:
+        dict: Queue metadata including the workflow thread id and stream URL.
+
+    Raises:
+        HTTPException: If the workflow cannot be queued.
+    """
     try:
         thread_id = str(uuid.uuid4())
         resources = request.app.state.resources

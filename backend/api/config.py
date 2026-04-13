@@ -4,7 +4,15 @@ from dotenv import load_dotenv
 
 
 def get_project_root() -> Path:
-    """Climbs up from the current file to find the project root."""
+    """Locate the backend project root directory.
+
+    Args:
+        None: The lookup is based on the current file location.
+
+    Returns:
+        Path: The nearest parent directory containing project markers such as
+        `.env` or `pyproject.toml`.
+    """
     current = Path(__file__).resolve()
     # Look for a marker that only exists in your root directory
     for parent in current.parents:

@@ -20,6 +20,18 @@ from api.routes.blog import blog_router
 # -------------------------
 @blog_router.post("/generate")
 async def generate_blog(payload: BlogRequest, request: Request):
+    """Start a new blog generation workflow and return its stream URL.
+
+    Args:
+        payload: Blog request containing the user id and prompt.
+        request: FastAPI request used to access shared application resources.
+
+    Returns:
+        dict: Queue metadata including the thread id and SSE stream URL.
+
+    Raises:
+        HTTPException: If the workflow cannot be queued.
+    """
     try:
         thread_id = str(uuid.uuid4())
         resources = request.app.state.resources
@@ -55,10 +67,27 @@ async def generate_blog(payload: BlogRequest, request: Request):
 # -------------------------
 @blog_router.get("/stream/{thread_id}")
 async def stream_blog(thread_id: str, request: Request):
+    """Stream workflow events to the client as server-sent events.
+
+    Args:
+        thread_id: Unique identifier for the workflow thread to consume.
+        request: FastAPI request used to access the shared stream manager.
+
+    Returns:
+        StreamingResponse: SSE response that yields queued workflow events.
+    """
     stream_manager = request.app.state.stream_manager
     queue = stream_manager.get_queue(thread_id)
 
     async def sse_generator():
+        """Yield queued stream events until the terminal event is received.
+
+        Args:
+            None: The generator reads from the thread-specific queue directly.
+
+        Returns:
+            AsyncIterator[str]: SSE-formatted event payloads for the client.
+        """
         while True:
             event = await queue.get()
 
@@ -82,6 +111,18 @@ async def stream_blog(thread_id: str, request: Request):
 # -------------------------
 @blog_router.post("/review")
 async def review_blog(payload: ReviewRequest, request: Request):
+    """Resume a paused workflow after human review is submitted.
+
+    Args:
+        payload: Review payload containing the thread id and approval flag.
+        request: FastAPI request used to access shared application resources.
+
+    Returns:
+        dict: A confirmation message when review processing is accepted.
+
+    Raises:
+        HTTPException: If the run cannot be resumed or review processing fails.
+    """
     resources = request.app.state.resources
     stream_manager = request.app.state.stream_manager
 
@@ -128,6 +169,14 @@ async def review_blog(payload: ReviewRequest, request: Request):
             )
 
         async def _finalize_with_guard():
+            """Finalize the resumed workflow and close the stream on failure.
+
+            Args:
+                None: The helper captures the enclosing review context directly.
+
+            Returns:
+                None: Finalization is performed asynchronously as a background task.
+            """
             try:
                 await finalize_workflow(
                     workflow=resources.workflow,
@@ -175,11 +224,24 @@ async def review_blog(payload: ReviewRequest, request: Request):
         await stream_manager.close(payload.thread_id)
         raise HTTPException(status_code=500, detail=str(e))
 
+
 # -------------------------
 # FINAL POST
 # -------------------------
 @blog_router.post("/final_post")
 async def get_final_post(payload: FinalPostRequest, request: Request):
+    """Return the finalized blog output for the requesting user.
+
+    Args:
+        payload: Request body containing the user id and workflow thread id.
+        request: FastAPI request used to access the database pool.
+
+    Returns:
+        dict: The stored final post output if the user owns the run.
+
+    Raises:
+        HTTPException: If no matching final post is found for the user.
+    """
     pool = request.app.state.resources.pool
 
     output = await get_output(pool, payload.thread_id)
@@ -195,6 +257,18 @@ async def get_final_post(payload: FinalPostRequest, request: Request):
 # -------------------------
 @blog_router.get("/user_posts/{user_id}")
 async def get_user_posts(user_id: str, request: Request):
+    """Return all finalized blog outputs associated with a user.
+
+    Args:
+        user_id: Identifier for the user whose posts should be returned.
+        request: FastAPI request used to access the database pool.
+
+    Returns:
+        list: Finalized blog outputs ordered from newest to oldest.
+
+    Raises:
+        HTTPException: If the user has no blog posts.
+    """
     pool = request.app.state.resources.pool
 
     posts = await get_all_outputs_of_user(pool, user_id)
@@ -210,6 +284,18 @@ async def get_user_posts(user_id: str, request: Request):
 # -------------------------
 @blog_router.get("/status/{thread_id}")
 async def check_blog_status(thread_id: str, request: Request):
+    """Return the current execution status for a blog workflow thread.
+
+    Args:
+        thread_id: Unique identifier for the workflow thread to inspect.
+        request: FastAPI request used to access the database pool.
+
+    Returns:
+        dict: Current status, wait flag, and error message for the run.
+
+    Raises:
+        HTTPException: If the specified blog run does not exist.
+    """
     pool = request.app.state.resources.pool
 
     run_data = await get_run(pool, thread_id)

@@ -3,8 +3,14 @@ from langchain_core.prompts import ChatPromptTemplate
 
 
 def task_executer_node(state: BlogAgentState, model) -> dict:
-    """
-    This function write blog content
+    """Draft one blog section from the current task and workflow state.
+
+    Args:
+        state: Current workflow state containing the blog plan and task data.
+        model: Language model used to generate the section draft.
+
+    Returns:
+        dict: Draft content, metadata, and/or revision output for downstream nodes.
     """
     # model = load_model()
 
@@ -236,7 +242,6 @@ def task_executer_node(state: BlogAgentState, model) -> dict:
         Generate the revised Markdown now.
         """
 
-
         prompt_template = ChatPromptTemplate.from_messages(
             [("system", system_prompt), ("human", user_prompt)]
         )
@@ -244,19 +249,17 @@ def task_executer_node(state: BlogAgentState, model) -> dict:
         chain = prompt_template | model
 
         input_variables = {
-                "title": title,
-                "subtitle": subtitle,
-                "tone": tone,
-                "audience": audience,
-                "research_summary": research_summary,
-                "issues": state.critic_feedback["issues"],
-                "suggestions": (
-                    state.critic_feedback["suggestions"]
-                ),
-                "confidence_score": state.quality_score,
-                "quality_score": state.quality_score,
-                'edited_draft': state.edited_draft,
-            }
+            "title": title,
+            "subtitle": subtitle,
+            "tone": tone,
+            "audience": audience,
+            "research_summary": research_summary,
+            "issues": state.critic_feedback["issues"],
+            "suggestions": (state.critic_feedback["suggestions"]),
+            "confidence_score": state.quality_score,
+            "quality_score": state.quality_score,
+            "edited_draft": state.edited_draft,
+        }
 
         revision_cycles += 1
 
@@ -265,8 +268,8 @@ def task_executer_node(state: BlogAgentState, model) -> dict:
         edited_draft = response.content
 
         return {
-            'edited_draft': edited_draft,
-            'revision_cycles': revision_cycles,
+            "edited_draft": edited_draft,
+            "revision_cycles": revision_cycles,
         }
 
     tasks = state.tasks
@@ -293,19 +296,19 @@ def task_executer_node(state: BlogAgentState, model) -> dict:
         chain = prompt_template | model
 
         input_variables = {
-                "title": title,
-                "subtitle": subtitle,
-                "tone": tone,
-                "audience": audience,
-                "task": task,
-                "section_name": section_name,
-                "section_description": section_description,
-                "section_word_count": section_word_count,
-                "section_key_points": section_key_points,
-                "section_seo_keywords": section_seo_keywords,
-                "estimated_total_words": estimated_total_words,
-                "research_summary": research_summary
-            }
+            "title": title,
+            "subtitle": subtitle,
+            "tone": tone,
+            "audience": audience,
+            "task": task,
+            "section_name": section_name,
+            "section_description": section_description,
+            "section_word_count": section_word_count,
+            "section_key_points": section_key_points,
+            "section_seo_keywords": section_seo_keywords,
+            "estimated_total_words": estimated_total_words,
+            "research_summary": research_summary,
+        }
 
         response = chain.invoke(input_variables)
 

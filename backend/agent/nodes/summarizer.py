@@ -8,6 +8,14 @@ FALLBACK_SUMMARY = "No useful research data could be generated."
 
 
 def _normalize_content(content: object) -> str:
+    """Normalize arbitrary message content into a plain string.
+
+    Args:
+        content: Raw content that may be a string, list, dict-like object, or scalar.
+
+    Returns:
+        str: A normalized string representation of the input content.
+    """
     if isinstance(content, str):
         return content
     if isinstance(content, list):
@@ -21,6 +29,15 @@ def _normalize_content(content: object) -> str:
 
 
 def _snippet_from_result(result: dict, max_chars: int = 300) -> str:
+    """Build a short snippet from a single research result.
+
+    Args:
+        result: Research result dictionary containing content to summarize.
+        max_chars: Maximum number of characters to include in the snippet.
+
+    Returns:
+        str: A short human-readable excerpt or a fallback marker.
+    """
     content = " ".join((result.get("content") or "").split())
     if not content:
         return "No content"
@@ -30,6 +47,14 @@ def _snippet_from_result(result: dict, max_chars: int = 300) -> str:
 
 
 def _build_fallback_research_summary(results: list[dict]) -> str:
+    """Construct a readable summary from raw research result records.
+
+    Args:
+        results: Collection of research result dictionaries.
+
+    Returns:
+        str: A markdown-like summary of the available research results.
+    """
     if not results:
         return FALLBACK_SUMMARY
 
@@ -44,6 +69,15 @@ def _build_fallback_research_summary(results: list[dict]) -> str:
 
 
 def _ensure_non_empty_summary(summary: object, fallback: object = "") -> str:
+    """Return the first non-empty summary candidate.
+
+    Args:
+        summary: Primary summary content to validate.
+        fallback: Secondary summary content used when the primary is empty.
+
+    Returns:
+        str: A non-empty summary string or a standard fallback message.
+    """
     summary_text = _normalize_content(summary).strip()
     if summary_text:
         return summary_text
@@ -56,6 +90,15 @@ def _ensure_non_empty_summary(summary: object, fallback: object = "") -> str:
 
 
 async def summarizer_node(state: BlogAgentState, model) -> dict:
+    """Condense research or model knowledge into a blog-ready summary.
+
+    Args:
+        state: Current workflow state containing the prompt and research data.
+        model: Language model used to generate the summary.
+
+    Returns:
+        dict: Updated research summary and message history entries.
+    """
     # model = load_model()
     fallback_from_results = _build_fallback_research_summary(state.research_results)
     # 1. Determine the source of data

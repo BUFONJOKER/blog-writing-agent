@@ -2,6 +2,7 @@ from psycopg_pool import AsyncConnectionPool
 from typing import Optional, Any, Dict, List
 from datetime import datetime, timezone
 
+
 async def create_blog_run(
     pool: AsyncConnectionPool,
     thread_id: str,
@@ -10,6 +11,19 @@ async def create_blog_run(
     status: str = "running",
     interrupt_type: Optional[str] = None,
 ) -> None:
+    """Create a new blog run record for a workflow execution.
+
+    Args:
+        pool: Shared PostgreSQL connection pool.
+        thread_id: Unique identifier for the workflow thread.
+        user_id: Identifier for the user who started the run.
+        prompt: Original blog request prompt.
+        status: Initial run status to persist.
+        interrupt_type: Optional interrupt classification for paused runs.
+
+    Returns:
+        None: The run record is inserted into the database.
+    """
     query = """
     insert into public.blog_runs (thread_id, user_id, prompt, status, interrupt_type)
     values (%s, %s, %s, %s, %s)
@@ -17,7 +31,10 @@ async def create_blog_run(
     """
     async with pool.connection() as conn:
         async with conn.cursor() as cur:
-            await cur.execute(query, (thread_id, user_id, prompt, status, interrupt_type))
+            await cur.execute(
+                query, (thread_id, user_id, prompt, status, interrupt_type)
+            )
+
 
 async def update_run_status(
     pool: AsyncConnectionPool,
@@ -25,8 +42,21 @@ async def update_run_status(
     status: str,
     interrupt_type: Optional[str] = None,
     error_message: Optional[str] = None,
-    completed_at: Optional[datetime] = None, # Changed to datetime for consistency
+    completed_at: Optional[datetime] = None,  # Changed to datetime for consistency
 ) -> None:
+    """Update the persisted status and metadata for a blog run.
+
+    Args:
+        pool: Shared PostgreSQL connection pool.
+        thread_id: Unique identifier for the workflow thread.
+        status: New lifecycle status to store.
+        interrupt_type: Optional interrupt label when the run is paused.
+        error_message: Optional error text to persist for failed runs.
+        completed_at: Optional completion timestamp for finished runs.
+
+    Returns:
+        None: The status row is updated in place.
+    """
     query = """
     update public.blog_runs
     set status = %s,
@@ -38,12 +68,24 @@ async def update_run_status(
     """
     async with pool.connection() as conn:
         async with conn.cursor() as cur:
-            await cur.execute(query, (status, interrupt_type, error_message, completed_at, thread_id))
+            await cur.execute(
+                query, (status, interrupt_type, error_message, completed_at, thread_id)
+            )
+
 
 async def get_run(
     pool: AsyncConnectionPool,
     thread_id: str,
 ) -> Optional[Dict[str, Any]]:
+    """Fetch a single blog run record by thread identifier.
+
+    Args:
+        pool: Shared PostgreSQL connection pool.
+        thread_id: Unique identifier for the workflow thread.
+
+    Returns:
+        Optional[Dict[str, Any]]: The matching run record, or None if absent.
+    """
     # Added "id" to the start of the SELECT to match your dictionary mapping
     query = """
     select id, thread_id, user_id, prompt, status, interrupt_type, error_message, created_at, updated_at, completed_at
@@ -66,13 +108,25 @@ async def get_run(
                     "error_message": row[6],
                     "created_at": row[7],
                     "updated_at": row[8],
-                    "completed_at": row[9]
+                    "completed_at": row[9],
                 }
             return None
+
 
 async def list_runs_for_user(
     pool: AsyncConnectionPool, user_id: str, limit: int = 50, offset: int = 0
 ) -> List[Dict[str, Any]]:
+    """List recent blog runs for a specific user.
+
+    Args:
+        pool: Shared PostgreSQL connection pool.
+        user_id: User identifier whose runs should be returned.
+        limit: Maximum number of rows to return.
+        offset: Row offset for pagination.
+
+    Returns:
+        List[Dict[str, Any]]: Blog run rows ordered from newest to oldest.
+    """
     query = """
     select thread_id, prompt, status, interrupt_type, error_message, created_at, updated_at, completed_at
     from public.blog_runs
@@ -94,10 +148,19 @@ async def list_runs_for_user(
                     "error_message": row[4],
                     "created_at": row[5],
                     "updated_at": row[6],
-                    "completed_at": row[7]
+                    "completed_at": row[7],
                 }
                 for row in rows
             ]
 
+
 def utc_now() -> datetime:
+    """Return the current UTC timestamp.
+
+    Args:
+        None: This helper reads the current system time only.
+
+    Returns:
+        datetime: Timezone-aware UTC datetime for persistence.
+    """
     return datetime.now(timezone.utc)
