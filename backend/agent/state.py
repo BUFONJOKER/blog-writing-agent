@@ -48,9 +48,9 @@ class BlogAgentState(BaseModel):
 
     final_post: str = Field(default="", description="Final edited article.")
 
-    human_feedback: str | None = Field(
-        default=None, description="Optional reviewer feedback."
-    )
+    # human_feedback: str | None = Field(
+    #     default=None, description="Optional reviewer feedback."
+    # )
 
     iteration_count: int = Field(
         default=0, ge=0, le=3, description="Number of revision cycles."
@@ -62,15 +62,15 @@ class BlogAgentState(BaseModel):
         default="running", description="Current lifecycle state of the run."
     )
 
-    interrupt_type: str | None = Field(
-        default=None, description="Checkpoint type when paused."
-    )
+    # interrupt_type: str | None = Field(
+    #     default=None, description="Checkpoint type when paused."
+    # )
 
-    error: str | None = Field(default=None, description="Optional error details.")
+    # error: str | None = Field(default=None, description="Optional error details.")
 
-    metadata: dict = Field(
-        default_factory=dict, description="Supplementary generation preferences."
-    )
+    # metadata: dict = Field(
+    #     default_factory=dict, description="Supplementary generation preferences."
+    # )
 
     needs_revision: bool = Field(
         default=False, description="Determines if another revision cycle is needed."
@@ -92,9 +92,9 @@ class BlogAgentState(BaseModel):
         default=None, description="Currently executing task."
     )
 
-    agent_thoughts: List[str] = Field(
-        default_factory=list, description="Chain-of-thought style reasoning summaries."
-    )
+    # agent_thoughts: List[str] = Field(
+    #     default_factory=list, description="Chain-of-thought style reasoning summaries."
+    # )
 
     confidence_score: float = Field(
         default=1.0, ge=0, le=1, description="Confidence level of the final output."
@@ -152,8 +152,6 @@ class BlogAgentState(BaseModel):
         default=0,
         description="Number of times the content has been revised based on critic feedback.",
     )
-
-
 
     human_approved: bool = Field(
     default=False,

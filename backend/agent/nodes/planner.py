@@ -104,6 +104,4 @@ def planner_node(state: BlogAgentState, model) -> dict:
         "blog_plan": response.model_dump(), # Convert Pydantic object to dictionary
         "tasks": response.tasks,       # Extract tasks for the next node
         "messages": [ai_msg],          # Append to the message history
-        "human_feedback":"awaiting",
-        "interrupt_type":"plan_review"
     }
