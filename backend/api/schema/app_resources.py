@@ -10,6 +10,10 @@ class AppResources(BaseModel):
     model instances, workflow graphs, and tool clients so they can be passed
     around in a structured way during application startup and request handling.
     """
+    prompt: str = Field(
+        default="",
+        description="The initial prompt for the blog generation workflow, set at request time.",
+    )
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 

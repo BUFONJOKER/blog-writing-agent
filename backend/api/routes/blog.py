@@ -1,205 +1,139 @@
+from fastapi import APIRouter, Request, HTTPException
+from pydantic import BaseModel, Field
 import asyncio
 import uuid
 import json
-from urllib.parse import urlencode
-from fastapi import APIRouter, Request, HTTPException
 from fastapi.responses import StreamingResponse
-from agent.main import agent, finalize_workflow
-from db.crud.blog_runs import update_run_status, utc_now, get_run
+from db.crud.blog_runs import create_blog_run, update_run_status, utc_now, get_run
+from db.crud.blog_outputs import get_output, get_all_outputs_of_user, save_output
 from langgraph.types import Command
-from db.crud.blog_outputs import get_output, get_all_outputs_of_user
-from api.schema.blog_request import BlogRequest
-from api.schema.review_request import ReviewRequest
-from api.schema.final_post_request import FinalPostRequest
+from api.schema.blog.states import BlogRequest, ReviewRequest, FinalPostRequest
+from agent.main import agent, finalize_workflow
+from typing import Any
 
 blog_router = APIRouter(prefix="/blog", tags=["Blog Generation"])
 
 
-# Create a new blog run ID and return the stream URL the client should open.
+
+
 @blog_router.post("/generate")
 async def generate_blog(payload: BlogRequest, request: Request):
-    """Initialize a blog generation request.
+    """Start blog generation in BACKGROUND and return SSE stream URL instantly."""
+    try:
+        thread_id = str(uuid.uuid4())
+        resources = request.app.state.resources
+        resources.prompt = payload.prompt  # For stream/review use
+        run_name = f"Blog Run - {payload.prompt[:30]}..."
+        resources.run_name = run_name  # For stream/review use
 
-    Args:
-        payload: Blog generation request containing the user ID and prompt.
-        request: FastAPI request object.
-
-    Returns:
-        dict: Initialization payload with the thread ID, status, and stream URL.
-    """
-
-    thread_id = str(uuid.uuid4())
-    query_string = urlencode({"prompt": payload.prompt, "user_id": payload.user_id})
-
-    return {
-        "user_id": payload.user_id,
-        "thread_id": thread_id,
-        "status": "initialized",
-        "stream_url": f"/blog/{thread_id}/stream?{query_string}",
-    }
-
-
-# Stream workflow events back to the client as Server-Sent Events.
-@blog_router.get("/{thread_id}/stream")
-async def stream_blog_output(
-    thread_id: str, prompt: str, user_id: str, request: Request
-):
-    '''
-    Stream blog generation updates for a given workflow thread.'''
-
-    resources = request.app.state.resources
-    run_name = f"blog_run_{thread_id}_{user_id}_{utc_now().isoformat()}"
-    config = {"configurable": {"thread_id": thread_id}, "run_name": run_name}
-
-    async def event_generator():
-        try:
-            stream = await agent(
+        # START BACKGROUND AGENT - NON-BLOCKING!
+        asyncio.create_task(
+            agent(
                 workflow=resources.workflow,
                 pool=resources.pool,
-                user_id=user_id,
+                user_id=payload.user_id,
                 thread_id=thread_id,
-                prompt=prompt,
+                prompt=payload.prompt,
                 run_name=run_name,
             )
-
-            while True:
-                try:
-                    event = await asyncio.wait_for(anext(stream), timeout=60.0)
-                    yield f"data: {json.dumps({'type': 'node_update', 'data': event})}\n\n"
-
-                except StopAsyncIteration:
-                    state = await resources.workflow.aget_state(config)
-
-                    if state.next and "human_review" in state.next:
-                        # Mark the run as waiting for review before pausing the stream.
-                        await update_run_status(
-                            pool=resources.pool,
-                            thread_id=thread_id,
-                            status="waiting_approval",
-                            interrupt_type="human_review",
-                        )
-                        yield f"data: {json.dumps({'type': 'waiting_for_review', 'message': 'Workflow is paused for human review'})}\n\n"
-                    else:
-                        await finalize_workflow(
-                            resources.workflow, config, resources.pool, thread_id
-                        )
-                        yield f"data: {json.dumps({'type': 'workflow_complete', 'message': 'Workflow execution completed'})}\n\n"
-                    break
-
-        except Exception as e:
-            await update_run_status(
-                pool=resources.pool,
-                thread_id=thread_id,
-                status="failed",
-                interrupt_type="error",
-                error_message=str(e),
-            )
-            yield f"data: {json.dumps({'type': 'error', 'message': 'An error occurred during workflow execution', 'details': str(e)})}\n\n"
-
-    return StreamingResponse(
-        event_generator(),
-        media_type="text/event-stream",
-        headers={
-            "Cache-Control": "no-cache",
-            "Connection": "keep-alive",
-            "X-Accel-Buffering": "no",
-        },
-    )
-
-
-# Resume a paused workflow after the user submits a review decision.
-@blog_router.post("/review")
-async def review_blog(payload: ReviewRequest, request: Request):
-    """Resume a paused blog workflow using the review decision.
-
-    Args:
-        payload: Review decision payload containing the thread ID and approval flag.
-        request: FastAPI request object used to access shared app resources.
-
-    Returns:
-        dict: Confirmation message that the review was processed.
-
-    Raises:
-        HTTPException: If workflow resumption fails.
-    """
-
-    resources = request.app.state.resources
-
-    config = {
-        "configurable": {"thread_id": payload.thread_id},
-        "run_name": f"blog_run_{payload.thread_id}",
-    }
-
-    await update_run_status(
-        pool=resources.pool,
-        thread_id=payload.thread_id,
-        status="running",
-    )
-
-    try:
-        await resources.workflow.ainvoke(Command(resume=payload.approved), config)
-
-        return {
-            "status": "success",
-            "message": "Review processed. Re-connect to the stream to see the remaining steps.",
-        }
-
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=str(e),
         )
 
+        return {
+            "user_id": payload.user_id,
+            "thread_id": thread_id,
+            "status": "queued",
+            "stream_url": str(request.url.replace(path=f"/stream/{thread_id}"))
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to queue: {str(e)}")
 
-# Return the persisted status for a blog run.
-@blog_router.get("/status/{thread_id}")
-async def check_blog_status(thread_id: str, request: Request):
-    """Fetch the current execution status for a blog run.
+def to_json_serializable(obj: Any) -> Any:
+    """Recursively convert Pydantic models and non-JSON types to JSON-safe."""
+    if isinstance(obj, BaseModel):
+        return to_json_serializable(obj.model_dump())  # Pydantic v2: model_dump()
+    elif isinstance(obj, dict):
+        return {k: to_json_serializable(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [to_json_serializable(v) for v in obj]
+    elif hasattr(obj, '__dict__'):  # Custom objects
+        return to_json_serializable(obj.__dict__)
+    elif obj is None or isinstance(obj, (str, int, float, bool)):
+        return obj
+    else:
+        return str(obj)  # Fallback: convert to string
 
-    Args:
-        thread_id: Workflow thread identifier to inspect.
-        request: FastAPI request object used to access the database pool.
 
-    Returns:
-        dict: Status payload including the current state, wait flag, and error.
-
-    Raises:
-        HTTPException: If the blog run does not exist.
-    """
-
-    pool = request.app.state.resources.pool
-
-    run_data = await get_run(pool, thread_id)
-
-    if not run_data:
-        raise HTTPException(status_code=404, detail="Blog run not found")
-
-    return {
-        "status": run_data["status"],
-        "is_waiting_for_you": run_data["status"] == "waiting_approval",
-        "error": run_data["error_message"],
+@blog_router.get("/stream/{thread_id}")
+async def stream_blog(thread_id: str, request: Request):
+    resources = request.app.state.resources
+    prompt = resources.prompt  # Get the prompt set at generation time, if needed for context in streaming
+    config = {
+        "configurable": {"thread_id": thread_id},
+        "run_name": getattr(resources, 'run_name', 'Blog Run')
     }
 
+    async def sse_generator():
+        try:
+            async for event in resources.workflow.astream_events(
+                {'prompt': prompt}, config, version="v2",
+                stream_mode=["updates", "messages"]
+            ):
+                # SERIALIZE BEFORE JSON!
+                safe_event = to_json_serializable(event)
+                yield f"data: {json.dumps(safe_event)}\n\n"
+            yield 'data: {"event": "stream_end", "message": "Workflow complete"}\n\n'
+        except Exception as e:
+            yield f'data: {{"error": "{str(e)}"}}\n\n'
 
-# Return the final stored post only when it belongs to the requesting user.
+    return StreamingResponse(
+        sse_generator(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "Connection": "keep-alive"}
+    )
+
+
+@blog_router.post("/review")
+async def review_blog(payload: ReviewRequest, request: Request):
+    """Process human review - resume workflow."""
+    resources = request.app.state.resources
+    config = {"configurable": {"thread_id": payload.thread_id}, "run_name": resources.run_name}
+
+    await update_run_status(pool=resources.pool, thread_id=payload.thread_id, status="running")
+
+    try:
+        async for event in resources.workflow.astream(
+            Command(resume=payload.approved), config, stream_mode="values"
+        ):
+            pass
+
+        asyncio.create_task(
+            finalize_workflow(resources.workflow, config, resources.pool, payload.thread_id)
+        )
+        return {"message": "Review processed. Check stream for updates."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Review failed: {str(e)}")
+
+
+
 @blog_router.post("/final_post")
 async def get_final_post(payload: FinalPostRequest, request: Request):
-    """Return the final blog output for the authenticated user.
+    """Return the final blog output if it belongs to the requesting user.
 
     Args:
-        payload: Request body containing the user ID and workflow thread ID.
+        payload: Request body containing user id and workflow thread id.
         request: FastAPI request object used to access the database pool.
 
     Returns:
         dict: Final blog markdown and metadata for the requested thread.
 
     Raises:
-        HTTPException: If no matching output is found for the user and thread ID.
+        HTTPException: If no matching output is found for user and thread id.
     """
 
     pool = request.app.state.resources.pool
     output = await get_output(pool, payload.thread_id)
 
+    # Check if output exists AND belongs to the user entered
     if output and output["user_id"] == payload.user_id:
         return {
             "thread_id": payload.thread_id,
@@ -214,8 +148,6 @@ async def get_final_post(payload: FinalPostRequest, request: Request):
             detail="Final post not found for the given thread_id and user_id.",
         )
 
-
-# Return all stored blog posts for the given user.
 @blog_router.get("/user_posts/{user_id}")
 async def get_user_posts(user_id: str, request: Request):
     """Fetch all blog posts generated by a specific user.
@@ -228,7 +160,7 @@ async def get_user_posts(user_id: str, request: Request):
         list: A list of blog posts associated with the user.
 
     Raises:
-        HTTPException: If no posts are found for the user.
+        HTTPException: If no posts are found for the given user.
     """
 
     pool = request.app.state.resources.pool
@@ -242,3 +174,35 @@ async def get_user_posts(user_id: str, request: Request):
         )
 
     return posts
+
+# --- routers/blog.py ---
+
+
+@blog_router.get("/status/{thread_id}")
+async def check_blog_status(thread_id: str, request: Request):
+    """Fetch the execution status of a blog generation run.
+
+    Args:
+        thread_id: Workflow thread identifier to inspect.
+        request: FastAPI request object used to access the database pool.
+
+    Returns:
+        dict: Status payload including current state, wait flag, and error.
+
+    Raises:
+        HTTPException: If the specified blog run does not exist.
+    """
+
+    pool = request.app.state.resources.pool
+
+    # Use the function you just showed me
+    run_data = await get_run(pool, thread_id)
+
+    if not run_data:
+        raise HTTPException(status_code=404, detail="Blog run not found")
+
+    return {
+        "status": run_data["status"],
+        "is_waiting_for_you": run_data["status"] == "waiting_approval",
+        "error": run_data["error_message"],
+    }
