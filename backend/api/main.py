@@ -4,7 +4,8 @@ import asyncio
 import uvicorn
 from fastapi import FastAPI, status, HTTPException
 from contextlib import asynccontextmanager
-from api.schema.app_resources import AppResources, StreamManager
+from api.schema.app_resources import AppResources
+from api.schema.stream_manager import StreamManager
 from psycopg_pool import AsyncConnectionPool
 from agent.config import DB_URL
 from langchain_ollama import ChatOllama
@@ -12,7 +13,7 @@ from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from agent.workflow import build_workflow
 from agent.tools import initialize_tools
 from fastapi.middleware.cors import CORSMiddleware
-from api.routes.blog import blog_router
+from api.routes.blog.main import blog_router
 
 
 if sys.platform == "win32":

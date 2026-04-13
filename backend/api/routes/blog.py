@@ -9,10 +9,10 @@ from langgraph.types import Command
 from db.crud.blog_runs import update_run_status, get_run
 from db.crud.blog_outputs import get_output, get_all_outputs_of_user
 
-from api.schema.blog.states import BlogRequest, ReviewRequest, FinalPostRequest
+from api.schema.blog_states import BlogRequest, ReviewRequest, FinalPostRequest
 from agent.main import agent, finalize_workflow
 
-blog_router = APIRouter(prefix="/blog", tags=["Blog Generation"])
+from api.routes.blog import blog_router
 
 
 # -------------------------
