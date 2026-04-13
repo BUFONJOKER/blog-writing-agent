@@ -4,7 +4,7 @@ import asyncio
 import uvicorn
 from fastapi import FastAPI, status, HTTPException
 from contextlib import asynccontextmanager
-from api.schema.app_resources import AppResources
+from api.schema.app_resources import AppResources, StreamManager
 from psycopg_pool import AsyncConnectionPool
 from agent.config import DB_URL
 from langchain_ollama import ChatOllama
@@ -23,7 +23,7 @@ if sys.platform == "win32":
 
 
 resources = AppResources()
-
+stream_manager = StreamManager()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -37,6 +37,7 @@ async def lifespan(app: FastAPI):
     """
 
     app.state.resources = resources
+    app.state.stream_manager = stream_manager
     resources.pool = AsyncConnectionPool(
         conninfo=DB_URL,
         max_size=20,
@@ -47,7 +48,7 @@ async def lifespan(app: FastAPI):
 
     await resources.pool.open()  # Ensure the pool is ready before accepting requests
 
-    resources.model = ChatOllama(model="qwen3.5:cloud")
+    resources.model = ChatOllama(model="minimax-m2.7:cloud")
 
     checkpointer = AsyncPostgresSaver(resources.pool)
 
