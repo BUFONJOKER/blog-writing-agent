@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Request, HTTPException
-from db.crud.blog_outputs import get_output
+from backend.db.crud.blog_outputs import get_output
 from api.schema.blog_states import FinalPostRequest
 
 router = APIRouter()

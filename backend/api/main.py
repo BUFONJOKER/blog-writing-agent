@@ -14,7 +14,7 @@ from agent.workflow import build_workflow
 from agent.tools import initialize_tools
 from fastapi.middleware.cors import CORSMiddleware
 from api.routes.blog.main import blog_router
-
+from api.routes.auth.main import auth_router
 
 if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
@@ -70,12 +70,8 @@ app = FastAPI(title="Blog Writing Agent API", version="0.0.1", lifespan=lifespan
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",  # Next.js dev
-        # "https://your-vercel-domain.vercel.app",
-        # "https://your-custom-domain.com",
-    ],
-    allow_credentials=True,
+    allow_origins=["http://localhost:3000"], # Must be specific, not "*"
+    allow_credentials=True, # Required for Cookies
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -130,6 +126,7 @@ async def health_check():
 
 
 app.include_router(blog_router)
+app.include_router(auth_router)
 
 if __name__ == "__main__":
     uvicorn.run("api.main:app", host="0.0.0.0", port=8000, reload=True)
