@@ -87,9 +87,9 @@ Open: http://localhost:3000
 
 ## 🔐 Environment Variables
 
-Create frontend/.env with at least:
+Create frontend/.env.local with at least:
 
-- NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
+- NEXT_PUBLIC_API_BASE_URL=http://localhost:8000/
 
 This is the base URL used by frontend API calls.
 

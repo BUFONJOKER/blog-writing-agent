@@ -49,7 +49,7 @@ async def lifespan(app: FastAPI):
 
     await resources.pool.open()  # Ensure the pool is ready before accepting requests
 
-    resources.model = ChatOllama(model="minimax-m2.7:cloud")
+    resources.model = ChatOllama(model="qwen3.5:cloud")
 
     checkpointer = AsyncPostgresSaver(resources.pool)
 

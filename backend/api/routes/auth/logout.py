@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Response
-from api.schema.auth_states import LogoutRequest
 
 router = APIRouter()
 
@@ -14,5 +13,5 @@ async def logout(response: Response):
     Returns:
         dict: A success message confirming logout.
     """
-    response.delete_cookies("access_token")
+    response.delete_cookie(key="access_token")
     return {"message": "Logout successful"}

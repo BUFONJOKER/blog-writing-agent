@@ -81,33 +81,41 @@ async def get_output(
 async def get_all_outputs_of_user(
     pool: AsyncConnectionPool, user_id: str
 ) -> List[Dict[str, Any]]:
-    """Fetch every finalized blog output owned by a given user.
+    """Fetch every finalized blog output owned by a given user, including in-progress runs.
 
     Args:
         pool: Shared PostgreSQL connection pool.
         user_id: User identifier whose outputs should be returned.
 
     Returns:
-        List[Dict[str, Any]]: Finalized blog outputs ordered newest first.
+        List[Dict[str, Any]]: Blog outputs (completed and in-progress) ordered newest first.
     """
 
-    # JOIN is required here because blog_outputs doesn't have user_id directly
+    # LEFT JOIN to include blog_runs even if they don't have outputs yet
     query = """
-            SELECT
-        o.thread_id,
-        r.user_id,
-        o.final_post_markdown,
-        o.meta,
-        o.created_at
-        FROM public.blog_outputs o
-        JOIN public.blog_runs r ON o.thread_id = r.thread_id
+        SELECT
+            COALESCE(o.thread_id, r.thread_id) as thread_id,
+            r.user_id,
+            r.prompt,
+            COALESCE(o.final_post_markdown, '') as final_post_markdown,
+            COALESCE(o.meta, '{}'::jsonb) as meta,
+            r.created_at
+        FROM public.blog_runs r
+        LEFT JOIN public.blog_outputs o ON r.thread_id = o.thread_id
         WHERE r.user_id = %s
-        ORDER BY o.created_at DESC;
+        ORDER BY r.created_at DESC;
     """
 
     async with pool.connection() as conn:
         async with conn.cursor() as cur:
             await cur.execute(query, (user_id,))
             rows = await cur.fetchall()
-            keys = ["thread_id", "user_id", "final_post_markdown", "meta", "created_at"]
+            keys = [
+                "thread_id",
+                "user_id",
+                "prompt",
+                "final_post_markdown",
+                "meta",
+                "created_at",
+            ]
             return [dict(zip(keys, row)) for row in rows]
