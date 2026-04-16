@@ -164,3 +164,46 @@ def utc_now() -> datetime:
         datetime: Timezone-aware UTC datetime for persistence.
     """
     return datetime.now(timezone.utc)
+
+
+async def delete_blog_run(
+    pool: AsyncConnectionPool,
+    thread_id: str,
+    user_id: str,
+) -> bool:
+    """Delete a blog run record if it belongs to the specified user.
+
+    Args:
+        pool: Shared PostgreSQL connection pool.
+        thread_id: Unique identifier for the workflow thread.
+        user_id: User identifier for ownership verification.
+
+    Returns:
+        bool: True if deletion was successful, False if thread doesn't belong to user.
+    """
+    # First verify that the thread belongs to this user
+    verify_query = """
+    select user_id from public.blog_runs
+    where thread_id = %s
+    limit 1;
+    """
+    async with pool.connection() as conn:
+        async with conn.cursor() as cur:
+            await cur.execute(verify_query, (thread_id,))
+            row = await cur.fetchone()
+
+            # If thread doesn't exist or doesn't belong to user, return False
+            if not row or row[0] != user_id:
+                return False
+
+            # Delete from blog_outputs first (foreign key constraint)
+            await cur.execute(
+                "delete from public.blog_outputs where thread_id = %s;", (thread_id,)
+            )
+
+            # Then delete from blog_runs
+            await cur.execute(
+                "delete from public.blog_runs where thread_id = %s;", (thread_id,)
+            )
+
+    return True

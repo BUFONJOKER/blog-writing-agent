@@ -19,6 +19,20 @@ export function BottomComposer({
 }: BottomComposerProps) {
     const isDisabled = disabled || isCreatingChat;
 
+    const handleTextareaKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (event.key !== "Enter" || event.shiftKey) {
+            return;
+        }
+
+        event.preventDefault();
+
+        if (isDisabled || !prompt.trim()) {
+            return;
+        }
+
+        event.currentTarget.form?.requestSubmit();
+    };
+
     return (
         <div className="fixed bottom-4 left-1/2 z-20 w-[calc(100%-2rem)] max-w-4xl -translate-x-1/2 md:bottom-8 md:w-[calc(100%-4rem)]">
             <form
@@ -30,6 +44,7 @@ export function BottomComposer({
                     rows={1}
                     disabled={isDisabled}
                     onChange={(e) => onPromptChange(e.target.value)}
+                    onKeyDown={handleTextareaKeyDown}
                     placeholder={isDisabled ? disabledHint : "Type your prompt to create a new chat..."}
                     className="min-h-12 w-full resize-none bg-transparent px-3 py-2 text-sm outline-none placeholder:text-zinc-600 disabled:opacity-50"
                 />

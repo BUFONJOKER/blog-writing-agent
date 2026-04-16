@@ -7,6 +7,7 @@ type PasswordFieldProps = {
     showPassword: boolean;
     onChange: (value: string) => void;
     onToggleShowPassword: () => void;
+    autoComplete?: string;
 };
 
 function EyeIcon() {
@@ -36,6 +37,7 @@ export function PasswordField({
     showPassword,
     onChange,
     onToggleShowPassword,
+    autoComplete,
 }: PasswordFieldProps) {
     return (
         <label className="block">
@@ -47,6 +49,7 @@ export function PasswordField({
                     onChange={(e) => onChange(e.target.value)}
                     className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2.5 pr-16 text-sm outline-none transition focus:border-blue-500"
                     placeholder={placeholder}
+                    autoComplete={autoComplete}
                     required
                 />
                 <button

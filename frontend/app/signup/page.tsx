@@ -25,6 +25,7 @@ export default function SignupPage() {
             await signupUser({ name: name.trim(), email: email.trim(), password });
             const loginResponse = await loginUser({ email: email.trim(), password });
             localStorage.setItem("auth_user_email", loginResponse.data.email);
+            localStorage.setItem("auth_user_name", loginResponse.data.name || name.trim());
             router.push("/");
             router.refresh();
         } catch (error: unknown) {

@@ -56,4 +56,21 @@ async def login(request: Request, payload: LoginRequest, response: Response):
         secure=False,  # Change to True in production with HTTPS!
     )
 
-    return {"message": "Login successful", "email": email}
+    return {
+        "message": "Login successful",
+        "email": email,
+        "name": user.get("name", ""),
+        "ollama_setup_notice": {
+            "title": "Before you start: run the Ollama model in your terminal",
+            "description": (
+                "Use Qwen 3.5 Cloud with Ollama so the blog workflow can run without using local RAM "
+                "for model inference. Run the install command that matches your environment, then continue "
+                "with sign-in and model setup."
+            ),
+            "steps": [
+                "winget install --id Ollama.Ollama -e",
+                "ollama signin",
+                "ollama run qwen3.5:cloud",
+            ],
+        },
+    }

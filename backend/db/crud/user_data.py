@@ -77,9 +77,8 @@ async def get_user(
         Optional[Dict[str, Any]]: The user row when found, otherwise a
         sentinel value indicating the user was not found.
     """
-    # Added "id" to the start of the SELECT to match your dictionary mapping
     query = """
-    select id, email, hashed_password
+    select id, name, email, hashed_password
     from public.user_data
     where email = %s
     limit 1;
@@ -89,7 +88,12 @@ async def get_user(
             await cur.execute(query, (email,))
             row = await cur.fetchone()
             if row:
-                return {"id": row[0], "email": row[1], "hashed_password": row[2]}
+                return {
+                    "id": row[0],
+                    "name": row[1],
+                    "email": row[2],
+                    "hashed_password": row[3],
+                }
             return None
 
 

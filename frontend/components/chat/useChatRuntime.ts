@@ -9,6 +9,7 @@ import {
     fetchFinalPost,
     fetchUserThreads,
     submitBlogReview,
+    deleteThread,
 } from "@/lib/api";
 import { summarizeNodeOutput, toThreadItems } from "@/components/chat/chatWorkflow.helpers";
 
@@ -34,14 +35,29 @@ const WORKFLOW_NODE_ORDER = [
     "finalize_node",
 ] as const;
 
-function buildInitialWorkflowNodes(): WorkflowNodeEntry[] {
-    return WORKFLOW_NODE_ORDER.map((nodeName) => ({
-        nodeName,
-        output: "",
-        updatedAt: "",
-        status: "pending",
-    }));
-}
+const WORKFLOW_NODE_TOTAL = WORKFLOW_NODE_ORDER.length;
+
+const inferNextNodeFromUpdate = (nodeName: string, payloadObj: Record<string, unknown>) => {
+    if (nodeName === "router_node") {
+        const needsResearch = payloadObj.needs_research;
+        if (typeof needsResearch === "boolean") {
+            return needsResearch ? "research_query_gen_node" : "summarizer_node";
+        }
+    }
+
+    if (nodeName === "research_loop") {
+        const moreResearchNeeded = payloadObj.more_research_needed;
+        if (typeof moreResearchNeeded === "boolean") {
+            return moreResearchNeeded ? "router_node" : "planner_node";
+        }
+    }
+
+    if (nodeName === "critic_node") {
+        return "human_review";
+    }
+
+    return null;
+};
 
 export function useChatRuntime({ userEmail, clearAuth, setDrawerOpen }: UseChatRuntimeOptions) {
     const [threads, setThreads] = useState<ThreadItem[]>([]);
@@ -57,13 +73,16 @@ export function useChatRuntime({ userEmail, clearAuth, setDrawerOpen }: UseChatR
     const [lastPrompt, setLastPrompt] = useState("");
     const [globalError, setGlobalError] = useState("");
 
-    const [workflowNodes, setWorkflowNodes] = useState<WorkflowNodeEntry[]>(buildInitialWorkflowNodes);
+    const [workflowNodes, setWorkflowNodes] = useState<WorkflowNodeEntry[]>([]);
     const [currentNode, setCurrentNode] = useState("");
     const [isStreaming, setIsStreaming] = useState(false);
     const [waitingForApproval, setWaitingForApproval] = useState(false);
     const [approvalSubmitting, setApprovalSubmitting] = useState(false);
     const [activeApprovalAction, setActiveApprovalAction] = useState<"approve" | "reject" | null>(null);
     const [criticOutput, setCriticOutput] = useState("");
+    const [editedDraft, setEditedDraft] = useState("");
+    const [workflowStartTime, setWorkflowStartTime] = useState<number | null>(null);
+    const [workflowTotalTime, setWorkflowTotalTime] = useState<number | null>(null);
 
     const streamRef = useRef<EventSource | null>(null);
     const streamThreadIdRef = useRef<string | null>(null);
@@ -95,10 +114,11 @@ export function useChatRuntime({ userEmail, clearAuth, setDrawerOpen }: UseChatR
 
     const upsertWorkflowNode = useCallback((nodeName: string, output: string) => {
         const timestamp = new Date().toISOString();
+        const now = Date.now();
 
         setWorkflowNodes((prev) => {
             const completedOlderRunning = prev.map((node) =>
-                node.nodeName !== nodeName && node.status === "running" ? { ...node, status: "completed" as const } : node,
+                node.nodeName !== nodeName && node.status === "running" ? { ...node, status: "completed" as const, endTime: now, duration: (now - (node.startTime || now)) / 1000 } : node,
             );
 
             const existingIndex = completedOlderRunning.findIndex((node) => node.nodeName === nodeName);
@@ -108,6 +128,7 @@ export function useChatRuntime({ userEmail, clearAuth, setDrawerOpen }: UseChatR
                 output,
                 updatedAt: timestamp,
                 status: "running",
+                startTime: existingIndex !== -1 ? completedOlderRunning[existingIndex].startTime : now,
             };
 
             if (existingIndex === -1) {
@@ -122,12 +143,24 @@ export function useChatRuntime({ userEmail, clearAuth, setDrawerOpen }: UseChatR
     }, []);
 
     const markAllWorkflowNodesCompleted = useCallback(() => {
-        setWorkflowNodes((prev) => prev.map((node) => (node.status === "pending" ? node : { ...node, status: "completed" })));
+        const now = Date.now();
+        setWorkflowNodes((prev) => prev.map((node) => ({
+            ...node,
+            status: "completed",
+            endTime: node.endTime || now,
+            duration: node.duration !== undefined ? node.duration : (now - (node.startTime || now)) / 1000
+        })));
     }, []);
 
     const markCurrentNodeCompleted = useCallback((nodeName: string) => {
         if (!nodeName) return;
-        setWorkflowNodes((prev) => prev.map((node) => (node.nodeName === nodeName ? { ...node, status: "completed" } : node)));
+        const now = Date.now();
+        setWorkflowNodes((prev) => prev.map((node) => (node.nodeName === nodeName ? {
+            ...node,
+            status: "completed",
+            endTime: now,
+            duration: (now - (node.startTime || now)) / 1000
+        } : node)));
     }, []);
 
     const checkApprovalStatus = useCallback(
@@ -203,6 +236,7 @@ export function useChatRuntime({ userEmail, clearAuth, setDrawerOpen }: UseChatR
                 setIsStreaming(false);
                 setActiveThreadLoading(false);
                 markCurrentNodeCompleted(currentNode);
+                setCurrentNode("human_review");
                 await checkApprovalStatus(threadId);
                 return;
             }
@@ -212,8 +246,16 @@ export function useChatRuntime({ userEmail, clearAuth, setDrawerOpen }: UseChatR
                 setIsStreaming(false);
                 setActiveThreadLoading(false);
                 setWaitingForApproval(false);
+                setEditedDraft("");
                 markAllWorkflowNodesCompleted();
                 setCurrentNode("");
+
+                // Calculate total workflow time
+                if (workflowStartTime) {
+                    const totalTime = (Date.now() - workflowStartTime) / 1000;
+                    setWorkflowTotalTime(totalTime);
+                }
+
                 updateThreadStatus(threadId, "completed");
                 await loadFinalThreadOutput(threadId);
                 return;
@@ -221,9 +263,18 @@ export function useChatRuntime({ userEmail, clearAuth, setDrawerOpen }: UseChatR
 
             if (type === "update") {
                 console.log("📝 Workflow update received");
+
+                // Set workflow start time on first update
+                if (!workflowStartTime) {
+                    setWorkflowStartTime(Date.now());
+                }
+
                 setActiveThreadLoading(true);
                 setIsStreaming(true);
                 updateThreadStatus(threadId, "running");
+                if (!currentNode) {
+                    setCurrentNode(WORKFLOW_NODE_ORDER[0]);
+                }
 
                 const data = payload.data;
                 if (!data || typeof data !== "object") {
@@ -235,10 +286,70 @@ export function useChatRuntime({ userEmail, clearAuth, setDrawerOpen }: UseChatR
                 console.log(`🔄 Processing ${nodeUpdates.length} nodes:`, nodeUpdates.map(([name]) => name));
 
                 nodeUpdates.forEach(([nodeName, nodePayload]) => {
+                    // Track the latest node update directly so the UI does not lag behind.
                     setCurrentNode(nodeName);
+
+                    const payloadObj = nodePayload && typeof nodePayload === "object"
+                        ? (nodePayload as Record<string, unknown>)
+                        : {};
+                    const inferredNextNode = inferNextNodeFromUpdate(nodeName, payloadObj);
+
+                    if ("edited_draft" in payloadObj) {
+                        const draftValue = payloadObj.edited_draft;
+                        if (typeof draftValue === "string") {
+                            setEditedDraft(draftValue);
+                        }
+                    }
+
                     const summary = summarizeNodeOutput(nodeName, nodePayload);
                     console.log(`📦 Node "${nodeName}" summary:`, summary.slice(0, 100) + "...");
                     upsertWorkflowNode(nodeName, summary);
+
+                    if (inferredNextNode && inferredNextNode !== nodeName) {
+                        const now = Date.now();
+                        const timestamp = new Date(now).toISOString();
+
+                        setWorkflowNodes((prev) => {
+                            const withCurrentCompleted = prev.map((node) => {
+                                if (node.nodeName !== nodeName || node.status !== "running") {
+                                    return node;
+                                }
+
+                                return {
+                                    ...node,
+                                    status: "completed" as const,
+                                    endTime: now,
+                                    duration: node.duration !== undefined ? node.duration : (now - (node.startTime || now)) / 1000,
+                                };
+                            });
+
+                            const nextIndex = withCurrentCompleted.findIndex((node) => node.nodeName === inferredNextNode);
+                            if (nextIndex === -1) {
+                                return [
+                                    ...withCurrentCompleted,
+                                    {
+                                        nodeName: inferredNextNode,
+                                        output: "",
+                                        updatedAt: timestamp,
+                                        status: "running",
+                                        startTime: now,
+                                    },
+                                ];
+                            }
+
+                            const nextNode = withCurrentCompleted[nextIndex];
+                            const updated = [...withCurrentCompleted];
+                            updated[nextIndex] = {
+                                ...nextNode,
+                                status: "running",
+                                updatedAt: timestamp,
+                                startTime: nextNode.startTime ?? now,
+                            };
+                            return updated;
+                        });
+
+                        setCurrentNode(inferredNextNode);
+                    }
 
                     if (nodeName.toLowerCase().includes("critic")) {
                         setCriticOutput(summary);
@@ -255,6 +366,7 @@ export function useChatRuntime({ userEmail, clearAuth, setDrawerOpen }: UseChatR
             markAllWorkflowNodesCompleted,
             markCurrentNodeCompleted,
             updateThreadStatus,
+            workflowStartTime,
             upsertWorkflowNode,
         ],
     );
@@ -273,8 +385,10 @@ export function useChatRuntime({ userEmail, clearAuth, setDrawerOpen }: UseChatR
             closeStream();
             setIsStreaming(true);
             setActiveThreadLoading(true);
-            setCurrentNode("");
-            setWorkflowNodes(buildInitialWorkflowNodes());
+            setCurrentNode(WORKFLOW_NODE_ORDER[0]);
+            setWorkflowNodes([]);
+            setWorkflowStartTime(null);
+            setWorkflowTotalTime(null);
 
             const computedStreamUrl = streamUrl || `${process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "")}/blog/stream/${threadId}`;
             console.log("🔥 Starting stream for thread:", threadId, "URL:", computedStreamUrl);
@@ -317,11 +431,8 @@ export function useChatRuntime({ userEmail, clearAuth, setDrawerOpen }: UseChatR
                 const items = toThreadItems(response.data);
                 console.log("✨ Converted to thread items:", items);
                 setThreads(items);
-                if (!hasSelectedInitialThreadRef.current && !activeThreadId && items.length > 0) {
-                    setActiveThreadId(items[0].threadId);
-                    setActiveThreadPrompt(items[0].prompt ?? "");
-                    hasSelectedInitialThreadRef.current = true;
-                }
+                // Don't auto-select a thread - let user start with a new chat
+                hasSelectedInitialThreadRef.current = true;
             } catch (error: unknown) {
                 const maybeAxiosError = error as AxiosError;
                 const status = maybeAxiosError.response?.status;
@@ -350,8 +461,10 @@ export function useChatRuntime({ userEmail, clearAuth, setDrawerOpen }: UseChatR
             setActiveThreadLoading(true);
             setGlobalError("");
             setWaitingForApproval(false);
-            setWorkflowNodes(buildInitialWorkflowNodes());
+            setWorkflowNodes([]);
             setCurrentNode("");
+            setWorkflowStartTime(null);
+            setWorkflowTotalTime(null);
 
             const activeThread = threadsRef.current.find((thread) => thread.threadId === threadId);
             if (activeThread && ["queued", "running", "waiting_approval"].includes(activeThread.status)) {
@@ -506,10 +619,11 @@ export function useChatRuntime({ userEmail, clearAuth, setDrawerOpen }: UseChatR
         setActiveThreadPrompt("");
         setActiveThreadId(null);
         setActiveThreadMarkdown("");
-        setWorkflowNodes(buildInitialWorkflowNodes());
+        setWorkflowNodes([]);
         setCurrentNode("");
         setWaitingForApproval(false);
         setCriticOutput("");
+        setEditedDraft("");
         setDrawerOpen(false);
     }, [closeStream, setDrawerOpen]);
 
@@ -545,6 +659,38 @@ export function useChatRuntime({ userEmail, clearAuth, setDrawerOpen }: UseChatR
         [activeApprovalAction, activeThreadId, clearAuth, startThreadStream, updateThreadStatus],
     );
 
+    const handleDeleteThread = useCallback(
+        async (threadId: string) => {
+            if (!userEmail) return;
+
+            try {
+                await deleteThread({ user_id: userEmail, thread_id: threadId });
+
+                // Remove thread from list
+                setThreads((prev) => prev.filter((thread) => thread.threadId !== threadId));
+
+                // If the deleted thread was active, clear the view
+                if (activeThreadId === threadId) {
+                    setActiveThreadId(null);
+                    setActiveThreadMarkdown("");
+                    setActiveThreadPrompt("");
+                }
+
+                console.log("✅ Thread deleted successfully");
+            } catch (error: unknown) {
+                const maybeAxiosError = error as AxiosError;
+                if (maybeAxiosError.response?.status === 401) {
+                    clearAuth();
+                    return;
+                }
+
+                console.error("Failed to delete thread", error);
+                setGlobalError("Unable to delete thread. Please try again.");
+            }
+        },
+        [activeThreadId, clearAuth, userEmail],
+    );
+
     const resetRuntime = useCallback(() => {
         closeStream();
         setThreads([]);
@@ -557,13 +703,14 @@ export function useChatRuntime({ userEmail, clearAuth, setDrawerOpen }: UseChatR
         setLastPrompt("");
         setActiveThreadPrompt("");
         setGlobalError("");
-        setWorkflowNodes(buildInitialWorkflowNodes());
+        setWorkflowNodes([]);
         setCurrentNode("");
         setIsStreaming(false);
         setWaitingForApproval(false);
         setApprovalSubmitting(false);
         setActiveApprovalAction(null);
         setCriticOutput("");
+        setEditedDraft("");
         hasSelectedInitialThreadRef.current = false;
     }, [closeStream]);
 
@@ -585,11 +732,16 @@ export function useChatRuntime({ userEmail, clearAuth, setDrawerOpen }: UseChatR
         approvalSubmitting,
         activeApprovalAction,
         criticOutput,
+        editedDraft,
+        workflowTotalNodes: WORKFLOW_NODE_TOTAL,
+        workflowStartTime,
+        workflowTotalTime,
         setActiveThreadId,
         setPrompt,
         handlePromptSubmit,
         handleQuickNewChat,
         handleReviewDecision,
+        handleDeleteThread,
         resetRuntime,
     };
 }

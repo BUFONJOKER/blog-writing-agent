@@ -29,9 +29,15 @@ export default function LoginPage() {
             const response = await Promise.race([
                 loginUser({ email: email.trim(), password }),
                 timeoutPromise
-            ]) as any;
+            ]);
             console.log("✅ Login successful:", response.data);
             localStorage.setItem("auth_user_email", response.data.email);
+            localStorage.setItem("auth_user_name", response.data.name || "");
+            if (response.data.ollama_setup_notice) {
+                localStorage.setItem("auth_ollama_setup_notice", JSON.stringify(response.data.ollama_setup_notice));
+            } else {
+                localStorage.removeItem("auth_ollama_setup_notice");
+            }
             router.push("/");
             router.refresh();
         } catch (error: unknown) {

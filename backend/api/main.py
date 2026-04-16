@@ -15,7 +15,7 @@ from agent.tools import initialize_tools
 from fastapi.middleware.cors import CORSMiddleware
 from api.routes.blog.main import blog_router
 from api.routes.auth.main import auth_router
-
+from api.config import OLLAMA_HOST
 if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
     # This ensures any library (like Psycopg) that checks the loop
@@ -49,7 +49,7 @@ async def lifespan(app: FastAPI):
 
     await resources.pool.open()  # Ensure the pool is ready before accepting requests
 
-    resources.model = ChatOllama(model="qwen3.5:cloud")
+    resources.model = ChatOllama(model="qwen3.5:cloud", base_url=OLLAMA_HOST)
 
     checkpointer = AsyncPostgresSaver(resources.pool)
 

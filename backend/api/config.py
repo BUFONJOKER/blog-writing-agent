@@ -32,3 +32,4 @@ else:
     load_dotenv()  # Fallback for Docker/Prod
 
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+OLLAMA_HOST = os.getenv("OLLAMA_HOST")

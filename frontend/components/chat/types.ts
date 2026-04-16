@@ -11,4 +11,7 @@ export type WorkflowNodeEntry = {
     output: string;
     updatedAt: string;
     status: "pending" | "running" | "completed";
+    startTime?: number; // Timestamp when node started
+    endTime?: number; // Timestamp when node completed
+    duration?: number; // Duration in seconds
 };

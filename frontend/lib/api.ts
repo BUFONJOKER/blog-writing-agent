@@ -73,12 +73,34 @@ export type ReviewResponse = {
     message: string;
 };
 
+export type OllamaSetupNotice = {
+    title: string;
+    description: string;
+    steps: string[];
+};
+
+export type LoginResponse = {
+    message: string;
+    email: string;
+    name: string;
+    ollama_setup_notice?: OllamaSetupNotice;
+};
+
+export type UpdatePasswordResponse = {
+    message: string;
+    email: string;
+};
+
 export async function loginUser(payload: { email: string; password: string }) {
-    return api.post<{ message: string; email: string }>("/auth/login", payload);
+    return api.post<LoginResponse>("/auth/login", payload);
 }
 
 export async function signupUser(payload: { name: string; email: string; password: string }) {
     return api.post<{ message: string }>("/auth/register", payload);
+}
+
+export async function updatePassword(payload: { email: string; password: string; new_password: string }) {
+    return api.put<UpdatePasswordResponse>("/auth/update_password", payload);
 }
 
 export async function logoutUser() {
@@ -103,4 +125,8 @@ export async function fetchBlogStatus(threadId: string) {
 
 export async function submitBlogReview(payload: { thread_id: string; approved: boolean }) {
     return api.post<ReviewResponse>("/blog/review", payload);
+}
+
+export async function deleteThread(payload: { user_id: string; thread_id: string }) {
+    return api.delete<{ message: string; thread_id: string }>("/blog/delete_thread", { data: payload });
 }

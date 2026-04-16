@@ -31,20 +31,51 @@ export function ChatWorkspace() {
                 threads={workflow.threads}
                 activeThreadId={workflow.activeThreadId}
                 userEmail={workflow.userEmail}
+                userName={workflow.userName}
                 onClose={() => workflow.setDrawerOpen(false)}
                 onQuickNewChat={workflow.handleQuickNewChat}
                 onSelectThread={(threadId) => {
                     workflow.setDrawerOpen(false);
                     workflow.setActiveThreadId(threadId);
                 }}
+                onDeleteThread={workflow.handleDeleteThread}
                 onLogout={workflow.handleLogout}
             />
 
             <section className="mx-auto flex min-h-screen w-full max-w-5xl flex-col px-4 pb-36 pt-16 md:px-8 md:pb-40">
-                <header className="mb-6 rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5">
-                    <h1 className="text-2xl font-bold tracking-tight text-blue-400">AI Chat Workspace</h1>
-                    <p className="mt-1 text-sm text-zinc-400">Secure chat management with per-user thread history.</p>
+                <header className="mb-6 rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5 text-center">
+                    <p className="mx-auto max-w-3xl text-sm text-zinc-400">
+                        This AI-assisted blog creation workflow includes research, planning, drafting, editing, critique review, and final human approval before publication.
+                        The process typically takes around 10-15 minutes, depending on the level of research required.
+                        Blogs that do not require research are completed faster.
+                        Please note that we use the open-source Qwen 3.5 model via Ollama, so inference speed may be slower compared to cloud-based proprietary models.
+                    </p>
                 </header>
+
+                {workflow.authReady && workflow.isLoggedIn && workflow.ollamaSetupNotice && (
+                    <div className="mb-6 rounded-2xl border border-amber-500/40 bg-amber-950/30 p-5 text-left">
+                        <div className="flex items-start justify-between gap-4">
+                            <div>
+                                <h2 className="text-sm font-semibold text-amber-200">{workflow.ollamaSetupNotice.title}</h2>
+                                <p className="mt-2 text-sm text-amber-100/90">{workflow.ollamaSetupNotice.description}</p>
+                                <ol className="mt-3 list-decimal space-y-1 pl-5 text-sm text-amber-100">
+                                    {workflow.ollamaSetupNotice.steps.map((step) => (
+                                        <li key={step}>
+                                            <code className="rounded bg-black/40 px-2 py-0.5 text-amber-50">{step}</code>
+                                        </li>
+                                    ))}
+                                </ol>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={workflow.dismissOllamaSetupNotice}
+                                className="rounded-md border border-amber-300/40 px-3 py-1 text-xs text-amber-100 transition hover:bg-amber-200/10"
+                            >
+                                Dismiss
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                 {!workflow.authReady && (
                     <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 text-sm text-zinc-400">Checking session...</div>
@@ -62,10 +93,14 @@ export function ChatWorkspace() {
                         isStreaming={workflow.isStreaming}
                         currentNode={workflow.currentNode}
                         workflowNodes={workflow.workflowNodes}
+                        workflowTotalNodes={workflow.workflowTotalNodes}
+                        workflowStartTime={workflow.workflowStartTime}
+                        workflowTotalTime={workflow.workflowTotalTime}
                         waitingForApproval={workflow.waitingForApproval}
                         approvalSubmitting={workflow.approvalSubmitting}
                         activeApprovalAction={workflow.activeApprovalAction}
                         criticOutput={workflow.criticOutput}
+                        editedDraft={workflow.editedDraft}
                         onApprove={() => void workflow.handleReviewDecision(true)}
                         onReject={() => void workflow.handleReviewDecision(false)}
                     />

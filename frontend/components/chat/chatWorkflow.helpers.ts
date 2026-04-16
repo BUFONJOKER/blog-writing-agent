@@ -66,7 +66,7 @@ export function summarizeNodeOutput(nodeName: string, payload: unknown): string 
     if ("research_summary" in payloadObj && typeof payloadObj.research_summary === "string") {
         const summary = payloadObj.research_summary.trim();
         if (summary) {
-            return summary.length > 500 ? summary.slice(0, 500) + "..." : summary;
+            return summary;
         }
     }
 
@@ -75,7 +75,7 @@ export function summarizeNodeOutput(nodeName: string, payload: unknown): string 
         const plan = payloadObj.blog_plan as Record<string, unknown>;
         if (Object.keys(plan).length > 0) {
             try {
-                return JSON.stringify(plan, null, 2).slice(0, 500) + "...";
+                return JSON.stringify(plan, null, 2);
             } catch {
                 return `${nodeName} created blog plan.`;
             }
@@ -95,14 +95,14 @@ export function summarizeNodeOutput(nodeName: string, payload: unknown): string 
     if ("draft" in payloadObj && typeof payloadObj.draft === "string") {
         const draft = payloadObj.draft.trim();
         if (draft) {
-            return draft.length > 300 ? draft.slice(0, 300) + "..." : draft;
+            return draft;
         }
     }
 
     if ("final_post" in payloadObj && typeof payloadObj.final_post === "string") {
         const finalPost = payloadObj.final_post.trim();
         if (finalPost) {
-            return finalPost.length > 300 ? finalPost.slice(0, 300) + "..." : finalPost;
+            return finalPost;
         }
     }
 
@@ -114,7 +114,7 @@ export function summarizeNodeOutput(nodeName: string, payload: unknown): string 
             const content = msg?.content;
             if (content && typeof content === "string" && content.trim()) {
                 const text = content.trim();
-                return text.length > 500 ? text.slice(0, 500) + "..." : text;
+                return text;
             }
         }
     }
