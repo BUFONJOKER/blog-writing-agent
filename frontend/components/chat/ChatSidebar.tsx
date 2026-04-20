@@ -101,6 +101,10 @@ export function ChatSidebar({
                         <button
                             type="button"
                             onClick={() => {
+                                const shouldDelete = window.confirm("Are you sure you want to delete this thread?");
+                                if (!shouldDelete) {
+                                    return;
+                                }
                                 void onDeleteThread(thread.threadId);
                             }}
                             className="flex h-auto w-12 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-red-700/50 bg-red-900/20 text-lg leading-none text-red-400 transition hover:border-red-600 hover:bg-red-900/40"

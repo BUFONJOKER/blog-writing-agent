@@ -17,7 +17,6 @@ FUTURE_KEYWORDS = [
 ]
 
 MAX_RESULTS_FOR_PROMPT = 5
-MAX_CONTEXT_MESSAGES = 8
 
 
 def is_futile_context(results):
@@ -388,10 +387,11 @@ async def researcher_node(state: BlogAgentState, tools: list, model) -> dict:
             + "\n".join(f"- {url}" for url in visited_urls[:20])
         )
 
-    recent_messages = state.messages[-MAX_CONTEXT_MESSAGES:]
+    # Gemini function-calling expects strict turn ordering. We build a deterministic
+    # prompt from state-derived context instead of replaying raw mixed history, which
+    # may contain truncated/orphaned tool-call turns.
     clean_messages = [
         SystemMessage(content=system_prompt),
-        *recent_messages,
         HumanMessage(content=user_content),
     ]
 

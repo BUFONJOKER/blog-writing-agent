@@ -33,3 +33,6 @@ else:
 
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 OLLAMA_HOST = os.getenv("OLLAMA_HOST")
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+OLLAMA_REMOTE_URL = os.getenv("OLLAMA_REMOTE_URL")

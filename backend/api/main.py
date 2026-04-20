@@ -16,11 +16,13 @@ from agent.tools import initialize_tools
 from fastapi.middleware.cors import CORSMiddleware
 from api.routes.blog.main import blog_router
 from api.routes.auth.main import auth_router
-from api.config import OLLAMA_HOST
+from api.config import OLLAMA_HOST, GOOGLE_API_KEY, OLLAMA_REMOTE_URL
 from api.utils.errors import safe_error_response
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_openai import ChatOpenAI  # pip install langchain-openai
 
 if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
@@ -57,8 +59,24 @@ async def lifespan(app: FastAPI):
 
     await resources.pool.open()  # Ensure the pool is ready before accepting requests
 
-    resources.model = ChatOllama(model="qwen3.5:cloud", base_url=OLLAMA_HOST)
+    # resources.model = ChatOllama(model="qwen3.5:cloud", base_url=OLLAMA_HOST)
+    # resources.model = ChatGoogleGenerativeAI(
+    #     model="gemini-2.5-flash-lite", google_api_key=GOOGLE_API_KEY
+    # )
 
+    # resources.model = ChatOpenAI(
+    #     model="qwen3.5:cloud",
+    #     openai_api_key="ollama",
+    #     # Add /v1 at the end so it targets the OpenAI-compatible API
+    #     base_url="https://qui-analyses-oriental-pediatric.trycloudflare.com/v1",
+    #     # Highly recommended for your i7-7500U to prevent timeouts
+    #     timeout=600,
+    # )
+
+    resources.model = ChatOllama(
+        model="qwen3.5:cloud",
+        base_url=OLLAMA_REMOTE_URL,  # e.g., http://100.x.y.z:11434
+    )
     checkpointer = AsyncPostgresSaver(resources.pool)
 
     resources.tools = await initialize_tools("hosted_horizon")
