@@ -9,10 +9,8 @@ type UseChatAuthOptions = {
 };
 
 const REQUIRED_OLLAMA_STEPS = [
-    "curl -fsSL https://ollama.com/install.sh | sh",
     "winget install --id Ollama.Ollama -e",
     "ollama signin",
-    "ollama pull qwen3.5:cloud",
     "ollama run qwen3.5:cloud",
 ];
 

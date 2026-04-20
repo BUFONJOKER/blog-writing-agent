@@ -6,7 +6,7 @@ type BottomComposerProps = {
     disabled?: boolean;
     disabledHint?: string;
     onPromptChange: (value: string) => void;
-    onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
+    onSubmit: (event: React.SyntheticEvent<HTMLFormElement>) => void;
 };
 
 export function BottomComposer({
