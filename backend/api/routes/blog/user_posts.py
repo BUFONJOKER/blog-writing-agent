@@ -26,6 +26,6 @@ async def get_user_posts(user_id: str, request: Request):
     posts = await get_all_outputs_of_user(pool, user_id)
 
     if not posts:
-        raise HTTPException(status_code=404, detail="No posts found")
+        raise HTTPException(status_code=404, detail="No posts found for this user.")
 
     return posts

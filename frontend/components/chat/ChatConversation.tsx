@@ -405,6 +405,12 @@ export function ChatConversation({
                                 </button>
                             </div>
                         </div>
+                        {activeThreadPrompt && (
+                            <div className="mb-4 rounded-xl border border-zinc-800 bg-zinc-950/50 p-4">
+                                <p className="text-xs uppercase tracking-wide text-zinc-400">Prompt</p>
+                                <p className="mt-2 whitespace-pre-wrap text-sm text-zinc-100">{activeThreadPrompt}</p>
+                            </div>
+                        )}
                         <article className="prose prose-invert max-w-none">
                             <ReactMarkdown>{activeThreadMarkdown}</ReactMarkdown>
                         </article>

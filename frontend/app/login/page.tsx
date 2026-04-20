@@ -3,7 +3,8 @@
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { LoginView } from "@/components/auth/LoginView";
-import { loginUser } from "@/lib/api";
+import { loginUser, type LoginResponse } from "@/lib/api";
+import { getErrorMessage } from "@/lib/error";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -25,12 +26,10 @@ export default function LoginPage() {
         );
 
         try {
-            console.log("🔐 Attempting login with email:", email.trim());
-            const response = await Promise.race([
+            const response = (await Promise.race([
                 loginUser({ email: email.trim(), password }),
                 timeoutPromise
-            ]);
-            console.log("✅ Login successful:", response.data);
+            ])) as { data: LoginResponse };
             localStorage.setItem("auth_user_email", response.data.email);
             localStorage.setItem("auth_user_name", response.data.name || "");
             if (response.data.ollama_setup_notice) {
@@ -41,14 +40,10 @@ export default function LoginPage() {
             router.push("/");
             router.refresh();
         } catch (error: unknown) {
-            console.error("❌ Login failed:", error);
-            const axiosError = (error as any)?.response;
             const errorMsg =
                 (error as Error)?.message === "Request timeout - is the backend running?"
                     ? "Login timeout - is the backend running? Check that the API server is accessible."
-                    : axiosError?.data?.detail ||
-                      (error as Error)?.message ||
-                      "Login failed. Please check your email and password.";
+                    : getErrorMessage(error, "Login failed. Please check your email and password.");
             setErrorMessage(errorMsg);
         } finally {
             setIsSubmitting(false);

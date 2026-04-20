@@ -1,8 +1,9 @@
 import sys
 import io
 import asyncio
+import logging
 import uvicorn
-from fastapi import FastAPI, status, HTTPException
+from fastapi import FastAPI, status, HTTPException, Request
 from contextlib import asynccontextmanager
 from api.schema.app_resources import AppResources
 from api.schema.stream_manager import StreamManager
@@ -16,6 +17,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from api.routes.blog.main import blog_router
 from api.routes.auth.main import auth_router
 from api.config import OLLAMA_HOST
+from api.utils.errors import safe_error_response
+from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
+
 if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
     # This ensures any library (like Psycopg) that checks the loop
@@ -25,6 +31,8 @@ if sys.platform == "win32":
 
 resources = AppResources()
 stream_manager = StreamManager()
+logger = logging.getLogger(__name__)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -68,10 +76,39 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Blog Writing Agent API", version="0.0.1", lifespan=lifespan)
 
 
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    code = (
+        "not_found" if exc.status_code == status.HTTP_404_NOT_FOUND else "request_error"
+    )
+    return JSONResponse(
+        status_code=exc.status_code, content=safe_error_response(str(exc.detail), code)
+    )
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content=safe_error_response("Invalid request payload.", "validation_error"),
+    )
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    logger.exception("Unhandled API exception", exc_info=exc)
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content=safe_error_response(
+            "An unexpected server error occurred.", "internal_error"
+        ),
+    )
+
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"], # Must be specific, not "*"
-    allow_credentials=True, # Required for Cookies
+    allow_origins=["http://localhost:3000"],  # Must be specific, not "*"
+    allow_credentials=True,  # Required for Cookies
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -89,13 +126,13 @@ def root():
     """
 
     return {
-        "messages":"Hello from the Blog Writing Agent API",
+        "messages": "Hello from the Blog Writing Agent API",
         "endpoints": {
             "/health": "GET - Check health status of critical services",
             "/blog/generate": "POST - Start a new blog generation workflow",
             "/blog/review": "POST - Approve or reject a workflow at human-review step",
             "/blog/status": "GET - Check the status of an ongoing workflow by thread_id",
-            "/blog/final_post":"POST - Retrieve the final blog post content after workflow completion by giving thread_id",
+            "/blog/final_post": "POST - Retrieve the final blog post content after workflow completion by giving thread_id",
             "/blog/user_posts/{user_id}": "GET - Retrieve all blog outputs associated with a user_id",
         },
     }

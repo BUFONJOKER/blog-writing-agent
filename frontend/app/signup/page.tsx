@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { SignupView } from "@/components/auth/SignupView";
 import { loginUser, signupUser } from "@/lib/api";
+import { getErrorMessage } from "@/lib/error";
 
 export default function SignupPage() {
     const router = useRouter();
@@ -29,8 +30,7 @@ export default function SignupPage() {
             router.push("/");
             router.refresh();
         } catch (error: unknown) {
-            console.error("Signup failed", error);
-            setErrorMessage("Signup failed. Please verify your details and try again.");
+            setErrorMessage(getErrorMessage(error, "Signup failed. Please verify your details and try again."));
         } finally {
             setIsSubmitting(false);
         }

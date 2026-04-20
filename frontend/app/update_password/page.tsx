@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { UpdatePasswordView } from "@/components/auth/UpdatePasswordView";
 import { logoutUser, updatePassword } from "@/lib/api";
+import { getErrorMessage } from "@/lib/error";
 
 export default function UpdatePasswordPage() {
     const router = useRouter();
@@ -59,8 +60,8 @@ export default function UpdatePasswordPage() {
 
             try {
                 await logoutUser();
-            } catch (logoutError: unknown) {
-                console.error("Post-update logout failed", logoutError);
+            } catch {
+                // Ignore logout failures after a successful password update.
             }
 
             if (typeof window !== "undefined") {
@@ -71,12 +72,10 @@ export default function UpdatePasswordPage() {
             router.replace("/login");
             router.refresh();
         } catch (error: unknown) {
-            console.error("Password update failed", error);
-            const axiosError = (error as any)?.response;
             const errorMsg =
                 (error as Error)?.message === "Request timeout - is the backend running?"
                     ? "Password update timeout - is the backend running? Check that the API server is accessible."
-                    : axiosError?.data?.detail || (error as Error)?.message || "Password update failed. Please try again.";
+                    : getErrorMessage(error, "Password update failed. Please try again.");
             setErrorMessage(errorMsg);
         } finally {
             setIsSubmitting(false);

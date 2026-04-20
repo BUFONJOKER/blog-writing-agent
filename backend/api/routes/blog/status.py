@@ -26,7 +26,7 @@ async def check_blog_status(thread_id: str, request: Request):
     run_data = await get_run(pool, thread_id)
 
     if not run_data:
-        raise HTTPException(status_code=404, detail="Not found")
+        raise HTTPException(status_code=404, detail="Run not found.")
 
     return {
         "status": run_data["status"],

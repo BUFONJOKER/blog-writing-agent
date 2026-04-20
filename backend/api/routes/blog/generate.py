@@ -1,10 +1,13 @@
 from fastapi import APIRouter, Request, HTTPException
 import asyncio
 import uuid
+import logging
 from api.schema.blog_states import BlogRequest
 from agent.main import agent
+from api.utils.errors import safe_error_response
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 @router.post("/generate")
@@ -47,5 +50,8 @@ async def generate_blog(payload: BlogRequest, request: Request):
             "stream_url": str(request.url.replace(path=f"/blog/stream/{thread_id}")),
         }
 
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as exc:
+        logger.exception("Failed to queue blog generation", exc_info=exc)
+        raise HTTPException(
+            status_code=500, detail="Unable to start the blog workflow right now."
+        )

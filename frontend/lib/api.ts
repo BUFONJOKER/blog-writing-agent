@@ -29,14 +29,7 @@ api.interceptors.request.use(
 // Response interceptor to handle 401 errors
 api.interceptors.response.use(
     (response: any) => response,
-    (error: any) => {
-        if (error.response && error.response.status === 401) {
-            // Handle unauthorized access, e.g., redirect to login page
-            console.error("Unauthorized access - redirecting to login");
-        }
-
-        return Promise.reject(error);
-    }
+    (error: any) => Promise.reject(error)
 );
 
 export default api;

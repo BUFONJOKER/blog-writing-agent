@@ -115,9 +115,6 @@ def router_node(state: BlogAgentState, model) -> dict:
             "Summarize the performance of the Pakistan cricket team in their last series.",
         ]
 
-        # print(f"\n{'Prompt':<60} | {'Needs Research':<15}")
-        # print("-" * 80)
-
         for p in test_prompts:
             # Initialize state with the updated schema
             state = BlogAgentState(prompt=p)
@@ -125,9 +122,7 @@ def router_node(state: BlogAgentState, model) -> dict:
             start_time = time.time()
             result = router_node(state)
             end_time = time.time()
-            # print(f"Time taken: {end_time - start_time:.2f}s") # Verify if < 2.00s
 
             # Print results for verification
-            # print(f"{p[:58]:<60} | {str(result['needs_research']):<15}")
 
     asyncio.run(test_router())

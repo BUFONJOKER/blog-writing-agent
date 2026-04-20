@@ -27,8 +27,6 @@ async def delete_thread(payload: DeleteThreadRequest, request: Request):
     success = await delete_blog_run(pool, payload.thread_id, payload.user_id)
 
     if not success:
-        raise HTTPException(
-            status_code=403, detail="Thread not found or does not belong to this user"
-        )
+        raise HTTPException(status_code=403, detail="Thread could not be deleted.")
 
     return {"message": "Thread deleted successfully", "thread_id": payload.thread_id}

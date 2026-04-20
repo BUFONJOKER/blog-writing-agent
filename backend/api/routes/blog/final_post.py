@@ -29,4 +29,4 @@ async def get_final_post(payload: FinalPostRequest, request: Request):
     if output and output["user_id"] == payload.user_id:
         return output
 
-    raise HTTPException(status_code=404, detail="Not found")
+    raise HTTPException(status_code=404, detail="Final post not found.")

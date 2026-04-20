@@ -314,8 +314,6 @@ def task_executer_node(state: BlogAgentState, model) -> dict:
 
         tasks_output_dict[section_name] = response.content
 
-    # print(f"Length of tasks_output: {len(tasks_output)}")
-
     return {
         "tasks_output": tasks_output_dict,
         "revision_cycles": revision_cycles if needs_revision else 0,

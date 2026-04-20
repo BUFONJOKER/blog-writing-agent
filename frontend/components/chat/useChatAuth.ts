@@ -65,8 +65,7 @@ export function useChatAuth(options: UseChatAuthOptions = {}) {
                     setOllamaSetupNotice(normalizedNotice);
                     localStorage.setItem("auth_ollama_setup_notice", JSON.stringify(normalizedNotice));
                 }
-            } catch (error: unknown) {
-                console.warn("Invalid Ollama setup notice in storage", error);
+            } catch {
                 localStorage.removeItem("auth_ollama_setup_notice");
             }
         }
@@ -92,8 +91,6 @@ export function useChatAuth(options: UseChatAuthOptions = {}) {
     const handleLogout = useCallback(async () => {
         try {
             await logoutUser();
-        } catch (error: unknown) {
-            console.error("Logout failed", error);
         } finally {
             clearAuth();
             setDrawerOpen(false);

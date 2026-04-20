@@ -1,11 +1,13 @@
 from fastapi import APIRouter, Request, HTTPException
 import asyncio
+import logging
 from langgraph.types import Command
 from db.crud.blog_runs import update_run_status, get_run
 from api.schema.blog_states import ReviewRequest, FinalPostRequest
 from agent.main import finalize_workflow
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 # -------------------------
@@ -40,14 +42,14 @@ async def review_blog(payload: ReviewRequest, request: Request):
     if run_data["status"] != "waiting_approval":
         raise HTTPException(
             status_code=409,
-            detail=f"Run is not awaiting review (current status: {run_data['status']})",
+            detail="Run is not awaiting review.",
         )
 
     graph_state = await resources.workflow.aget_state(config)
     if not graph_state.next or "human_review" not in graph_state.next:
         raise HTTPException(
             status_code=409,
-            detail="No resumable human review checkpoint found for this thread",
+            detail="No resumable human review checkpoint found for this thread.",
         )
 
     await update_run_status(
@@ -87,19 +89,20 @@ async def review_blog(payload: ReviewRequest, request: Request):
                     thread_id=payload.thread_id,
                     stream_manager=stream_manager,
                 )
-            except Exception as e:
+            except Exception as exc:
+                logger.exception("Finalization failed after review", exc_info=exc)
                 await update_run_status(
                     pool=resources.pool,
                     thread_id=payload.thread_id,
                     status="failed",
-                    error_message=str(e),
+                    error_message="The workflow failed while finalizing the reviewed draft.",
                     interrupt_type="error",
                 )
                 await stream_manager.publish(
                     payload.thread_id,
                     {
                         "type": "error",
-                        "message": str(e),
+                        "message": "The workflow failed while finalizing the reviewed draft.",
                     },
                 )
                 await stream_manager.close(payload.thread_id)
@@ -108,20 +111,23 @@ async def review_blog(payload: ReviewRequest, request: Request):
 
         return {"message": "Review processed"}
 
-    except Exception as e:
+    except Exception as exc:
+        logger.exception("Failed to resume workflow review", exc_info=exc)
         await update_run_status(
             pool=resources.pool,
             thread_id=payload.thread_id,
             status="failed",
-            error_message=str(e),
+            error_message="The workflow failed while processing review.",
             interrupt_type="error",
         )
         await stream_manager.publish(
             payload.thread_id,
             {
                 "type": "error",
-                "message": str(e),
+                "message": "The workflow failed while processing review.",
             },
         )
         await stream_manager.close(payload.thread_id)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(
+            status_code=500, detail="Unable to process the review right now."
+        )

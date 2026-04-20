@@ -7,7 +7,7 @@ def main():
     Returns:
         None: The function is intended for direct execution only.
     """
-    print("Hello from backend!")
+    return None
 
 
 if __name__ == "__main__":

@@ -31,6 +31,8 @@ async def register(request: Request, payload: RegisterRequest):
 
     user = await get_user(pool, email=email)
     if not user:
-        raise HTTPException(status_code=404, detail="User not found after creation")
+        raise HTTPException(
+            status_code=500, detail="Unable to complete registration right now."
+        )
 
     return {"message": "Registration successful"}

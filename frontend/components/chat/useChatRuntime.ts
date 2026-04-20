@@ -11,6 +11,7 @@ import {
     submitBlogReview,
     deleteThread,
 } from "@/lib/api";
+import { getErrorMessage } from "@/lib/error";
 import { summarizeNodeOutput, toThreadItems } from "@/components/chat/chatWorkflow.helpers";
 
 type UseChatRuntimeOptions = {
@@ -171,7 +172,7 @@ export function useChatRuntime({ userEmail, clearAuth, setDrawerOpen }: UseChatR
                 setWaitingForApproval(isWaiting);
                 updateThreadStatus(threadId, isWaiting ? "waiting_approval" : "running");
             } catch (error: unknown) {
-                console.error("Failed to check approval status", error);
+                setGlobalError(getErrorMessage(error, "Unable to verify review status right now."));
             }
         },
         [updateThreadStatus],
@@ -197,8 +198,7 @@ export function useChatRuntime({ userEmail, clearAuth, setDrawerOpen }: UseChatR
                     return;
                 }
 
-                console.error("Failed to load final thread output", error);
-                setGlobalError("Unable to load final output for this thread.");
+                setGlobalError(getErrorMessage(error, "Unable to load final output for this thread."));
             }
         },
         [clearAuth, updateThreadStatus, userEmail],
@@ -209,10 +209,8 @@ export function useChatRuntime({ userEmail, clearAuth, setDrawerOpen }: UseChatR
             if (!eventPayload || typeof eventPayload !== "object") return;
 
             const payload = eventPayload as Record<string, unknown>;
-            console.log("⚙️  Processing stream update:", payload.type);
 
             if (payload.event === "stream_end") {
-                console.log("🏁 Stream end received");
                 setIsStreaming(false);
                 setActiveThreadLoading(false);
                 closeStream();
@@ -222,17 +220,15 @@ export function useChatRuntime({ userEmail, clearAuth, setDrawerOpen }: UseChatR
             const type = payload.type;
 
             if (type === "error") {
-                console.error("❌ Workflow error:", payload.message);
                 setIsStreaming(false);
                 setActiveThreadLoading(false);
-                setGlobalError(String(payload.message || "Streaming failed."));
+                setGlobalError("The blog workflow encountered an error. Please try again.");
                 updateThreadStatus(threadId, "failed");
                 closeStream();
                 return;
             }
 
             if (type === "waiting_approval") {
-                console.log("⏸️  Workflow waiting for approval");
                 setIsStreaming(false);
                 setActiveThreadLoading(false);
                 markCurrentNodeCompleted(currentNode);
@@ -242,7 +238,6 @@ export function useChatRuntime({ userEmail, clearAuth, setDrawerOpen }: UseChatR
             }
 
             if (type === "completed") {
-                console.log("✅ Workflow completed");
                 setIsStreaming(false);
                 setActiveThreadLoading(false);
                 setWaitingForApproval(false);
@@ -262,8 +257,6 @@ export function useChatRuntime({ userEmail, clearAuth, setDrawerOpen }: UseChatR
             }
 
             if (type === "update") {
-                console.log("📝 Workflow update received");
-
                 // Set workflow start time on first update
                 if (!workflowStartTime) {
                     setWorkflowStartTime(Date.now());
@@ -278,12 +271,10 @@ export function useChatRuntime({ userEmail, clearAuth, setDrawerOpen }: UseChatR
 
                 const data = payload.data;
                 if (!data || typeof data !== "object") {
-                    console.log("⚠️  No data in update payload");
                     return;
                 }
 
                 const nodeUpdates = Object.entries(data as Record<string, unknown>);
-                console.log(`🔄 Processing ${nodeUpdates.length} nodes:`, nodeUpdates.map(([name]) => name));
 
                 nodeUpdates.forEach(([nodeName, nodePayload]) => {
                     // Track the latest node update directly so the UI does not lag behind.
@@ -302,7 +293,6 @@ export function useChatRuntime({ userEmail, clearAuth, setDrawerOpen }: UseChatR
                     }
 
                     const summary = summarizeNodeOutput(nodeName, nodePayload);
-                    console.log(`📦 Node "${nodeName}" summary:`, summary.slice(0, 100) + "...");
                     upsertWorkflowNode(nodeName, summary);
 
                     if (inferredNextNode && inferredNextNode !== nodeName) {
@@ -391,7 +381,6 @@ export function useChatRuntime({ userEmail, clearAuth, setDrawerOpen }: UseChatR
             setWorkflowTotalTime(null);
 
             const computedStreamUrl = streamUrl || `${process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "")}/blog/stream/${threadId}`;
-            console.log("🔥 Starting stream for thread:", threadId, "URL:", computedStreamUrl);
             const source = new EventSource(computedStreamUrl, { withCredentials: true });
             streamRef.current = source;
             streamThreadIdRef.current = threadId;
@@ -399,23 +388,20 @@ export function useChatRuntime({ userEmail, clearAuth, setDrawerOpen }: UseChatR
             source.onmessage = (event) => {
                 try {
                     const parsed = JSON.parse(event.data);
-                    console.log("📡 Stream event received:", parsed.type, parsed);
                     void processStreamUpdate(threadId, parsed);
-                } catch (error) {
-                    console.log("⏭️  Skipping non-JSON event (heartbeat)");
+                } catch {
+                    return;
                 }
             };
 
-            source.onerror = (error) => {
-                console.error("❌ Stream error:", error);
+            source.onerror = () => {
                 setIsStreaming(false);
                 setActiveThreadLoading(false);
+                setGlobalError("The connection to the blog workflow was interrupted.");
                 closeStream();
             };
 
-            source.onopen = () => {
-                console.log("✅ Stream connection opened");
-            };
+            source.onopen = () => {};
         },
         [closeStream, processStreamUpdate],
     );
@@ -427,9 +413,7 @@ export function useChatRuntime({ userEmail, clearAuth, setDrawerOpen }: UseChatR
 
             try {
                 const response = await fetchUserThreads(email);
-                console.log("📥 API returned threads:", response.data.length, "threads for user:", email);
                 const items = toThreadItems(response.data);
-                console.log("✨ Converted to thread items:", items);
                 setThreads(items);
                 // Don't auto-select a thread - let user start with a new chat
                 hasSelectedInitialThreadRef.current = true;
@@ -438,14 +422,11 @@ export function useChatRuntime({ userEmail, clearAuth, setDrawerOpen }: UseChatR
                 const status = maybeAxiosError.response?.status;
 
                 if (status === 404) {
-                    console.log("ℹ️  No posts found for user");
                     setThreads([]);
                 } else if (status === 401) {
-                    console.error("🔐 Unauthorized access");
                     clearAuth();
                 } else {
-                    console.error("❌ Failed to load threads:", error);
-                    setGlobalError("Unable to load your chats right now.");
+                    setGlobalError(getErrorMessage(error, "Unable to load your chats right now."));
                 }
             } finally {
                 setThreadsLoading(false);
@@ -467,8 +448,13 @@ export function useChatRuntime({ userEmail, clearAuth, setDrawerOpen }: UseChatR
             setWorkflowTotalTime(null);
 
             const activeThread = threadsRef.current.find((thread) => thread.threadId === threadId);
+            if (activeThread?.prompt) {
+                setActiveThreadPrompt(activeThread.prompt);
+            } else {
+                setActiveThreadPrompt("");
+            }
+
             if (activeThread && ["queued", "running", "waiting_approval"].includes(activeThread.status)) {
-                setActiveThreadPrompt(activeThread.prompt ?? "");
                 setActiveThreadMarkdown("");
                 if (activeThread.status === "waiting_approval") {
                     await checkApprovalStatus(threadId);
@@ -499,7 +485,6 @@ export function useChatRuntime({ userEmail, clearAuth, setDrawerOpen }: UseChatR
                     return;
                 }
 
-                console.error("Failed to load thread", error);
                 setActiveThreadMarkdown("Unable to load this chat at the moment.");
             } finally {
                 setActiveThreadLoading(false);
@@ -577,8 +562,7 @@ export function useChatRuntime({ userEmail, clearAuth, setDrawerOpen }: UseChatR
                 if (status === 401) {
                     clearAuth();
                 } else {
-                    console.error("Failed to create a new chat", error);
-                    setGlobalError("Unable to create a new chat right now.");
+                    setGlobalError(getErrorMessage(error, "Unable to create a new chat right now."));
                 }
 
                 setActiveThreadLoading(false);
@@ -649,7 +633,6 @@ export function useChatRuntime({ userEmail, clearAuth, setDrawerOpen }: UseChatR
                     return;
                 }
 
-                console.error("Failed to submit review", error);
                 setGlobalError("Unable to submit your review decision.");
             } finally {
                 setApprovalSubmitting(false);
@@ -675,8 +658,6 @@ export function useChatRuntime({ userEmail, clearAuth, setDrawerOpen }: UseChatR
                     setActiveThreadMarkdown("");
                     setActiveThreadPrompt("");
                 }
-
-                console.log("✅ Thread deleted successfully");
             } catch (error: unknown) {
                 const maybeAxiosError = error as AxiosError;
                 if (maybeAxiosError.response?.status === 401) {
@@ -684,8 +665,7 @@ export function useChatRuntime({ userEmail, clearAuth, setDrawerOpen }: UseChatR
                     return;
                 }
 
-                console.error("Failed to delete thread", error);
-                setGlobalError("Unable to delete thread. Please try again.");
+                setGlobalError(getErrorMessage(error, "Unable to delete thread. Please try again."));
             }
         },
         [activeThreadId, clearAuth, userEmail],

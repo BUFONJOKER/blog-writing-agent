@@ -1,7 +1,11 @@
 import asyncio
+import logging
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from agent.config import HORIZON_TOKEN
 from typing import Literal
+
+
+logger = logging.getLogger(__name__)
 
 
 async def get_local_mcp_tools() -> list:
@@ -101,6 +105,4 @@ async def initialize_tools(
 
 if __name__ == "__main__":
     tools = asyncio.run(initialize_tools("hosted_huggingface"))
-    print(f"Discovered {len(tools)} tools:")
-    for tool in tools:
-        print(f" - {tool.name}")
+    logger.info("Discovered %s tools", len(tools))

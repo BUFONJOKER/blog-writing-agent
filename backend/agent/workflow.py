@@ -1,5 +1,6 @@
 from langgraph.graph import StateGraph, START, END
 from agent.state import BlogAgentState
+import logging
 
 # import all nodes
 from agent.nodes.router import router_node
@@ -18,6 +19,9 @@ from langgraph.prebuilt import ToolNode
 from functools import partial
 from langgraph.types import interrupt
 from functools import partial
+
+
+logger = logging.getLogger(__name__)
 
 
 async def build_workflow(checkpointer, model, shared_tools):
@@ -212,6 +216,6 @@ if __name__ == "__main__":
         with open("blog_agent_workflow.png", "wb") as f:
             f.write(graph_png_bytes)
 
-        print("✅ Workflow saved as blog_agent_workflow.png")
+        logger.info("Workflow saved as blog_agent_workflow.png")
 
     asyncio.run(main())
