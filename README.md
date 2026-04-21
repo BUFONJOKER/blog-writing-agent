@@ -11,6 +11,8 @@
 
 ## 📖 Table of Contents
 
+- [Problem This App Solves](#-problem-this-app-solves)
+- [Problems in the Project](#-problems-in-the-project)
 - [What This Project Does](#-what-this-project-does)
 - [Tech Stack](#-tech-stack)
 - [Architecture Flow](#-architecture-flow)
@@ -21,6 +23,40 @@
 - [Next Milestones](#-next-milestones)
 - [Planning Source](#-planning-source)
 - [Contributing](#-contributing)
+
+---
+
+## 🚩 Problem This App Solves
+
+Writing a high-quality blog is usually slow and manual. Most people have to:
+
+- Research multiple sources by hand
+- Gather and organize facts manually
+- Draft, edit, and rework the structure several times
+
+If you only use a simple LLM, it often produces generic content from model memory and cannot reliably do live research, source gathering, and multi-step editorial refinement.
+
+This app solves that by using an agent workflow that can:
+
+- Do live research with tools
+- Think in steps (plan before writing)
+- Write section by section
+- Edit and assemble a full draft
+- Run critique and revision loops
+- Support human review before generating the final blog
+
+---
+
+## ⚠️ Problems in the Project
+
+There are still a few important problems we need to improve:
+
+- The current Ollama-based workflow takes nearly 17 minutes to complete end to end
+- Total token usage is very high, at roughly 86,000 tokens including input and output
+- We should reduce runtime and token cost to make the system faster and more efficient
+- Right now the agent is not a chat app after generation
+- After a blog is generated, the user should be able to edit it, add headings, or make other changes using the LLM
+- That post-generation editing flow would make the experience feel more like a chat-based assistant
 
 ---
 
@@ -175,10 +211,21 @@ Implemented now:
 - MCP tool integration in the agent loop
 - Notion-derived planning docs and task structure
 
-Still in progress:
+Completed recently:
 
-- Portions of the FastAPI route layer
-- Portions of the frontend user journey/pages
+- Backend implementation is completed
+- Frontend implementation is completed
+
+Deployment status (current):
+
+- MCP server is deployed
+- Frontend is not deployed yet
+- Backend is not deployed yet
+
+Planned upgrades:
+
+- Deploy frontend and backend in future milestones
+- Use OpenAI models via API (cloud) in place of the current local Ollama/Qwen 3.5 setup
 
 To avoid confusion, treat this repository as **active development** rather than a fully completed production release.
 

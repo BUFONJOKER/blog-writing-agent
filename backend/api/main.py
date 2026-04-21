@@ -59,7 +59,7 @@ async def lifespan(app: FastAPI):
 
     await resources.pool.open()  # Ensure the pool is ready before accepting requests
 
-    # resources.model = ChatOllama(model="qwen3.5:cloud", base_url=OLLAMA_HOST)
+    resources.model = ChatOllama(model="qwen3.5:cloud", base_url=OLLAMA_HOST)
     # resources.model = ChatGoogleGenerativeAI(
     #     model="gemini-2.5-flash-lite", google_api_key=GOOGLE_API_KEY
     # )
@@ -73,10 +73,10 @@ async def lifespan(app: FastAPI):
     #     timeout=600,
     # )
 
-    resources.model = ChatOllama(
-        model="qwen3.5:cloud",
-        base_url=OLLAMA_REMOTE_URL,  # e.g., http://100.x.y.z:11434
-    )
+    # resources.model = ChatOllama(
+    #     model="qwen3.5:cloud",
+    #     base_url=OLLAMA_REMOTE_URL,  # e.g., http://100.x.y.z:11434
+    # )
     checkpointer = AsyncPostgresSaver(resources.pool)
 
     resources.tools = await initialize_tools("hosted_horizon")

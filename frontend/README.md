@@ -101,24 +101,18 @@ Implemented:
 
 - Next.js app setup with core dependencies
 - Base folder layout for pages, components, API utilities, and state
+- Full frontend implementation is completed
+- Live progress and backend status integration is completed
+- Run history and final output pages are completed
+- Resilience and error feedback across views is improved
 
-In progress:
+Still to improve:
 
-- Full prompt-to-result user flow implementation
-- Rich progress/review/history/result pages
 - More robust loading/error states and UX polish
+- Support for editing and extending generated blogs after output, closer to a chat-like workflow
 
 ---
 
-## 🛠️ Next Milestones
-
-- Complete prompt submission and run start flow
-- Add live progress and backend status integration
-- Implement plan review and draft review interfaces
-- Add run history and final output pages
-- Improve resilience and error feedback across views
-
----
 
 ## 🗺️ Planning Source
 

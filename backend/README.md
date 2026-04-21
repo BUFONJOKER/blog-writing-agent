@@ -14,6 +14,7 @@
 - [Tech Stack](#-tech-stack)
 - [Architecture Flow](#-architecture-flow)
 - [Project Areas](#-project-areas)
+- [API Routes](#-api-routes)
 - [Requirements](#-requirements)
 - [Getting Started](#-getting-started)
 - [Environment Variables](#-environment-variables)
@@ -63,7 +64,36 @@ Finalization
 - agent/main.py: local runner entrypoint for graph execution
 - agent/nodes/: node implementations (router, planner, editor, critic, etc.)
 - agent/tools.py: tool initialization and binding
-- api/: FastAPI app and route scaffolding
+- api/: FastAPI app and route scaffolding, including auth and blog route modules
+
+---
+
+## 🔌 API Routes
+
+### Authentication Routes
+
+All authentication routes are mounted under `/auth`.
+
+| Method | Path | Purpose |
+|---|---|---|
+| POST | `/auth/login` | Authenticate a user and set the access token cookie |
+| POST | `/auth/register` | Register a new user |
+| POST | `/auth/logout` | Clear the access token cookie |
+| PUT | `/auth/update_password` | Update the authenticated user's password |
+
+### Blog Routes
+
+All blog routes are mounted under `/blog` and require an authenticated user.
+
+| Method | Path | Purpose |
+|---|---|---|
+| POST | `/blog/generate` | Start a new blog generation workflow |
+| POST | `/blog/review` | Resume a paused workflow after human review |
+| GET | `/blog/status/{thread_id}` | Check the current status of a workflow run |
+| POST | `/blog/final_post` | Fetch the finalized blog output for a run |
+| GET | `/blog/user_posts/{user_id}` | List all finalized posts for a user |
+| GET | `/blog/stream/{thread_id}` | Stream workflow events as server-sent events |
+| DELETE | `/blog/delete_thread` | Delete a blog run thread for a user |
 
 ---
 
@@ -87,7 +117,7 @@ uv sync
 ### Run Backend Agent Workflow
 
 ```bash
-python -m agent.main
+python -m api.main
 ```
 
 This executes the workflow directly and supports interactive flow in the terminal.
@@ -98,7 +128,7 @@ This executes the workflow directly and supports interactive flow in the termina
 
 Common variables currently used in backend code:
 
-- DB_URL
+- DB_URL (PostgreSQL URL for checkpointing from supabase)
 - HORIZON_TOKEN
 - HUGGINGFACEHUB_API_TOKEN
 
@@ -116,24 +146,7 @@ Implemented:
 
 - Multi-node LangGraph workflow with conditional edges
 - Tool loop integration through LangGraph ToolNode
-
-In progress:
-
 - FastAPI route implementations under api/routes/
 - Additional API schemas, validation, and integration hardening
 
 ---
-
-## 🛠️ Next Milestones
-
-- Complete route implementations in api/routes/
-- Add stronger request/response schemas and validation
-- Expand automated tests around routing and node behavior
-- Improve environment/config consistency across local and deployment setups
-
----
-
-## 🗺️ Planning Source
-
-- Root project plan: ../README.md
-- Detailed planning exports: ../docs/
