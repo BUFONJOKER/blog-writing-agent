@@ -17,6 +17,7 @@ const NODE_DESCRIPTIONS: Record<string, string> = {
     editor_node: "Polishes wording, clarity, and structure of the draft.",
     critic_node: "Evaluates quality and flags issues before approval.",
     human_review: "Pauses for your approval decision to continue.",
+    __interrupt__: "Workflow pause/interrupt checkpoint awaiting resume decision.",
     finalize_node: "Produces the final publish-ready markdown output.",
 };
 
