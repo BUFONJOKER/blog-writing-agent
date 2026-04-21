@@ -37,3 +37,7 @@ backend/.env*
 Thumbs.db
 
 duckdns_update.ps1/
+
+
+# also include .mp4 files in the root directory
+*.mp4
