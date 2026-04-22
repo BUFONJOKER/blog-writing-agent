@@ -11,6 +11,7 @@
 
 ## 📖 Table of Contents
 
+- [Demo Videos](#-demo-videos)
 - [Problem This App Solves](#-problem-this-app-solves)
 - [Problems in the Project](#-problems-in-the-project)
 - [What This Project Does](#-what-this-project-does)
@@ -23,6 +24,24 @@
 - [Next Milestones](#-next-milestones)
 - [Planning Source](#-planning-source)
 - [Contributing](#-contributing)
+
+---
+
+## 🎬 Demo Videos
+
+### Fast-Paced Highlight Reel
+
+A quicker highlight reel of the main workflow and output.
+
+<iframe width="100%" height="400" src="https://www.youtube.com/embed/q1T_noaZJhE" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+> **💡 Tip:** Click the settings icon (⚙️) in the video player and select **Speed** → **0.25x** to watch at slower speed for better understanding.
+
+### Full Video Walkthrough
+
+End-to-end demo covering the full project flow and features.
+
+[Watch the complete walkthrough](https://github.com/BUFONJOKER/blog-writing-agent/blob/main/Blog%20Writing%20Agent.mp4)
 
 ---
 
