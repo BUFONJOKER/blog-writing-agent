@@ -41,7 +41,7 @@ A quicker highlight reel of the main workflow and output.
 
 A complete end-to-end walkthrough of the project, including setup, workflow execution, and final output review.
 
-[Full Long Demo on YouTube](https://youtu.be/KgpNe0CwLn4)
+[Full Long Demo on YouTube](https://youtu.be/KgpNe0CwLn4?si=aBB7osuOQLGMj5t4)
 
 ---
 
