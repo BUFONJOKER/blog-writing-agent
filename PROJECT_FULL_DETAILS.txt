@@ -1,0 +1,636 @@
+BLOG WRITING AGENT - FULL PROJECT TRANSCRIPT / DETAILED TECHNICAL DOCUMENTATION
+Generated: 2026-04-22
+Repository: blog-writing-agent
+Scope: frontend + backend + mcp_server
+
+====================================================================
+1) PROJECT OVERVIEW
+====================================================================
+This is a full-stack AI blog generation system with three primary services:
+1. Frontend (Next.js + React + TypeScript)
+2. Backend (FastAPI + LangGraph + LangChain + PostgreSQL persistence)
+3. MCP tool server (FastMCP + Tavily search/extract)
+
+Primary user flow:
+- User submits prompt in frontend chat UI.
+- Backend starts a LangGraph workflow with the prompt.
+- Workflow optionally performs external research through MCP tools.
+- Workflow plans, drafts, assembles, edits, critiques, and finalizes a blog.
+- If human review is required, workflow pauses and awaits approve/reject.
+- Final post is stored in DB and returned/streamed to frontend.
+
+Known current project constraints (from docs):
+- Runtime can be long for fully researched runs.
+- Token usage is high in current model setup.
+- Post-generation chat-edit experience can be expanded further.
+
+
+====================================================================
+2) ROOT-LEVEL REPO STRUCTURE
+====================================================================
+- README.md: Full project intro, architecture, setup, status, milestones.
+- prompt.txt: NotebookLM/source-analysis prompt instructions.
+- backend/: AI orchestration + API layer + DB CRUD.
+- frontend/: User-facing chat/auth app.
+- mcp_server/: Tool server for web search/page fetch.
+- docs/: Project planning exports and supporting documents.
+
+
+====================================================================
+3) BACKEND - TECHNICAL TRANSCRIPT
+====================================================================
+
+3.1) Backend Stack and Dependencies
+File: backend/pyproject.toml
+- Python >= 3.11
+- fastapi
+- langchain
+- langgraph
+- langchain-mcp-adapters
+- langchain-ollama
+- langgraph-checkpoint-postgres
+- psycopg + psycopg-pool
+- bcrypt
+- python-jose[cryptography]
+- python-dotenv
+- supabase
+- uvicorn
+- langchain-google-genai
+- langchain-openai
+
+3.2) Backend Startup and Lifecycle
+File: backend/api/main.py
+Core behavior:
+- Creates FastAPI app with lifespan manager.
+- Initializes shared resources in app.state:
+  - PostgreSQL async connection pool (DB_URL)
+  - LLM model (default ChatOllama qwen3.5:cloud with OLLAMA_HOST)
+  - MCP tools via initialize_tools("hosted_horizon")
+  - Compiled LangGraph workflow
+- Adds CORS middleware for http://localhost:3000.
+- Registers route groups:
+  - /blog/* (authenticated)
+  - /auth/*
+- Provides / health endpoint checks for DB/model/workflow readiness.
+- Defines global exception handlers with safe structured error payloads.
+
+3.3) Workflow Graph
+File: backend/agent/workflow.py
+Nodes defined:
+- router_node
+- research_query_gen_node
+- researcher_node
+- researcher_tools (ToolNode wrapper)
+- summarizer_node
+- research_loop
+- planner_node
+- task_executer_node
+- assembler_node
+- editor_node
+- critic_node
+- human_review (interrupt-based)
+- finalize_node
+
+Routing logic highlights:
+- START -> router_node
+- router_node decides:
+  - needs_research=True -> research_query_gen_node
+  - False -> summarizer_node
+- researcher_node conditionally loops through researcher_tools based on tool calls.
+- research_loop controls return-to-research vs planner progression.
+- critic_node -> human_review
+- human_review routes:
+  - approved -> finalize_node
+  - rejected and revision_cycles < 3 -> task_executer_node
+  - otherwise -> finalize_node
+- finalize_node -> END
+
+3.4) Agent Runtime State (Shared Graph State)
+File: backend/agent/state.py
+Model: BlogAgentState (Pydantic)
+Major state fields include:
+- prompt, topic
+- needs_research, more_research_needed, research_gaps
+- research_queries, research_results, research_summary
+- blog_plan, tasks, tasks_output
+- draft, edited_draft, final_post
+- feedback, critic_feedback
+- quality_score, confidence_score
+- revision_cycles, needs_revision
+- thread_id, status, human_approved
+- tool_call_count, max_tool_calls, has_tool_calls
+- title, slug, meta_description, keywords_used
+- messages (LangGraph message history)
+
+3.5) Node-by-Node Behavior
+Files: backend/agent/nodes/*.py
+
+- router.py
+  - LLM structured decision: needs_research (bool), topic.
+  - Conservative policy: if unsure, favors research.
+
+- research_query_gen.py
+  - Generates 3-5 focused search queries.
+  - Outputs research_gaps and more_research_needed.
+
+- researcher.py
+  - Binds MCP tools to model.
+  - Reconstructs/merges historical tool results.
+  - Deduplicates by URL.
+  - Stops on futility patterns (future/not available language).
+  - Enforces tool-call limit guard.
+  - Returns summary snapshot + loop flags.
+
+- summarizer.py
+  - If research is enabled, condenses research output.
+  - If not, generates summary from internal model knowledge.
+  - Ensures non-empty fallback summary.
+
+- research_loop.py
+  - Decides continue research vs planning.
+  - Hard stops if tool_call_count >= max_tool_calls.
+
+- planner.py
+  - Produces structured BlogPlan:
+    - title, subtitle, tone, audience
+    - sections with key_points, keywords, word targets
+    - ordered tasks list
+  - Repairs tasks/sections mismatch if needed.
+
+- task_executer.py
+  - Drafts section content for each planned task.
+  - Revision mode supports critic-feedback-based rewrite.
+  - Maintains markdown structure and SEO constraints.
+
+- assembler.py
+  - Combines section outputs to structured BlogDraft schema.
+  - Produces draft + meta_description + slug + keyword usage + title.
+
+- editor.py
+  - Final pass to improve coherence, readability, transitions.
+  - Avoids adding new factual claims.
+
+- critic.py
+  - Structured critique: issues/suggestions + score + confidence.
+  - Sets needs_revision boolean for loop control.
+
+- finalize.py
+  - Final polish on edited draft.
+  - Returns final_post markdown.
+
+3.6) MCP Tool Wiring From Backend
+File: backend/agent/tools.py
+Tool source modes:
+- local: starts mcp_server using uv stdio command.
+- hosted_horizon: uses streamable_http endpoint with Authorization header.
+- hosted_huggingface: uses SSE endpoint.
+
+Function:
+- initialize_tools(tools_place) chooses source and returns discovered MCP tools.
+
+3.7) Async Agent Execution / Persistence
+File: backend/agent/main.py
+- agent(...):
+  - creates blog_run row
+  - executes workflow.astream updates
+  - publishes updates to StreamManager queue
+  - handles human_review wait status
+  - finalizes and persists output
+- finalize_workflow(...):
+  - reads final state
+  - saves final markdown + meta
+  - marks run completed
+  - publishes completed + closes stream
+
+3.8) API Route Surface
+
+Auth routes (mounted at /auth):
+- POST /auth/register
+- POST /auth/login
+- POST /auth/logout
+- PUT /auth/update_password
+
+Blog routes (mounted at /blog, requires auth cookie):
+- POST /blog/generate
+- POST /blog/review
+- GET /blog/status/{thread_id}
+- POST /blog/final_post
+- GET /blog/user_posts/{user_id}
+- GET /blog/stream/{thread_id}
+- DELETE /blog/delete_thread
+
+Route behavior details:
+- generate.py
+  - Creates thread_id UUID.
+  - Launches background task for workflow.
+  - Returns stream_url for SSE consumption.
+- review.py
+  - Validates waiting_approval status.
+  - Resumes graph via Command(resume=approved).
+  - Finalizes output asynchronously.
+- stream.py
+  - SSE endpoint reading from per-thread queue.
+  - Terminates on {"event":"stream_end"}.
+- status/final_post/user_posts/delete_chat
+  - Read/write run and output state with ownership checks.
+
+3.9) Auth / Security Utilities
+Files: backend/api/utils/*.py
+- access_token.py
+  - JWT create/decode using HS256 and JWT_SECRET_KEY.
+  - 100-minute token expiry.
+- auth.py
+  - get_current_user() reads access_token cookie and validates JWT.
+- password_hashing.py
+  - SHA-256 prehash + bcrypt hash/check.
+- errors.py
+  - consistent safe error payload helpers.
+
+3.10) API Schemas
+Files: backend/api/schema/*.py
+- auth_states.py:
+  - RegisterRequest, LoginRequest, LogoutRequest, UpdatePasswordRequest
+- blog_states.py:
+  - BlogRequest, FinalPostRequest, ReviewRequest, DeleteThreadRequest
+- app_resources.py:
+  - pooled resources container (pool/model/workflow/tools/etc.)
+- stream_manager.py:
+  - per-thread asyncio queues + publish + close(stream_end)
+
+3.11) Database CRUD Layer
+Files: backend/db/crud/*.py
+- user_data.py:
+  - create_user, get_user, update_password
+- blog_runs.py:
+  - create_blog_run, get_run, list_runs_for_user, update_run_status, delete_blog_run
+- blog_outputs.py:
+  - save_output, get_output, get_all_outputs_of_user
+
+Data model usage implied by queries:
+- public.user_data
+- public.blog_runs
+- public.blog_outputs
+
+
+====================================================================
+4) FRONTEND - TECHNICAL TRANSCRIPT
+====================================================================
+
+4.1) Frontend Stack and Dependencies
+File: frontend/package.json
+- next 16.2.2
+- react 19.2.4
+- react-dom 19.2.4
+- axios
+- react-markdown
+- tailwindcss v4 + postcss tooling
+- eslint + typescript
+
+4.2) Frontend App Shell
+Files:
+- frontend/app/layout.tsx
+- frontend/app/page.tsx
+
+Behavior:
+- Global layout with top app title and dark theme shell.
+- Home page renders ChatWorkspace.
+
+4.3) Frontend API Client Layer
+File: frontend/lib/api.ts
+- Axios instance with baseURL from NEXT_PUBLIC_API_BASE_URL.
+- withCredentials enabled (cookie auth expected).
+- Exposes typed client functions:
+  - loginUser, signupUser, updatePassword, logoutUser
+  - fetchUserThreads, createChatThread, fetchFinalPost
+  - fetchBlogStatus, submitBlogReview, deleteThread
+
+4.4) Error Parsing Utility
+File: frontend/lib/error.ts
+- getErrorMessage(error, fallback) normalizes backend and Axios errors.
+
+4.5) Chat Runtime Orchestration
+Primary files:
+- frontend/components/chat/useChatWorkflow.ts
+- frontend/components/chat/useChatAuth.ts
+- frontend/components/chat/useChatRuntime.ts
+- frontend/components/chat/chatWorkflow.helpers.ts
+
+Behavior summary:
+- Auth state sourced from localStorage for email/name/setup notice.
+- Maintains active thread, prompts, markdown output, workflow progress.
+- Consumes backend SSE updates via EventSource.
+- Tracks node-level workflow status, timing, and summaries.
+- Handles approval actions at human_review step.
+- Supports new chat, thread switching, thread deletion, logout.
+
+Workflow node order represented in UI:
+- router_node
+- research_query_gen_node
+- researcher_node
+- researcher_tools
+- summarizer_node
+- research_loop
+- planner_node
+- task_executer_node
+- assembler_node
+- editor_node
+- critic_node
+- human_review
+- finalize_node
+
+4.6) Chat UI Components
+Key files:
+- ChatWorkspace.tsx: top-level workspace composition.
+- ChatSidebar.tsx: thread list, create/delete, profile controls.
+- ChatConversation.tsx: prompt bubble, workflow progress UI, outputs, review panel.
+- BottomComposer.tsx: prompt input submit area.
+- AuthRequiredCard.tsx: login/signup prompt when unauthenticated.
+- MenuButton.tsx: drawer toggle.
+
+4.7) Auth Screens
+Files:
+- frontend/app/login/page.tsx
+- frontend/app/signup/page.tsx
+- frontend/app/update_password/page.tsx
+- frontend/components/auth/*
+
+Behavior summary:
+- Login stores email/name/optional ollama_setup_notice in localStorage.
+- Signup auto-logins on success and routes to home.
+- Update password performs backend update then logs user out.
+
+4.8) Styling / Config
+Files:
+- frontend/app/globals.css
+- frontend/next.config.ts
+- frontend/tailwind.config.ts
+- frontend/postcss.config.mjs
+- frontend/eslint.config.mjs
+- frontend/tsconfig.json
+
+
+====================================================================
+5) MCP SERVER - TECHNICAL TRANSCRIPT
+====================================================================
+
+5.1) MCP Server Stack
+File: mcp_server/pyproject.toml
+- fastmcp
+- mcp[cli]
+- tavily-python
+- tiktoken
+- python-dotenv
+
+5.2) MCP Server Bootstrap
+File: mcp_server/server.py
+- Creates FastMCP("blog-research-tools").
+- Registers two tools:
+  - web_search_tool
+  - fetch_page_tool
+- Transport modes:
+  - default: stdio (local usage)
+  - --sse: host 0.0.0.0, port from PORT env (default 8000)
+
+5.3) Tool Config
+File: mcp_server/config.py
+- Loads .env.
+- Exposes TAVILY_API_KEY.
+
+5.4) Tool: web_search_tool
+File: mcp_server/tools/web_search.py
+- Inputs:
+  - query (required)
+  - max_results (1-10, clamped)
+- Calls Tavily search.
+- Returns JSON string with query + normalized results list:
+  - url, title, content, score
+
+5.5) Tool: fetch_page_tool
+File: mcp_server/tools/fetch_page.py
+- Inputs:
+  - url (required)
+  - query (optional focus)
+- Calls Tavily extract (advanced depth).
+- Merges top chunks, cleans content (unicode/junk stripping), truncates by tokens.
+- Returns structured dict with:
+  - tool, title, content, snippet, source, score, word_count
+
+5.6) Containerization
+File: mcp_server/Dockerfile
+- Multi-stage build with uv dependency sync.
+- Runtime image based on python:3.11-slim-bookworm.
+- Healthcheck using pgrep for server.py process.
+- Default container command runs SSE mode.
+
+
+====================================================================
+6) ENVIRONMENT VARIABLES (ACROSS SERVICES)
+====================================================================
+Commonly used:
+- TAVILY_API_KEY
+- MCP_AUTH_TOKEN
+- DB_URL / DATABASE_URL
+- JWT_SECRET_KEY
+- OLLAMA_HOST
+- OLLAMA_REMOTE_URL
+- GOOGLE_API_KEY
+- GROQ_API_KEY
+- HORIZON_TOKEN
+- HUGGINGFACEHUB_API_TOKEN
+- NEXT_PUBLIC_API_BASE_URL
+- PORT (mcp_server SSE)
+
+
+====================================================================
+7) RUNTIME EXECUTION COMMANDS
+====================================================================
+MCP server:
+- cd mcp_server
+- uv sync
+- uv run fastmcp run server.py
+- python server.py --sse
+
+Backend API:
+- cd backend
+- uv sync
+- python -m api.main
+
+Frontend:
+- cd frontend
+- pnpm install
+- pnpm dev
+
+
+====================================================================
+8) COMPLETE SOURCE INVENTORY (frontend/backend/mcp_server)
+====================================================================
+Note: This list excludes heavy generated/build folders such as .venv, node_modules, .next, __pycache__.
+
+BACKEND
+- backend/__init__.py
+- backend/.env
+- backend/.python-version
+- backend/main.py
+- backend/pyproject.toml
+- backend/README.md
+- backend/uv.lock
+- backend/.vscode/settings.json
+- backend/agent/__init__.py
+- backend/agent/config.py
+- backend/agent/main.py
+- backend/agent/state.py
+- backend/agent/tools.py
+- backend/agent/workflow.py
+- backend/agent/nodes/__init__.py
+- backend/agent/nodes/assembler.py
+- backend/agent/nodes/critic.py
+- backend/agent/nodes/editor.py
+- backend/agent/nodes/finalize.py
+- backend/agent/nodes/planner.py
+- backend/agent/nodes/research_loop.py
+- backend/agent/nodes/research_query_gen.py
+- backend/agent/nodes/researcher.py
+- backend/agent/nodes/router.py
+- backend/agent/nodes/summarizer.py
+- backend/agent/nodes/task_executer.py
+- backend/api/__init__.py
+- backend/api/config.py
+- backend/api/main.py
+- backend/api/routes/__init__.py
+- backend/api/routes/auth/__init__.py
+- backend/api/routes/auth/login.py
+- backend/api/routes/auth/logout.py
+- backend/api/routes/auth/main.py
+- backend/api/routes/auth/register.py
+- backend/api/routes/auth/update_password.py
+- backend/api/routes/blog/__init__.py
+- backend/api/routes/blog/delete_chat.py
+- backend/api/routes/blog/final_post.py
+- backend/api/routes/blog/generate.py
+- backend/api/routes/blog/main.py
+- backend/api/routes/blog/review.py
+- backend/api/routes/blog/status.py
+- backend/api/routes/blog/stream.py
+- backend/api/routes/blog/user_posts.py
+- backend/api/schema/__init__.py
+- backend/api/schema/app_resources.py
+- backend/api/schema/auth_states.py
+- backend/api/schema/blog_states.py
+- backend/api/schema/stream_manager.py
+- backend/api/utils/__init__.py
+- backend/api/utils/access_token.py
+- backend/api/utils/auth.py
+- backend/api/utils/errors.py
+- backend/api/utils/password_hashing.py
+- backend/db/__init__.py
+- backend/db/crud/__init__.py
+- backend/db/crud/blog_outputs.py
+- backend/db/crud/blog_runs.py
+- backend/db/crud/user_data.py
+- backend/docs/blogs_title.txt
+- backend/docs/commands_used.txt
+- backend/docs/fastapi_tasks.md
+- backend/docs/hil_code.md
+- backend/docs/hil.md
+- backend/docs/node_check_streaming_output.txt
+- backend/docs/prompts_used.txt
+- backend/docs/run_output.txt
+- backend/docs/task_executer_output.md
+- backend/docs/workflow.md
+- backend/docs/workflow.png
+
+FRONTEND
+- frontend/.env.local
+- frontend/AGENTS.md
+- frontend/CLAUDE.md
+- frontend/eslint.config.mjs
+- frontend/next-env.d.ts
+- frontend/next.config.ts
+- frontend/package.json
+- frontend/pnpm-lock.yaml
+- frontend/pnpm-workspace.yaml
+- frontend/postcss.config.mjs
+- frontend/README.md
+- frontend/tailwind.config.ts
+- frontend/tsconfig.json
+- frontend/app/favicon.ico
+- frontend/app/globals.css
+- frontend/app/layout.tsx
+- frontend/app/page.tsx
+- frontend/app/login/page.tsx
+- frontend/app/signup/page.tsx
+- frontend/app/update_password/page.tsx
+- frontend/components/auth/AuthPageShell.tsx
+- frontend/components/auth/LoginView.tsx
+- frontend/components/auth/PasswordField.tsx
+- frontend/components/auth/SignupView.tsx
+- frontend/components/auth/TextField.tsx
+- frontend/components/auth/UpdatePasswordView.tsx
+- frontend/components/chat/AuthRequiredCard.tsx
+- frontend/components/chat/BottomComposer.tsx
+- frontend/components/chat/ChatConversation.tsx
+- frontend/components/chat/ChatSidebar.tsx
+- frontend/components/chat/chatWorkflow.helpers.ts
+- frontend/components/chat/ChatWorkspace.tsx
+- frontend/components/chat/MenuButton.tsx
+- frontend/components/chat/types.ts
+- frontend/components/chat/useChatAuth.ts
+- frontend/components/chat/useChatRuntime.ts
+- frontend/components/chat/useChatWorkflow.ts
+- frontend/components/layout/AppTitle.tsx
+- frontend/docs/prompts_used.txt
+- frontend/lib/api.ts
+- frontend/lib/error.ts
+- frontend/public/file.svg
+- frontend/public/globe.svg
+- frontend/public/next.svg
+- frontend/public/vercel.svg
+- frontend/public/window.svg
+
+MCP_SERVER
+- mcp_server/.dockerignore
+- mcp_server/.env
+- mcp_server/.python-version
+- mcp_server/config.py
+- mcp_server/Dockerfile
+- mcp_server/integration_result.json
+- mcp_server/pyproject.toml
+- mcp_server/README.md
+- mcp_server/server.py
+- mcp_server/uv.lock
+- mcp_server/tools/__init__.py
+- mcp_server/tools/fetch_page.py
+- mcp_server/tools/web_search.py
+
+
+====================================================================
+9) END-TO-END FLOW TRANSCRIPT (OPERATIONAL)
+====================================================================
+1. User logs in from frontend auth page.
+2. Frontend stores auth identity in localStorage and uses cookie session for API calls.
+3. User submits prompt in BottomComposer.
+4. Frontend calls POST /blog/generate.
+5. Backend starts async workflow and returns thread_id + stream_url.
+6. Frontend opens EventSource to /blog/stream/{thread_id}.
+7. Backend publishes node updates while graph runs.
+8. Frontend visualizes node progress and node outputs.
+9. If critic requires review, backend marks waiting_approval and stream sends waiting event.
+10. User approves/rejects via frontend.
+11. Frontend sends POST /blog/review.
+12. Backend resumes graph from human_review checkpoint.
+13. Backend finalizes output, persists final markdown + metadata.
+14. Backend sends completed event and closes stream.
+15. Frontend fetches final post and renders markdown output.
+16. User can revisit prior threads via sidebar history.
+
+
+====================================================================
+10) CURRENT STATE SUMMARY
+====================================================================
+- Core workflow is fully implemented with multi-node orchestration.
+- Auth + blog endpoints are implemented and integrated in frontend.
+- SSE streaming and human-in-the-loop approval are implemented.
+- MCP server is implemented and deployable with stdio/SSE modes.
+- Deployment status from root docs: MCP deployed, frontend/backend not fully deployed yet.
+
+End of document.

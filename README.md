@@ -37,6 +37,12 @@ A quicker highlight reel of the main workflow and output.
 
 > **💡 Tip:** Click the settings icon (⚙️) in the video player and select **Speed** → **0.25x** to watch at slower speed for better understanding.
 
+### Full Long Video
+
+A complete end-to-end walkthrough of the project, including setup, workflow execution, and final output review.
+
+[Full Long Demo on YouTube](https://www.youtube.com/watch?v=KgpNe0CwLn4)
+
 ---
 
 ## 🚩 Problem This App Solves
