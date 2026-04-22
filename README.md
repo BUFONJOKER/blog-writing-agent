@@ -33,22 +33,9 @@
 
 A quicker highlight reel of the main workflow and output.
 
-<iframe width="100%" height="400" src="https://www.youtube.com/embed/q1T_noaZJhE" title="Fast-Paced Highlight Reel" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-
-[Open the fast-paced highlight reel in YouTube](https://www.youtube.com/watch?v=q1T_noaZJhE)
+[Demo of Full Project on YouTube](https://www.youtube.com/watch?v=q1T_noaZJhE)
 
 > **💡 Tip:** Click the settings icon (⚙️) in the video player and select **Speed** → **0.25x** to watch at slower speed for better understanding.
-
-### Full Video Walkthrough
-
-End-to-end demo covering the full project flow and features.
-
-<video controls width="100%" preload="metadata">
-	<source src="https://github.com/BUFONJOKER/blog-writing-agent/raw/main/Blog%20Writing%20Agent.mp4" type="video/mp4">
-	Your browser does not support the video tag.
-</video>
-
-[Open the complete walkthrough directly](https://github.com/BUFONJOKER/blog-writing-agent/blob/main/Blog%20Writing%20Agent.mp4)
 
 ---
 
